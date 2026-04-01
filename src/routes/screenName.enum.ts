@@ -11,10 +11,15 @@ enum ScreenNameEnum {
   MyProfile="MyProfile",
   HomeDashboard="HomeDashboard",
   LibraryScreen="LibraryScreen",
+  ScriptDetailsScreen="ScriptDetailsScreen",
   MoreViewDetails="MoreViewDetails",
+  ProfileSetting="ProfileSetting",
+  BirdNestRescueScreen="BirdNestRescueScreen",
   NearbyDriversMap="NearbyDriversMap",
   Activity="Activity",
-
+  FAQs="FAQs"
+,
+SupportScreen="SupportScreen",
   CreateParcelFrom="CreateParcelFrom",
   DeliveryRequest="DeliveryRequest",
   ChooseRole="ChooseRole",

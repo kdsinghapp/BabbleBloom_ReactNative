@@ -5,8 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  StatusBar,
-  Image,
+   Image,
 } from 'react-native';
 import Svg, { Rect, Line, Polyline } from 'react-native-svg';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
@@ -359,7 +358,7 @@ const styles = StyleSheet.create({
   },
   tabBtn: {
     flex: 1,
-    paddingVertical: 20,
+    paddingVertical: 8,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',  
@@ -368,7 +367,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.green,
         alignItems: 'center',
     justifyContent: 'center',  
-    paddingVertical: 15,
+    paddingVertical: 12,
 
  
   },

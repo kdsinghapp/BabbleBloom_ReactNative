@@ -71,14 +71,14 @@ const NotificationsScreen = () => {
     <SafeAreaView style={styles.container}>
             <CustomHeader
                 label={"Notification"}
-                menuIcon={imageIndex.left}
-                leftPress={true}
-                navigation={navigation}
+               
                 // rightIcons={[
                 //     { icon: imageIndex.close, onPress:()=>navigation.navigate(ScreenNameEnum.NotificationsScreen)}
                 // ]}
             />
-      <SectionList
+            <View        style={{ flex: 1, paddingHorizontal: 20, marginTop: 10 }}
+>
+      <SectionList 
         sections={notifications}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <NotificationItem item={item} />}
@@ -87,6 +87,7 @@ const NotificationsScreen = () => {
         )}
         contentContainerStyle={{ paddingBottom: 20 }}
       />
+      </View>
     </SafeAreaView>
   );
 };
@@ -95,8 +96,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    
   },
   sectionHeader: {
     fontSize: 16,

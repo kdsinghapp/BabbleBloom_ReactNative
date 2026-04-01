@@ -10,6 +10,9 @@ import {
 import CustomHeader from '../../../compoent/CustomHeader';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import imageIndex from '../../../assets/imageIndex';
+import ScreenNameEnum from '../../../routes/screenName.enum';
+import { useNavigation } from '@react-navigation/native';
 
 const scriptData = [
   '“Oh no! The bird fell down!”',
@@ -19,6 +22,7 @@ const scriptData = [
 ];
 
 const MoreViewDetails = () => {
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
             <StatusBarComponent />
@@ -33,7 +37,7 @@ const MoreViewDetails = () => {
           <View style={styles.imageWrapper}>
             <Image
               source={{
-                uri: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=800&auto=format&fit=crop',
+                uri: 'https://images.unsplash.com/photo-1444464666168-49d633b86797?q=80&w=800&auto=format&fit=crop',
               }}
               style={styles.mainImage}
             />
@@ -43,10 +47,12 @@ const MoreViewDetails = () => {
           <View style={styles.badge}>
             <Text style={styles.badgeText}>Bird Nest Rescue</Text>
           </View>
+            <Text style={[styles.cardTitle,{
+              marginTop:40
+            }]}>✍️ What you’ll practice</Text>
 
           {/* Practice Card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>✍️ What you’ll practice</Text>
 
             <View style={styles.bulletRow}>
               <Text style={styles.bullet}>•</Text>
@@ -72,13 +78,29 @@ const MoreViewDetails = () => {
           </View>
 
           {/* Scripts */}
-          <View style={styles.scriptHeaderRow}>
-            <Text style={styles.scriptTitle}>🟢 Scripts to Model</Text>
-          </View>
-
-          <Text style={styles.subText}>
+          <View style={[styles.scriptHeaderRow,{
+            flexDirection:"row" ,
+            alignItems:"center"
+          }]}>
+            <Image source={imageIndex.Validation} 
+            
+            style={{width:22,height:22,marginRight:2}}
+            />
+            <View style={{
+              flexDirection:"column",
+              marginLeft:5
+            }}>
+            <Text style={styles.scriptTitle}>Scripts to Model</Text>
+            <Text style={[styles.subText,{
+            color:"#ADA4A5",
+            marginLeft:1
+          }]}>
             Tap the play icon to hear how to say these phrases naturally.
           </Text>
+          </View>
+          </View>
+
+          
 
           {scriptData.map((item, index) => (
             <View key={index} style={styles.scriptItem}>
@@ -96,7 +118,9 @@ const MoreViewDetails = () => {
         </ScrollView>
 
         {/* Bottom Button */}
-        <TouchableOpacity style={styles.bottomButton}>
+        <TouchableOpacity style={styles.bottomButton} 
+        onPress={()=>navigation.navigate(ScreenNameEnum.BirdNestRescueScreen)}
+        >
           <Text style={styles.bottomButtonText}>▷ Start Activity</Text>
         </TouchableOpacity>
  
@@ -144,6 +168,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#111',
+    
   },
   scrollContent: {
     paddingBottom: 20,
@@ -163,10 +188,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#F06B7A',
+    borderColor: '#E03B65',
     borderRadius: 20,
     paddingHorizontal: 14,
-    paddingVertical: 5,
+    paddingVertical: 10,
+  position:"absolute",
+  top:120
   },
   badgeText: {
     fontSize: 12,
@@ -182,7 +209,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
+  elevation: 8,
   },
   cardTitle: {
     fontSize: 13,
@@ -204,7 +231,7 @@ const styles = StyleSheet.create({
   cardText: {
     flex: 1,
     fontSize: 12,
-    color: '#555',
+    color: 'black',
     lineHeight: 18,
   },
   scriptHeaderRow: {
@@ -223,12 +250,22 @@ const styles = StyleSheet.create({
   },
   scriptItem: {
     backgroundColor: '#fff',
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
+  borderRadius: 14,
+  paddingHorizontal: 10,
+  paddingVertical: 12,
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 10,
+
+  // iOS Shadow
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.08,
+  shadowRadius: 6,
+
+  // Android Shadow
+  elevation: 8,
+
   },
   playButton: {
     width: 28,
@@ -258,7 +295,7 @@ const styles = StyleSheet.create({
     color: '#F27A8A',
   },
   bottomButton: {
-    backgroundColor: '#E83E67',
+    backgroundColor: '#E03B65',
     borderRadius: 16,
     height: 52,
     alignItems: 'center',

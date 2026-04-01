@@ -15,6 +15,7 @@ import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 import { useNavigation } from '@react-navigation/native';
+import imageIndex from '../../../assets/imageIndex';
  
 
 const activities = [
@@ -114,8 +115,11 @@ const ActivityViewDetails = () => {
  
         <View style={styles.searchRow}>
           <View style={styles.searchBox}>
-            {/* <Ionicons name="search-outline" size={18} color="#7C8797" /> */}
-            <TextInput
+            <Image source={imageIndex.search1} 
+            
+            style={{width:22,height:22}}
+            />
+             <TextInput
               placeholder="Search activities or skills..."
               placeholderTextColor="#7C8797"
               style={styles.input}
@@ -214,15 +218,19 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 10,
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 8,
-    elevation: 2,
+   // iOS Shadow
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.08,
+  shadowRadius: 6,
+
+  // Android Shadow
+  elevation: 8,
+  marginHorizontal:5
   },
   cardImage: {
-    width: 88,
-    height: 108,
+    width: 100,
+    height: 140,
     borderRadius: 16,
     marginRight: 12,
   },

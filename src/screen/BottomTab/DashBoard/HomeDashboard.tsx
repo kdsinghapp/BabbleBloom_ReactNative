@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-    Platform,
+  Platform,
 } from 'react-native';
 import imageIndex from '../../../assets/imageIndex';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
@@ -21,7 +21,7 @@ const PlusCircle = () => (
     <Text style={styles.iconCircleText}>＋</Text>
   </View>
 );
- const ScriptIcon = () => <Image source={imageIndex.Frame} style={{ width: 29, height: 29 }} />;
+const ScriptIcon = () => <Image source={imageIndex.Frame} style={{ width: 29, height: 29 }} />;
 const BarChartIcon = () => <Image source={imageIndex.grap} style={{ width: 29, height: 29 }} />;
 const LibraryIcon = () => <Image source={imageIndex.Library} style={{ width: 29, height: 29 }} />;
 const ActivityIcon = () => <Image source={imageIndex.Activity} style={{ width: 29, height: 29 }} />;
@@ -60,44 +60,49 @@ const recentScripts = [
 function TodayBanner() {
   return (
     <View style={styles.banner}>
-      <View style={[styles.bannerContent,{
-        bottom:15
+      <View style={[styles.bannerContent, {
+        bottom: 15
       }]}>
         <Text style={styles.bannerTitle}>{"Try this today: 'Let's\nplay together."}</Text>
         <TouchableOpacity style={styles.bannerBtn} activeOpacity={0.85}>
           <Text style={styles.bannerBtnText}>Let's play together</Text>
         </TouchableOpacity>
       </View>
-       <View style={[styles.bannerIllustration,{
-        marginTop:8
-       }]}>
-    <Image source={imageIndex.family} style={styles.bannerImg} />
+      <View style={[styles.bannerIllustration, {
+        marginTop: 8
+      }]}>
+        <Image source={imageIndex.family} style={styles.bannerImg} />
       </View>
     </View>
   );
 }
 
-function ScriptItem({ item }: { item: (typeof recentScripts)[0] }) {
+function ScriptItem({ item, navigator }: { item: (typeof recentScripts)[0]; navigator: any }) {
   return (
     <View style={styles.scriptItem}>
       <View style={styles.scriptLeft}>
         {/* Baby avatar */}
-          <Image source={imageIndex.moji} 
-          
+        <Image source={imageIndex.moji}
+
           style={{
-            width: 42,      
-            height:42
+            width: 42,
+            height: 42
           }}
-          />
-        
+        />
+
         <View>
           <Text style={styles.scriptText}>{item.text}</Text>
-          <Text style={[styles.scriptTime,{
-            color:"#ADA4A5"
+          <Text style={[styles.scriptTime, {
+            color: "#ADA4A5"
           }]}>{item.time}</Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.scriptIconBtn}>
+      <TouchableOpacity style={styles.scriptIconBtn}
+
+        onPress={() => {
+          navigator.navigate(screenNameEnum.ScriptDetailsScreen)
+        }}
+      >
         <ScriptIcon />
       </TouchableOpacity>
     </View>
@@ -105,18 +110,23 @@ function ScriptItem({ item }: { item: (typeof recentScripts)[0] }) {
 }
 
 function RecentScripts() {
+  const navigator = useNavigation()
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Scripts</Text>
         <TouchableOpacity>
-          <Text style={[styles.seeAll,{
-            color:"#00D490"
+          <Text style={[styles.seeAll, {
+            color: "#00D490"
           }]}>See All</Text>
         </TouchableOpacity>
       </View>
       {recentScripts.map((item) => (
-        <ScriptItem key={item.id} item={item} />
+        <ScriptItem key={item.id} item={item} 
+        
+        
+        navigator={navigator}
+        />
       ))}
     </View>
   );
@@ -129,15 +139,15 @@ function WeeklyInsight() {
       <View style={styles.insightRow}>
         {/* Left card */}
         <View style={[styles.insightCard, { flex: 1, marginRight: 8 }]}>
-          <Text style={[styles.insightLabel,{
-            color:"#000000"
+          <Text style={[styles.insightLabel, {
+            color: "#000000"
           }]}>Scripts this week</Text>
           <Text style={styles.insightNumber}>12</Text>
         </View>
         {/* Right card */}
         <View style={[styles.insightCard, { flex: 1, marginLeft: 8 }]}>
-          <Text style={[styles.insightLabel,{
-                        color:"#000000"
+          <Text style={[styles.insightLabel, {
+            color: "#000000"
 
           }]}>Most repeated</Text>
           <View style={styles.insightTag}>
@@ -145,11 +155,11 @@ function WeeklyInsight() {
           </View>
         </View>
       </View>
-         <Text style={styles.insightNoteText}>
-          Pattern found: Evenings show more overwhelm scripts than mornings. Consider adding sensory
-          breaks at 5 PM.
-        </Text>
-     </View>
+      <Text style={styles.insightNoteText}>
+        Pattern found: Evenings show more overwhelm scripts than mornings. Consider adding sensory
+        breaks at 5 PM.
+      </Text>
+    </View>
   );
 }
 
@@ -159,84 +169,86 @@ function WeeklyInsight() {
 
 export default function HomeScreen() {
   const navigator = useNavigation()
-function QuickActions() {
-  const quickActions = [
-  { 
-    
-    name: screenNameEnum.ProgressScreen,
-    label: 'Reports', color: "#67B3C8", Icon: BarChartIcon },
-  { label: 'Library', color: "#A1D14A", Icon: LibraryIcon ,    name: screenNameEnum.LibraryScreen,
- },
-  { label: 'Activity', color: "#E03B65", Icon: ActivityIcon ,  name: screenNameEnum.Activity, },
-];
+  function QuickActions() {
+    const quickActions = [
+      {
 
-  return (
-    <View style={[styles.section, { paddingBottom: 32 }]}>
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
-      <View style={styles.quickRow}>
-        {quickActions.map(({ label, color, Icon ,name }) => (
-          <TouchableOpacity
-            key={label}
-            onPress={()=>{
-              navigator.navigate(name)
-            }}
-            style={[styles.quickCard, { backgroundColor: color }]}
-            activeOpacity={0.85}
-          >
-            <Icon />
-            <Text style={styles.quickLabel}>{label}</Text>
+        name: screenNameEnum.ProgressScreen,
+        label: 'Reports', color: "#67B3C8", Icon: BarChartIcon
+      },
+      {
+        label: 'Library', color: "#A1D14A", Icon: LibraryIcon, name: screenNameEnum.LibraryScreen,
+      },
+      { label: 'Activity', color: "#E03B65", Icon: ActivityIcon, name: screenNameEnum.Activity, },
+    ];
+
+    return (
+      <View style={[styles.section, { paddingBottom: 32 }]}>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.quickRow}>
+          {quickActions?.map(({ label, color, Icon, name }) => (
+            <TouchableOpacity
+              key={label}
+              onPress={() => {
+                navigator.navigate(name)
+              }}
+              style={[styles.quickCard, { backgroundColor: color }]}
+              activeOpacity={0.85}
+            >
+              <Icon />
+              <Text style={styles.quickLabel}>{label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  }
+  function AddScriptButton() {
+    return (
+      <TouchableOpacity style={styles.addBtn} activeOpacity={0.88}
+
+        onPress={() => {
+          navigator.navigate(ScreenNameEnum.AddNewScript)
+        }}
+      >
+        <View style={styles.addBtnInner}>
+          <PlusCircle />
+          <Text style={styles.addBtnText}>Add New Script</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+  function Header() {
+    return (
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>Good Morning</Text>
+          <Text style={styles.subGreeting}>Let's support Emma today</Text>
+        </View>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.bellBtn}>
+            <Image source={imageIndex.NotificationIcon}
+
+              style={{ width: 22, height: 22 }}
+            />
           </TouchableOpacity>
-        ))}
+          <TouchableOpacity onPress={() => {
+            navigator.navigate(screenNameEnum.ProfileSetting)
+          }}>
+            <View style={styles.avatar}>
+              <Image source={imageIndex.Ellipse}
+
+                style={{ width: 44, height: 44 }}
+              />
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
-}
-function AddScriptButton() {
-  return (
-    <TouchableOpacity style={styles.addBtn} activeOpacity={0.88} 
-    
-    onPress={()=>{
-      navigator.navigate(ScreenNameEnum.AddNewScript)
-    }}
-    >
-      <View style={styles.addBtnInner}>
-        <PlusCircle />
-        <Text style={styles.addBtnText}>Add New Script</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
-function Header() {
-  return (
-    <View style={styles.header}>
-      <View>
-        <Text style={styles.greeting}>Good Morning</Text>
-        <Text style={styles.subGreeting}>Let's support Emma today</Text>
-      </View>
-      <View style={styles.headerRight}>
-        <TouchableOpacity style={styles.bellBtn}>
-        <Image source={imageIndex.NotificationIcon} 
-        
-        style={{ width: 22, height: 22 }}
-        />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={()=>{
-          navigator.navigate(screenNameEnum.EditProfile)
-        }}>
-          <View style={styles.avatar}>
-           <Image source={imageIndex.Ellipse} 
-        
-        style={{ width: 44, height: 44 }}
-        />
-          </View>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+    );
+  }
   return (
     <SafeAreaView style={styles.safe}>
-     <StatusBarComponent/>
+      <StatusBarComponent />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -295,15 +307,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   bellBtn: {
- 
+
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatar: {
- 
+
     alignItems: 'center',
     justifyContent: 'center',
-    
+
   },
   avatarImg: {
     width: 55,
@@ -354,9 +366,9 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   bannerImg: {
-     height: 140,
+    height: 140,
     resizeMode: 'contain',
-    right:18
+    right: 18
   },
 
   // Add Script
@@ -367,7 +379,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingVertical: 16,
     alignItems: 'center',
- 
+
   },
   addBtnInner: {
     flexDirection: 'row',
@@ -459,7 +471,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   scriptIconBtn: {
-    
+
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -485,13 +497,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: C.textGray,
     marginBottom: 6,
-    textAlign:"center"
+    textAlign: "center"
   },
   insightNumber: {
     fontSize: 32,
     fontWeight: '800',
     color: C.textDark,
-        textAlign:"center"
+    textAlign: "center"
 
   },
   insightTag: {
@@ -531,7 +543,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
- 
+
   },
   quickLabel: {
     color: C.white,

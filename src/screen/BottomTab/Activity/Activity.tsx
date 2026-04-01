@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,23 @@ import {
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'react-native';
+import imageIndex from '../../../assets/imageIndex';
 
 const Activity = () => {
+
+  const [activeTab, setActiveTab] = useState('Week');
+
   const previousReports = [
-    { id: 1, title: 'Week of March 5', date: 'Generated Mar 12' },
-    { id: 2, title: 'Week of Feb 26', date: 'Generated Mar 5' },
-    { id: 3, title: 'Week of Feb 19', date: 'Generated Feb 26' },
+    { id: 1, title: 'Week of March 5', date: 'Generated Mar 12', type: 'Week' },
+    { id: 2, title: 'Month of February', date: 'Generated Mar 5', type: 'Month' },
+    { id: 3, title: 'Quarter Q1', date: 'Generated Mar 26', type: 'Quarter' },
+    { id: 4, title: 'Week of Feb 19', date: 'Generated Feb 26', type: 'Week' },
   ];
+
+  const filteredReports = previousReports.filter(
+    item => item.type === activeTab
+  );
 
   const StatRow = ({
     label,
@@ -84,36 +94,55 @@ const Activity = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-          <StatusBarComponent />
+      <StatusBarComponent />
       <CustomHeader label="Activity" />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
- 
+
+        {/* Tabs */}
         <View style={styles.tabContainer}>
-          <TouchableOpacity style={[styles.tabButton, styles.activeTabButton]}>
-            <Text style={[styles.tabText, styles.activeTabText]}>Week</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabButton}>
-            <Text style={styles.tabText}>Month</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tabButton}>
-            <Text style={styles.tabText}>Quarter</Text>
-          </TouchableOpacity>
+          {['Week', 'Month', 'Quarter'].map(tab => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              style={[
+                styles.tabButton,
+                activeTab === tab && styles.activeTabButton,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === tab && styles.activeTabText,
+                ]}
+              >
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
+        {/* Report Card */}
         <View style={styles.reportCard}>
           <View style={styles.reportHeader}>
-            <View style={styles.blueIconBox}>
-              <Text style={styles.blueIcon}>📄</Text>
-            </View>
+           <Image source={imageIndex.doc}  
+            style={{
+              width: 55,  
+              height: 55,
+              marginRight:8
+           }}
+           />
 
             <View style={styles.reportHeaderText}>
-              <Text style={styles.reportTitle}>Communication Progress Report</Text>
-              <Text style={styles.reportDate}>March 12 - March 19, 2026</Text>
+              <Text style={styles.reportTitle}>
+                Communication Progress Report
+              </Text>
+              <Text style={styles.reportDate}>
+                March 12 - March 19, 2026
+              </Text>
             </View>
           </View>
 
@@ -123,235 +152,294 @@ const Activity = () => {
           <StatRow label="New Milestones" value="3" />
 
           <TouchableOpacity activeOpacity={0.85} style={styles.generateButton}>
-            <Text style={styles.generateButtonText}>⭳  Generate PDF Report</Text>
+            <Text style={styles.generateButtonText}>
+               Generate PDF Report
+            </Text>
           </TouchableOpacity>
         </View>
 
+        {/* Share Section */}
         <Text style={styles.sectionTitle}>Share Report With</Text>
 
         <ShareCard
           title="Email Report"
           subtitle="Send to therapist or school"
-          leftBg="#E8F6EE"
+          leftBg="#50C878"
           icon="✉️"
         />
 
         <ShareCard
           title="Schedule Regular Reports"
           subtitle="Automatic weekly or monthly delivery"
-          leftBg="#EAF1FF"
+          leftBg="#4A90E2"
           icon="📅"
         />
 
+        {/* Previous Reports */}
         <Text style={styles.sectionTitle}>Previous Reports</Text>
 
-        {previousReports.map(item => (
-          <PreviousReportItem
-            key={item.id}
-            title={item.title}
-            date={item.date}
-          />
-        ))}
+        {filteredReports.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 10 }}>
+            No reports available
+          </Text>
+        ) : (
+          filteredReports.map(item => (
+            <PreviousReportItem
+              key={item.id}
+              title={item.title}
+              date={item.date}
+            />
+          ))
+        )}
+
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 export default Activity;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F5',
+    backgroundColor: 'white',
   },
+
   contentContainer: {
     paddingHorizontal: 18,
     paddingTop: 12,
     paddingBottom: 30,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111111',
-    textAlign: 'center',
-    marginBottom: 18,
-  },
+
+  /* 🔥 Tabs */
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ECECE8',
+    backgroundColor: '#F5F5F5',
     borderRadius: 30,
-    padding: 4,
-    marginBottom: 18,
+    padding: 5,
+    marginBottom: 20,
+
+ 
   },
+
   tabButton: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 24,
+    borderRadius: 25,
     alignItems: 'center',
-    justifyContent: 'center',
   },
+
   activeTabButton: {
     backgroundColor: '#E83F77',
   },
+
   tabText: {
     fontSize: 13,
+    color: 'black',
     fontWeight: '500',
-    color: '#555',
   },
+
   activeTabText: {
     color: '#FFFFFF',
     fontWeight: '700',
   },
+
+  /* 🔥 Report Card */
   reportCard: {
-    backgroundColor: '#F4F4F1',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 22,
+
+    elevation: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
+
   reportHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 18,
   },
+
   blueIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+    width: 50,
+    height: 50,
+    borderRadius: 16,
     backgroundColor: '#5C9DF5',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
+
   blueIcon: {
     fontSize: 20,
   },
+
   reportHeaderText: {
     flex: 1,
   },
+
   reportTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
-    color: '#111111',
-    marginBottom: 4,
+    color: '#111',
   },
+
   reportDate: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#8A8A8A',
+    marginTop: 2,
   },
+
+  /* 🔥 Stats */
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E2DD',
+    borderBottomColor: '#F0F0F0',
   },
+
   statLabel: {
     fontSize: 13,
-    color: '#3A3A3A',
+    color: '#555',
     fontWeight: '500',
   },
+
   statValue: {
     fontSize: 13,
-    color: '#111111',
+    color: '#111',
     fontWeight: '700',
   },
+
+  /* 🔥 Button */
   generateButton: {
     marginTop: 18,
-    backgroundColor: '#C7C428',
-    borderRadius: 14,
+    backgroundColor: '#CCCA33',
+    borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
+
+   
   },
+
   generateButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#FFF',
   },
+
+  /* 🔥 Section Title */
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
-    color: '#111111',
+    color: '#111',
     marginBottom: 12,
   },
+
+  /* 🔥 Share Card */
   shareCard: {
-    backgroundColor: '#F4F4F1',
-    borderRadius: 16,
-    padding: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 15,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
+
+    elevation: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
   },
+
   shareIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
+
   shareIcon: {
     fontSize: 18,
+    color: '#FFF',
   },
+
   shareTextWrap: {
     flex: 1,
   },
+
   shareTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111111',
-    marginBottom: 2,
+    color: '#111',
   },
+
   shareSubtitle: {
     fontSize: 11,
-    color: '#949494',
+    color: '#999',
+    marginTop: 2,
   },
+
   shareAction: {
     fontSize: 18,
-    color: '#74C67A',
+    color: '#4CAF50',
     fontWeight: '700',
   },
+
+  /* 🔥 Previous Reports */
   previousCard: {
-    backgroundColor: '#F4F4F1',
-    borderRadius: 16,
-    padding: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 14,
+
+    elevation: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
   },
+
   previousLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+
   reportIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     backgroundColor: '#E83F77',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
+
   reportIcon: {
     fontSize: 18,
-    color: '#FFFFFF',
+    color: '#FFF',
   },
+
   previousTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111111',
-    marginBottom: 3,
+    color: '#111',
   },
+
   previousSubtitle: {
     fontSize: 11,
-    color: '#9A9A9A',
+    color: '#999',
+    marginTop: 2,
   },
+
   downloadIcon: {
     fontSize: 18,
     color: '#6FA8FF',

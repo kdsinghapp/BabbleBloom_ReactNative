@@ -1,34 +1,35 @@
 import React, { memo } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import font from '../theme/font';
 
 const LogoutModal = ({ visible, onLogout, onCancel }: any) => {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-    >
+    <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.closeButton} onPress={onCancel}>
-            <Text style={styles.closeText}>×</Text>
-          </TouchableOpacity>
+        <View style={styles.bottomContainer}>
+          
+          {/* Drag Indicator */}
+          <View style={styles.dragLine} />
 
-          <Text allowFontScaling={false} style={styles.title}>
-            Log Out
-          </Text>
-          <Text allowFontScaling={false} style={styles.message}>
-            Are you sure you want to log out of your account?
+          <Text style={styles.title}>Log Out</Text>
+          <Text style={styles.message}>
+            Are you sure you want to log out?
           </Text>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-              <Text allowFontScaling={false} style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-              <Text allowFontScaling={false} style={styles.logoutText}>Yes</Text>
+              <Text style={styles.logoutText}>Yes</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -42,68 +43,56 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end', // 👈 important (bottom pe laane ke liye)
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  modalContainer: {
-    width: width * 0.85,
+
+  bottomContainer: {
+    width: '100%',
     backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 25,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#EDEDED',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 30,
+
+    // Shadow
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: 6,
     elevation: 10,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 15,
-    right: 15,
-    zIndex: 1,
+
+  dragLine: {
+    width: 50,
+    height: 5,
+    backgroundColor: '#ccc',
+    borderRadius: 10,
+    alignSelf: 'center',
+    marginBottom: 15,
   },
-  closeText: {
-    fontSize: 22,
-    color: '#A0A0A0',
-  },
+
   title: {
     fontSize: 18,
     fontWeight: '700',
-    marginBottom: 10,
-    fontFamily: font.MonolithRegular,
     textAlign: 'center',
     color: '#333',
+ 
+    marginBottom: 10,
   },
+
   message: {
     fontSize: 15,
     color: '#666',
     textAlign: 'center',
-    lineHeight: 22,
     marginBottom: 25,
-    fontFamily: font.MonolithRegular,
+    fontWeight:"500"
   },
+
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
   },
-  logoutButton: {
-    flex: 1,
-    backgroundColor: '#FFCC00',
-    paddingVertical: 12,
-    marginLeft: 10,
-    borderRadius: 25,
-    alignItems: 'center',
-  },
-  logoutText: {
-    color: '#fff',
-    fontSize: 15,
-    fontFamily: font.MonolithRegular,
-   },
+
   cancelButton: {
     flex: 1,
     backgroundColor: '#EDEDED',
@@ -112,11 +101,27 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
   },
+
   cancelText: {
     color: '#333',
-    fontSize: 16,
-    fontFamily: font.MonolithRegular,
+    fontSize: 15,
     fontWeight: '600',
+  },
+
+  logoutButton: {
+    flex: 1,
+    backgroundColor: '#E03B65',
+    paddingVertical: 15,
+    marginLeft: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+  },
+
+  logoutText: {
+    color: '#fff',
+    fontSize: 15,
+        fontWeight:"500"
+
   },
 });
 
