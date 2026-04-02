@@ -28,7 +28,7 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: '1',
-    title: "Track your child’s\ncommunication",
+    title: "Track your child’s communication",
     description: 'Monitor communication patterns in a simple and clear way.',
     img: imageIndex.sp2,
   },

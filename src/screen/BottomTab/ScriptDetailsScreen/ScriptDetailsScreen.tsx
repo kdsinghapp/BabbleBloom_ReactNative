@@ -240,9 +240,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
    },
   analysisSubtitle: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#8A8A8A',
-    marginTop: 2,
+    marginTop: 4,
   },
   analysisText: {
     fontSize: 13,

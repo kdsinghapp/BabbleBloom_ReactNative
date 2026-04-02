@@ -40,15 +40,7 @@ const C = {
   neutral: '#94A3B8',
 };
 
-// ── Data ─────────────────────────────────────────────────────────────────────
-const CONTEXTS = [
-  { id: 'home', label: 'Home', emoji: '🏠' },
-  { id: 'school', label: 'School', emoji: '🏫' },
-  { id: 'car', label: 'Car', emoji: '🚗' },
-  { id: 'bedtime', label: 'Bedtime', emoji: '🌙' },
-  { id: 'park', label: 'Park', emoji: '🌳' },
-  { id: 'store', label: 'Store', emoji: '🛒' },
-];
+
 
 const EMOTIONS = [
   { id: 'happy', label: 'Happy', color: C.happy },
@@ -149,7 +141,14 @@ const FreqButton = ({ label, selected, onPress }) => (
 export default function AddNewScriptScreen({ navigation }: any) {
   const [currentStep, setCurrentStep] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-
+// ── Data ─────────────────────────────────────────────────────────────────────
+const CONTEXTS = [
+  { id: 'home', label: 'Home', emoji: '🏠', },
+  { id: 'school', label: 'School', emoji: '🏫' },
+  { id: 'car', label: 'Car', emoji: '🚗' },
+  { id: 'bedtime', label: 'Bedtime', emoji: '🌙' },
+ 
+];
   // Form States
   const [scriptText, setScriptText] = useState('');
   const [selectedContext, setSelectedContext] = useState('home');
@@ -283,9 +282,10 @@ export default function AddNewScriptScreen({ navigation }: any) {
           <TextInput
             style={s.textArea}
             placeholder="Explain the intended meaning…"
-            placeholderTextColor={C.sub}
+            placeholderTextColor={"black"}
             value={meaning}
             onChangeText={setMeaning}
+            
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -297,9 +297,10 @@ export default function AddNewScriptScreen({ navigation }: any) {
           <TextInput
             style={s.textArea}
             placeholder="Any other observations?"
-            placeholderTextColor={C.sub}
-            value={notes}
+             value={notes}
             onChangeText={setNotes}
+                        placeholderTextColor={"black"}
+
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -477,7 +478,7 @@ const s = StyleSheet.create({
     borderColor: 'transparent',
   },
   contextChipSelected: {
-    backgroundColor: C.primaryLight,
+    backgroundColor: "white",
     borderColor: C.primary,
   },
   contextEmoji: { fontSize: 18, marginRight: 8 },
@@ -526,9 +527,9 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  freqBtnSelected: { backgroundColor: C.primaryLight, borderColor: C.primary },
+  freqBtnSelected: { backgroundColor: "#E03B65",   },
   freqLabel: { fontSize: 14, fontWeight: '700', color: C.tagText },
-  freqLabelSelected: { color: C.primary },
+  freqLabelSelected: { color: "white" },
 
   // Footer
   footer: {
@@ -561,7 +562,7 @@ textAlign:"center"
      borderColor: C.border,
      justifyContent:"center"
   },
-  secondaryBtnText: { color: C.sub, fontSize: 16, fontWeight: '700' },
+  secondaryBtnText: { color: "black", fontSize: 16, fontWeight: '700' },
 
   saveBtn: {
     flex: 2,
