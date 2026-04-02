@@ -5,21 +5,24 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
+  Platform,
 } from 'react-native';
 import Svg, { Rect, Line, Polyline, Circle, Text as SvgText } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomHeader from '../../../compoent/CustomHeader';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
+import imageIndex from '../../../assets/imageIndex';
 
 type TabType = 'Activity' | 'Emotions' | 'Trends';
 
 const COLORS = {
-  bg: '#F7F8FA',
+  bg: 'white',
   card: '#FFFFFF',
   text: '#111111',
   subText: '#9A9A9A',
   border: '#EFEFEF',
-  green: '#9AD14B',
+  green: '#A1D14A',
   greenLight: '#EAF5D2',
   pink: '#E84A78',
   pinkLight: '#FDEEF3',
@@ -71,35 +74,10 @@ const milestones = [
   },
 ];
 
-const stats = [
-  { emoji: '📘', bg: '#EEF3FF', value: '27', label: 'Scripts', valueColor: COLORS.blue },
-  { emoji: '📊', bg: '#EEFBF2', value: '+18%', label: 'Growth', valueColor: '#40B36C' },
-  { emoji: '☺', bg: '#FFF6E8', value: '82%', label: 'Positive', valueColor: COLORS.orange },
-];
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-const Header = () => (
-  <View style={styles.header}>
-    <View style={styles.headerIconPlaceholder} />
-    <Text style={styles.headerTitle}>Progress</Text>
-    <View style={styles.headerIconPlaceholder} />
-  </View>
-);
 
+ 
 // ─── Stats Row ────────────────────────────────────────────────────────────────
-const StatsRow = () => (
-  <View style={styles.statsRow}>
-    {stats.map((item, index) => (
-      <View key={index} style={styles.statCard}>
-        <View style={[styles.statIconCircle, { backgroundColor: item.bg }]}>
-          <Text style={styles.statEmoji}>{item.emoji}</Text>
-        </View>
-        <Text style={[styles.statValue, { color: item.valueColor }]}>{item.value}</Text>
-        <Text style={styles.statLabel}>{item.label}</Text>
-      </View>
-    ))}
-  </View>
-);
 
 // ─── Tab Bar ──────────────────────────────────────────────────────────────────
 const TabBar = ({
@@ -174,8 +152,8 @@ const WeeklyBarsCard = () => {
                 x={x + barW / 2}
                 y={svgH}
                 textAnchor="middle"
-                fontSize="10"
-                fill={COLORS.subText}
+                fontSize="13"
+                fill={"black"}
               >
                 {weekDays[index]}
               </SvgText>
@@ -337,7 +315,43 @@ const ProgressScreen = () => {
         return <CommunicationImprovementCard />;
     }
   };
+const StatsRow = () => (
+  <View style={styles.statsRow}>
+    {stats.map((item, index) => (
+      <View key={index} style={styles.statCard}>
+        <View style={[styles.statIconCircle,]}>
+          <Image source={item?.img}
+          style={{
+            height:58,
+            width:58
+          }}
+          />
+          {/* <Text style={styles.statEmoji}>{item.emoji}</Text> */}
+        </View>
+      
+        <Text style={styles.statLabel}>{item.label}</Text>
+          <Text style={[styles.statValue, { color: item.valueColor }]}>{item.value}</Text>
+      </View>
+    ))}
+  </View>
+);
+const stats = [
+  { emoji: '📘', 
+    
+    img:imageIndex.Conservative,
+    bg: '#EEF3FF', value: '27', label: 'Scripts', valueColor: COLORS.blue ,    
+ },
+  { emoji: '📊', bg: '#EEFBF2', value: '+18%', label: 'Growth', valueColor: '#40B36C',
+    img:imageIndex.icons,
 
+
+   },
+  {
+    
+        img:imageIndex.Positive,
+
+    emoji: '☺', bg: '#FFF6E8', value: '82%', label: 'Positive', valueColor: COLORS.orange },
+];
   return (
     <SafeAreaView style={styles.safe}>
        <StatusBarComponent />
@@ -403,13 +417,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: '#000',
+           shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
-    elevation: 11,
+    elevation: 15,
   },
   statIconCircle: {
     width: 44,
@@ -428,8 +441,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   statLabel: {
-    fontSize: 11,
-    color: COLORS.subText,
+    fontSize: 12,
+    color: "black",
     fontWeight: '500',
   },
   // Tabs
@@ -454,7 +467,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: COLORS.subText,
+    color: "black",
   },
   tabTextActive: {
     color: '#FFFFFF',
@@ -465,14 +478,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderRadius: 18,
     padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+     borderColor: COLORS.border,
     marginBottom: 16,
-    shadowColor: '#000',
+          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
+
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.07,
     shadowRadius: 8,
-    elevation: 12,
+    elevation: 15,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -481,8 +495,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cardTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
     color: COLORS.text,
   },
   cardBadge: {
@@ -507,12 +521,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   progressLabel: {
-    fontSize: 12,
-    color: COLORS.subText,
+    fontSize: 14,
+    color: "black",
     fontWeight: '500',
   },
   progressPercent: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
   },
   progressTrack: {
@@ -561,9 +575,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: '#000',
+            shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
@@ -579,11 +592,13 @@ const styles = StyleSheet.create({
   },
   milestoneEmoji: {
     fontSize: 18,
+        fontWeight: '600',
+color:"black"
   },
   milestoneTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: COLORS.text,
+    color: "black",
     marginBottom: 3,
   },
   milestoneDate: {

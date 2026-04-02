@@ -42,14 +42,6 @@ const C = {
 
 
 
-const EMOTIONS = [
-  { id: 'happy', label: 'Happy', color: C.happy },
-  { id: 'sad', label: 'Sad', color: C.sad },
-  { id: 'angry', label: 'Angry', color: C.angry },
-  { id: 'anxious', label: 'Anxious', color: C.anxious },
-  { id: 'excited', label: 'Excited', color: C.excited },
-  { id: 'neutral', label: 'Neutral', color: C.neutral },
-];
 
 const SOURCES = [
   { id: 'tv', label: 'TV', icon: imageIndex.tv },
@@ -98,8 +90,8 @@ const EmotionButton = ({ item, selected, onPress }) => (
     activeOpacity={0.8}
   >
     <Image 
-      source={imageIndex.moji} 
-      style={{ width: 32, height: 32, marginBottom: 6,  }}
+      source={item?.image} 
+      style={{ width: 44, height: 44, marginBottom: 6,  }}
     />
     <Text style={[s.emotionLabel, selected && { color: item.color, fontWeight: '700' }]}>
       {item.label}
@@ -226,6 +218,14 @@ const CONTEXTS = [
         </View>
       );
     }
+const EMOTIONS = [
+  { id: 'happy', label: 'Happy', color: C.happy , image :imageIndex.Happy },
+  { id: 'sad', label: 'Sad', color: C.sad ,image :imageIndex.Sad  },
+  { id: 'angry', label: 'Angry', color: C.angry,image :imageIndex.Angry  },
+  { id: 'anxious', label: 'Anxious', color: C.anxious ,image :imageIndex.Anxious  },
+  { id: 'excited', label: 'Excited', color: C.excited ,image :imageIndex.Excited },
+  { id: 'neutral', label: 'Neutral', color: C.neutral ,image :imageIndex.Neutral },
+];
 
     if (stepIndex === 1) {
       return (
@@ -398,7 +398,8 @@ const s = StyleSheet.create({
     backgroundColor: C.card,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
     shadowOpacity: 0.05,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
@@ -419,7 +420,8 @@ const s = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#64748B',
+          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
     shadowOpacity: 0.08,
     shadowRadius: 15,
     shadowOffset: { width: 0, height: 8 },
@@ -497,7 +499,7 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  emotionLabel: { fontSize: 13, color: C.tagText, marginTop: 4 },
+  emotionLabel: { fontSize: 14, color: "black", marginTop: 4 , },
 
   // Source
   sourceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Platform,
 } from 'react-native';
 import CustomHeader from '../../../compoent/CustomHeader';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
@@ -193,10 +194,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
   position:"absolute",
-  top:120
+  top:125
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#222',
     fontWeight: '600',
   },
@@ -205,14 +206,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     marginTop: 16,
-    shadowColor: '#000',
+        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
-  elevation: 8,
+  elevation: 10,
   },
   cardTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: '#222',
     marginBottom: 10,
@@ -233,6 +234,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'black',
     lineHeight: 18,
+    fontWeight:"500"
   },
   scriptHeaderRow: {
     marginTop: 18,
@@ -258,13 +260,13 @@ const styles = StyleSheet.create({
   marginBottom: 10,
 
   // iOS Shadow
-  shadowColor: '#000',
+        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
   shadowOffset: { width: 0, height: 3 },
   shadowOpacity: 0.08,
   shadowRadius: 6,
 
   // Android Shadow
-  elevation: 8,
+  elevation: 10,
 
   },
   playButton: {

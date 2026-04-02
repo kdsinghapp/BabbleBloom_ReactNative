@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
@@ -65,7 +66,12 @@ const Activity = () => {
         <Text style={styles.shareSubtitle}>{subtitle}</Text>
       </View>
 
-      <Text style={styles.shareAction}>↗</Text>
+       <Image source={imageIndex.share} 
+       style={{
+        height:22,
+        width:22
+       }}
+       />
     </TouchableOpacity>
   );
 
@@ -78,9 +84,14 @@ const Activity = () => {
   }) => (
     <TouchableOpacity activeOpacity={0.8} style={styles.previousCard}>
       <View style={styles.previousLeft}>
-        <View style={styles.reportIconBox}>
-          <Text style={styles.reportIcon}>📄</Text>
-        </View>
+       <Image source={imageIndex.pinkDoc} 
+       
+       style={{
+        height:55,
+        width:55 ,
+        marginRight:18
+       }}
+       />
 
         <View>
           <Text style={styles.previousTitle}>{title}</Text>
@@ -233,9 +244,9 @@ const styles = StyleSheet.create({
   },
 
   tabText: {
-    fontSize: 13,
+    fontSize: 14,
     color: 'black',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 
   activeTabText: {
@@ -251,7 +262,8 @@ const styles = StyleSheet.create({
     marginBottom: 22,
 
     elevation: 15,
-    shadowColor: '#000',
+          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
     shadowOpacity: 0.06,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
@@ -299,12 +311,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#DCE3EB',
   },
 
   statLabel: {
     fontSize: 13,
-    color: '#555',
+    color: '#473728',
     fontWeight: '500',
   },
 
@@ -349,7 +361,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
 
     elevation: 15,
-    shadowColor: '#000',
+        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
     shadowOpacity: 0.05,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -402,7 +415,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
 
     elevation: 15,
-    shadowColor: '#000',
+          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+  
     shadowOpacity: 0.05,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -429,7 +443,7 @@ const styles = StyleSheet.create({
   },
 
   previousTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111',
   },

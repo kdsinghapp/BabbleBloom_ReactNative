@@ -23,8 +23,7 @@ type ItemType = {
     tag1: string;
     tag2: string;
     image: string;
-};
-
+ };
 const DATA: ItemType[] = [
     {
         id: '1',
@@ -32,15 +31,15 @@ const DATA: ItemType[] = [
         subtitle: '"You want [item] Let me help you get it."',
         tag1: '10 Years',
         tag2: '2-3 years',
-        image: 'https://cdn-icons-png.flaticon.com/512/4140/4140048.png',
+        img: imageIndex.Happy
     },
     {
         id: '2',
-        title: 'Addressing Frustration',
+        title: 'Expressing Frustration',
         subtitle: '"I know it’s frustrating. Let’s take a deep breath together."',
         tag1: 'Emotions',
         tag2: '3-4 years',
-        image: 'https://cdn-icons-png.flaticon.com/512/4140/4140051.png',
+        img: imageIndex.Anxious
     },
     {
         id: '3',
@@ -48,7 +47,7 @@ const DATA: ItemType[] = [
         subtitle: '"Good morning! It’s time to start our day."',
         tag1: 'Routines',
         tag2: 'All Ages',
-        image: 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png',
+        img: imageIndex.Neutral
     },
     {
         id: '4',
@@ -56,16 +55,9 @@ const DATA: ItemType[] = [
         subtitle: '"Can we share? Let’s take turns with the toy."',
         tag1: 'Social',
         tag2: '3-4 years',
-        image: 'https://cdn-icons-png.flaticon.com/512/4140/4140037.png',
+        img: imageIndex.Happy
     },
-    {
-        id: '5',
-        title: 'Requesting Items',
-        subtitle: '"You want [item] Let me help you get it."',
-        tag1: '10 Years',
-        tag2: '2-3 years',
-        image: 'https://cdn-icons-png.flaticon.com/512/4140/4140048.png',
-    },
+    
 ];
 
 const Tag = ({ label, color }: { label: string; color: string }) => {
@@ -84,7 +76,7 @@ const LibraryScreen = () => {
     return (
         <View style={styles.card}>
             <View style={styles.cardRow}>
-                <Image source={imageIndex.moji} style={styles.avatar} />
+                <Image source={item.img} style={styles.avatar} />
 
                 <View style={styles.cardContent}>
                     <Text style={styles.cardTitle} numberOfLines={1}>
@@ -244,9 +236,12 @@ const styles = StyleSheet.create({
         borderRadius: 18,
         padding: 14,
         marginBottom: 14,
-        shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 3 },
-        borderWidth: Platform.OS === 'android' ? 1 : 0,
-        borderColor: "#E0E0E0"
+        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+        
+        
+        shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 3 },
+        borderWidth: Platform.OS === 'android' ? 0.5 : 0,
+        borderColor: "#BCDBFF"
     },
     cardRow: {
         flexDirection: 'row',

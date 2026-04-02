@@ -8,6 +8,7 @@ import {
 
     StatusBar,
     Image,
+    Platform,
 } from 'react-native';
 import imageIndex from '../../../assets/imageIndex';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -149,6 +150,7 @@ const styles = StyleSheet.create({
         color: "black",
         marginBottom: 6,
         textAlign: 'center',
+        fontWeight:"600"
     },
     progressBarBackground: {
         height: 6,
@@ -172,16 +174,16 @@ const styles = StyleSheet.create({
 
     // Cards
     card: {
-        backgroundColor: "#F8F9FC",
+        backgroundColor: "white",
         borderRadius: 16,
         paddingVertical: 24,
         paddingHorizontal: 20,
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+        shadowOffset: { width: 2, height: 1 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
-        elevation: 10,
+        elevation: 12,
     },
 
     // Illustration
@@ -202,16 +204,16 @@ const styles = StyleSheet.create({
 
     // Phrase text
     phraseText: {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: '700',
-        color: DARK_TEXT,
+        color: "black",
         textAlign: 'center',
         marginBottom: 6,
         lineHeight: 24,
     },
     labelText: {
         fontSize: 12,
-        color: GRAY_TEXT,
+        color: "#ADA4A5",
         textAlign: 'center',
     },
 

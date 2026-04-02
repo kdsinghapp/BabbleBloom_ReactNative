@@ -9,6 +9,7 @@ import {
   FlatList,
   Image,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
@@ -219,13 +220,13 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 14,
    // iOS Shadow
-  shadowColor: '#000',
+        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
   shadowOffset: { width: 0, height: 3 },
   shadowOpacity: 0.08,
   shadowRadius: 6,
 
   // Android Shadow
-  elevation: 8,
+  elevation: 10,
   marginHorizontal:5
   },
   cardImage: {
