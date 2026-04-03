@@ -50,8 +50,6 @@
 
 	<key>UIAppFonts</key>
 	<array>
-	  <string>MaterialIcons.ttf</string>
-       <string>Ionicons.ttf</string>
       <string>FontAwesome.ttf</string>
 		<string>TT Neoris Trial Black Italic.ttf</string>
 		<string>TT Neoris Trial Black.ttf</string>

@@ -52,6 +52,7 @@ interface ProfileFieldProps {
   icon?: any;
   editable?: boolean;
   onPress?: () => void;
+  placeholder?: any
 }
 
 // ─── Reusable field row ────────────────────────────────────────────────────
@@ -61,7 +62,8 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
   onChangeText,
   icon,
   editable = true,
-  onPress
+  onPress,
+  placeholder
 }) => (
   <TouchableOpacity
     activeOpacity={onPress ? 0.7 : 1}
@@ -87,7 +89,8 @@ const ProfileField: React.FC<ProfileFieldProps> = ({
         value={value}
         onChangeText={onChangeText}
         editable={editable && !onPress}
-        placeholderTextColor={COLORS.subText}
+        placeholderTextColor={"black"}
+        placeholder={placeholder}
         pointerEvents={onPress ? "none" : "auto"}
       />
     </View>
@@ -99,17 +102,23 @@ const MyProfile = () => {
   const navigation = useNavigation();
 
   // States
-  const [childName, setChildName] = useState("Charlie Lipshutz");
-  const [age, setAge] = useState("05 year old");
-  const [birthDate, setBirthDate] = useState(new Date(new Date().setFullYear(new Date().getFullYear() - 5)));
-  const [interests, setInterests] = useState("Toys");
-  const [commLevel, setCommLevel] = useState("Toys");
+  const [childName, setChildName] = useState("");
+  const [age, setAge] = useState("");
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
+  const [interests, setInterests] = useState("");
+  const [commLevel, setCommLevel] = useState("");
+
+  // Error States
+  const [childNameError, setChildNameError] = useState("");
+  const [ageError, setAgeError] = useState("");
+  const [interestsError, setInterestsError] = useState("");
+  const [commLevelError, setCommLevelError] = useState("");
 
   // Modal & Picker States
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [profileImage, setProfileImage] = useState("https://i.pravatar.cc/200?img=11");
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [tempDate, setTempDate] = useState(birthDate);
+  const [tempDate, setTempDate] = useState(birthDate || new Date());
 
   // Handlers
   const handleImageResult = (result: any) => {
@@ -126,6 +135,7 @@ const MyProfile = () => {
       if (selectedDate) {
         setBirthDate(selectedDate);
         setAge(calculateAge(selectedDate));
+        if (ageError) setAgeError("");
       }
     } else {
       // iOS: Just update temp date, don't close modal
@@ -138,11 +148,12 @@ const MyProfile = () => {
   const handleConfirmDate = () => {
     setBirthDate(tempDate);
     setAge(calculateAge(tempDate));
+    if (ageError) setAgeError("");
     setShowDatePicker(false);
   };
 
   const handleCancelDate = () => {
-    setTempDate(birthDate);
+    setTempDate(birthDate || new Date());
     setShowDatePicker(false);
   };
 
@@ -184,30 +195,52 @@ const MyProfile = () => {
             <ProfileField
               label="Child Name"
               value={childName}
-              onChangeText={setChildName}
+              placeholder={"Name"}
+              onChangeText={(text) => {
+                setChildName(text);
+                if (childNameError) setChildNameError("");
+              }}
               icon={imageIndex.profileChildName}
             />
+            {childNameError ? <Text style={styles.errorText}>{childNameError}</Text> : null}
+
             <ProfileField
               label="Age"
               value={age}
+              placeholder={"Age"}
+
               icon={imageIndex.age}
               onPress={() => {
-                setTempDate(birthDate);
+                setTempDate(birthDate || new Date());
                 setShowDatePicker(true);
               }}
             />
+            {ageError ? <Text style={styles.errorText}>{ageError}</Text> : null}
             <ProfileField
               label="Interests"
               value={interests}
-              onChangeText={setInterests}
+              placeholder={"Interests"}
+
+              onChangeText={(text) => {
+                setInterests(text);
+                if (interestsError) setInterestsError("");
+              }}
               icon={imageIndex.Toys}
             />
+            {interestsError ? <Text style={styles.errorText}>{interestsError}</Text> : null}
+
             <ProfileField
               label="Communication Level"
+              placeholder={"Communication Level"}
+
               value={commLevel}
-              onChangeText={setCommLevel}
+              onChangeText={(text) => {
+                setCommLevel(text);
+                if (commLevelError) setCommLevelError("");
+              }}
               icon={imageIndex.cooment}
             />
+            {commLevelError ? <Text style={styles.errorText}>{commLevelError}</Text> : null}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -215,7 +248,37 @@ const MyProfile = () => {
       <View style={{ marginTop: 20, marginHorizontal: 15, marginBottom: 20 }}>
         <CustomButton
           title={"Save"}
-          onPress={() => navigation.navigate(ScreenNameEnum.PhoneLogin as never)}
+          onPress={() => {
+            let hasError = false;
+            if (!childName.trim()) {
+              setChildNameError("Child's name required");
+              hasError = true;
+            }
+            if (!birthDate) {
+              setAgeError("Date of birth required");
+              hasError = true;
+            } else {
+              const years = new Date().getFullYear() - birthDate.getFullYear();
+              if (years < 2 || years > 14) {
+                setAgeError("Only for children aged 2-14 years");
+                hasError = true;
+              }
+            }
+            if (!interests.trim()) {
+              setInterestsError("Interests required");
+              hasError = true;
+            }
+            if (!commLevel.trim()) {
+              setCommLevelError("Communication level required");
+              hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Proper real-time feedback with Success Toast (once implementation is final)
+            // successToast("Profile saved successfully");
+            navigation.navigate(ScreenNameEnum.PhoneLogin as never);
+          }}
         />
       </View>
 
@@ -262,10 +325,9 @@ const MyProfile = () => {
         </Modal>
       )}
 
-      {/* ── Android Date Picker ── */}
       {Platform.OS === 'android' && showDatePicker && (
         <DateTimePicker
-          value={birthDate}
+          value={birthDate || new Date()}
           mode="date"
           display="default"
           onChange={onDateChange}
@@ -388,6 +450,13 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "500",
   },
+  errorText: {
+    color: "red",
+    fontSize: 13,
+    marginTop: -8,
+    marginBottom: 8,
+    marginLeft: 4,
+   },
 });
 
 export default MyProfile;

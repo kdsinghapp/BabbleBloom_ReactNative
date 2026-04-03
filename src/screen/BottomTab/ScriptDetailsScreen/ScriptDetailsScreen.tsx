@@ -7,14 +7,87 @@ import {
   StatusBar,
   ScrollView,
   Image,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
 import imageIndex from '../../../assets/imageIndex';
+import Tts from 'react-native-tts';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useFocusEffect } from '@react-navigation/native';
  
 
 const ScriptDetailsScreen = () => {
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const [isMuted, setIsMuted] = React.useState(false);
+
+  const scriptText = "Nana... juice... gogo's";
+
+  React.useEffect(() => {
+    Tts.getInitStatus().then(() => {
+      Tts.setDefaultLanguage('en-US');
+      Tts.setDefaultRate(0.5);
+      if (Platform.OS === 'ios') {
+        Tts.setIgnoreSilentSwitch('ignore');
+      }
+    }).catch((err) => {
+      if (err.code === 'no_engine') {
+        Tts.requestInstallEngine();
+      }
+    });
+
+    const onStart = () => setIsPlaying(true);
+    const onFinish = () => setIsPlaying(false);
+    const onCancel = () => setIsPlaying(false);
+
+    Tts.addEventListener('tts-start', onStart);
+    Tts.addEventListener('tts-finish', onFinish);
+    Tts.addEventListener('tts-cancel', onCancel);
+
+    return () => {
+      if (Platform.OS === 'android') {
+        Tts.stop();
+      }
+      // Remove specific listeners if the library supports it, or just stop
+    };
+  }, []);
+
+  // Stop TTS when leaving the screen
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        if (Platform.OS === 'android') {
+          Tts.stop();
+        }
+      };
+    }, [])
+  );
+
+  const handleSpeech = () => {
+    if (isPlaying) {
+      if (Platform.OS === 'android') {
+        Tts.stop();
+      }
+      setIsPlaying(false);
+    } else {
+      if (!isMuted) {
+        Tts.speak(scriptText);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    if (nextMuted && isPlaying) {
+      if (Platform.OS === 'android') {
+        Tts.stop();
+      }
+      setIsPlaying(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
    <StatusBarComponent />
@@ -42,10 +115,36 @@ const ScriptDetailsScreen = () => {
               <Text style={styles.scriptTime}>Today 6:29 PM</Text>
             </View>
 
-            <TouchableOpacity style={styles.playButton}>
-              <Image source={imageIndex.voice1} style={{width:33,height:33}} />
-            </TouchableOpacity>
+            <View style={styles.actionButtons}>
+
+              <TouchableOpacity 
+                style={styles.playButton} 
+                onPress={handleSpeech}
+              >
+                <Image 
+                  source={imageIndex.voice1} 
+                  style={[
+                    { width: 30, height: 30 , tintColor: "black"  },
+                    isMuted && { tintColor: "#E03B65" }
+                  ]} 
+                />
+              </TouchableOpacity>
+              
+            </View>
           </View>
+                       
+ <TouchableOpacity 
+                style={[styles.muteButton,{
+                  marginTop:5
+                }]} 
+                onPress={toggleMute}
+              >
+                <Icon 
+                  name={isMuted ? "volume-off" : "volume-high"} 
+                  size={20} 
+                  color={isMuted ? "#FF6B6B" : "#E03B65"} 
+                />
+              </TouchableOpacity>
         </View>
 
         {/* Meaning */}
@@ -194,11 +293,25 @@ const styles = StyleSheet.create({
     color: '#9B9B9B',
   },
   playButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  muteButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F8F9FC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EEFCFA',
   },
   sectionTitle: {
     marginTop: 18,

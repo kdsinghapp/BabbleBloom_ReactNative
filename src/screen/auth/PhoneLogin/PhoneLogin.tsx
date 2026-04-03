@@ -46,43 +46,46 @@ const PhoneLogin = () => {
     }
   }, [searchText]);
 
-  const handleSelectCountry = (country) => {
+  const handleSelectCountry = (country: any) => {
     setCountryCode(country.code);
     setCallingCode(country.dial_code);
     setModalVisible(false);
     setSearchText(""); // reset search
+    if (error) setError(""); // Clear error on interaction
   };
 
   const handleContinue = async () => {
-    navigation.navigate(ScreenNameEnum.OtpScreen, {
-      phoneNumber: phoneNumber,
-      callingCode: callingCode,
-    });
-    //   const trimmedNumber = phoneNumber.replace(/\D/g, ""); // Remove non-digit characters
-    //  const userType = await AsyncStorage.getItem('selectedRole');
 
-    //   // Validation
-    //   if (!trimmedNumber) {
-    //     setError("Please enter your phone number.");
-    //     return;
-    //   } else if (trimmedNumber.length < 6 || trimmedNumber.length > 15) {
-    //     setError("Please enter a valid phone number (6-15 digits).");
-    //     return;
-    //   }
-    //   // Clear error if valid
-    //   setError("");
-    //   let data ={
-    //       code: `${callingCode}`,
-    //     phone: phoneNumber,
-    //     navigation:navigation,
-    //     type:userType
-    //   }
 
-    //        try {
-    //   await LogiApi(data, setLoading);
-    // } catch (err) {
-    //   console.log("API call error:", err);
-    // }
+  
+    const trimmedNumber = phoneNumber.trim();
+
+    // Local Validation for Inline Message
+    if (!trimmedNumber) {
+      setError("Please enter your phone number.");
+      return;
+    } else if (trimmedNumber.length < 6 || trimmedNumber.length > 15) {
+      setError("Please enter a valid phone number (6-15 digits).");
+      return;
+    }
+    
+    setError(""); // Clear error if valid
+    const userRole = await AsyncStorage.getItem('selectedRole') || 'User';
+
+    let data = {
+      code: `${callingCode}`,
+      phone: trimmedNumber,
+      navigation: navigation,
+      type: userRole
+    };
+
+    try {
+      // LogiApi handles Toasts for API responses (success/error)
+      await LogiApi(data, setLoading);
+    } catch (err) {
+      console.log("API call error:", err);
+      // Fallback if API handler fails to show toast
+    }
   };
 
 
@@ -128,7 +131,10 @@ const PhoneLogin = () => {
             keyboardType="number-pad"
             placeholder="Phone Number"
             value={phoneNumber}
-            onChangeText={setPhoneNumber}
+            onChangeText={(text) => {
+              setPhoneNumber(text);
+              if (error) setError(""); // Real-time error clearing
+            }}
             placeholderTextColor={"black"}
           />
         </View>
@@ -136,7 +142,10 @@ const PhoneLogin = () => {
 
         {/* Continue Button */}
         <View style={{ marginTop: 20 }}>
-          <CustomButton title={"Continue"} onPress={handleContinue} />
+          <CustomButton title={"Continue"} onPress={()=>{
+                navigation.navigate(ScreenNameEnum.OtpScreen);
+          }} />
+          {/* <CustomButton title={"Continue"} onPress={handleContinue} /> */}
         </View>
 
         <TouchableOpacity>
@@ -145,9 +154,9 @@ const PhoneLogin = () => {
             <Text style={{
               color: color.protein,
 
-            }} 
-            
-            onPress={()=>navigation.navigate(ScreenNameEnum.Sinup)}
+            }}
+
+              onPress={() => navigation.navigate(ScreenNameEnum.Sinup as never)}
             > Sign Up</Text>
 
           </Text>
@@ -209,7 +218,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: "#9DB2BF", marginBottom: 30, marginTop: 10 },
   inputContainer: { flexDirection: "row", alignItems: "center", borderWidth: 1.2, borderColor: "#50C878", borderRadius: 40, paddingHorizontal: 10, marginBottom: 20 },
   countryPicker: { marginRight: 5, alignItems: "center", flexDirection: "row" },
-  callingCode: { fontSize: 16, color: "black", fontWeight: '500'  },
+  callingCode: { fontSize: 16, color: "black", fontWeight: '500' },
   separator: { borderWidth: 0.5, height: 22, borderColor: "#50C878", marginLeft: 5 },
   input: { fontWeight: '400', flex: 1, height: 50, fontSize: 16, marginLeft: 5, color: "black" },
   emailText: { color: "black", textAlign: "center", fontSize: 15, marginTop: 30, },
@@ -218,11 +227,11 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
   modalContent: { backgroundColor: "#fff", width: "85%", borderRadius: 15, maxHeight: "45%", padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2, shadowRadius: 5, elevation: 5 },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
-  modalTitle: {  fontWeight: '500',fontSize: 18, color: "#000" },
-  modalCancel: {  fontWeight: '500',  fontSize: 15, color: "#E03B65" },
-  searchInput: {  borderWidth: 1, borderColor: "#ccc", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 15, fontSize: 14, color: "#000" },
+  modalTitle: { fontWeight: '500', fontSize: 18, color: "#000" },
+  modalCancel: { fontWeight: '500', fontSize: 15, color: "#E03B65" },
+  searchInput: { borderWidth: 1, borderColor: "#ccc", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 15, fontSize: 14, color: "#000" },
   modalItem: { paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: "#ddd" },
-  countryText: {  fontWeight: '500',fontSize: 16, color: "#000", fontFamily: font.MonolithRegular },
+  countryText: { fontWeight: '500', fontSize: 16, color: "#000", fontFamily: font.MonolithRegular },
   errorText: {
     color: "red",
     marginBottom: 10,
