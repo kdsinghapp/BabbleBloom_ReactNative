@@ -20,6 +20,7 @@ enum ScreenNameEnum {
   FAQs="FAQs"
 ,
 SupportScreen="SupportScreen",
+  ParentInfo="ParentInfo",
   CreateParcelFrom="CreateParcelFrom",
   DeliveryRequest="DeliveryRequest",
   ChooseRole="ChooseRole",

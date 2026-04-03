@@ -1,6 +1,4 @@
- 
 export const endpointCustomer = {
-  
   SignUp:"Register" ,
   LoginApi:"Login",
   verifyotp:"/bikedoctor/dealerAuth/verifyotp" ,
@@ -24,4 +22,12 @@ export const endpointCustomer = {
   addshopdetails:"/bikedoctor/dealer/add-shop-details",
   adddocuments:"/bikedoctor/dealer/add-dealer-documents"
 };
- 
+
+export const authEndpoints = {
+  signup: 'signup',
+  signupSendOtp: 'signup/send-otp',
+  signupVerifyOtp: 'signup/verify-otp',
+  loginSendOtp: 'login/send-otp',
+  loginVerifyOtp: 'login/verify-otp',
+  me: 'me',
+};

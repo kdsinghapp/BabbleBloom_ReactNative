@@ -8,6 +8,7 @@ import {
   ViewStyle,
   TextStyle,
   GestureResponderEvent,
+  ActivityIndicator,
 } from 'react-native';
 import { color } from '../constant';
 import font from '../theme/font';
@@ -25,6 +26,7 @@ interface CustomButtonProps {
   height?: number;
   onPress?: (event: GestureResponderEvent) => void;
   disable?: boolean;
+  loading?: boolean;
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
@@ -37,7 +39,8 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   textStyle,
   height = 55,
   onPress,
-  disable = false
+  disable = false,
+  loading = false,
 }) => {
   const alignment: Record<AlignType, 'flex-start' | 'center' | 'flex-end'> = {
     left: 'flex-start',
@@ -55,15 +58,22 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     <TouchableOpacity
       onPress={onPress}
       style={[styles.button, buttonStyle, style]}
-      disabled={disable}
+      disabled={disable || loading}
     >
       <View style={[styles.content, { justifyContent: alignment[alignItm] }]}>
-        {leftIcon && <View style={styles.icon}>{leftIcon}</View>}
-        <Text
-
-          allowFontScaling={false}
-
-          style={[styles.text, { color: txtcolor }, textStyle]}>{title}</Text>
+        {loading ? (
+          <ActivityIndicator color={txtcolor} size="small" />
+        ) : (
+          <>
+            {leftIcon && <View style={styles.icon}>{leftIcon}</View>}
+            <Text
+              allowFontScaling={false}
+              style={[styles.text, { color: txtcolor }, textStyle]}
+            >
+              {title}
+            </Text>
+          </>
+        )}
       </View>
     </TouchableOpacity>
   );

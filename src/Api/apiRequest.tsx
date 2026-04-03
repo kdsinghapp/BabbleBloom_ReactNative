@@ -3,6 +3,7 @@ import { base_url } from './index';
 
 // ─── BabbleBloom Auth Base URL ───────────────────────────────────────────────
 const AUTH_BASE_URL = 'https://python.aitechnotech.in/bubblebloom/api/v1/auth';
+
 import ScreenNameEnum from '../routes/screenName.enum';
 import { loginSuccess, logout } from '../redux/feature/authSlice';
 import { errorToast, successToast } from '../utils/customToast';
@@ -10,6 +11,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Toast } from '../utils/Toast';
 import { color } from '../constant';
 import axios from 'axios';
+import { authEndpoints } from './endpoints';
+
+// ─── Session Management ──────────────────────────────────────────────────────
+
 const handleLogout = async (dispatch: any, navigation: any, setvisible: (val: boolean) => void) => {
   try {
     // 1. Clear all persistence layers
@@ -41,6 +46,7 @@ const saveAuthData = async (userData: any, token: any) => {
     console.error('Error saving auth data:', error);
   }
 };
+
 const getAuthData = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem('authData');
@@ -51,7 +57,8 @@ const getAuthData = async () => {
   }
 };
 
-// ─── Step 1: Signup (register user) ─────────────────────────────────────────
+// ─── BabbleBloom Auth APIs ───────────────────────────────────────────────────
+
 const SignUpApi = async (
   param: {
     full_name: string;
@@ -65,7 +72,6 @@ const SignUpApi = async (
 ) => {
   setLoading(true);
   try {
-    // API requires application/x-www-form-urlencoded
     const body = new URLSearchParams({
       full_name: param.full_name,
       email: param.email,
@@ -74,14 +80,7 @@ const SignUpApi = async (
       password: param.password,
     }).toString();
 
-    console.log('[SignUpApi] Calling POST /api/v1/auth/signup', {
-      full_name: param.full_name,
-      email: param.email,
-      country_code: param.country_code,
-      phone_number: param.phone_number,
-    });
-
-    const response = await fetch(`${AUTH_BASE_URL}/signup`, {
+    const response = await fetch(`${AUTH_BASE_URL}/${authEndpoints.signup}`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -99,20 +98,16 @@ const SignUpApi = async (
       return;
     }
 
-    console.log('[SignUpApi] Response:', parsedResponse);
-
     if (parsedResponse?.status === 1) {
       successToast(parsedResponse?.message || 'Signup successful. Please verify OTP.');
-      // Navigate to OTP screen with data from response
       param.navigation.navigate(ScreenNameEnum.OtpScreen, {
         country_code: parsedResponse?.data?.country_code || param.country_code,
         phone_number: parsedResponse?.data?.phone_number || param.phone_number,
-        otp_code: parsedResponse?.data?.otp_code, // Pass the OTP code if provided (for testing)
+        otp_code: parsedResponse?.data?.otp_code,
         flowType: 'signup',
       });
     } else {
-      const msg = parsedResponse?.message || 'Signup failed';
-      errorToast(msg);
+      errorToast(parsedResponse?.message || 'Signup failed');
     }
   } catch (error) {
     console.error('[SignUpApi] error:', error);
@@ -122,7 +117,6 @@ const SignUpApi = async (
   }
 };
 
-// ─── Step 2: Send OTP ────────────────────────────────────────────────────────
 const SendSignupOtpApi = async (
   param: {
     country_code: string;
@@ -138,12 +132,7 @@ const SendSignupOtpApi = async (
       phone_number: param.phone_number,
     }).toString();
 
-    console.log('[SendSignupOtpApi] Calling POST /api/v1/auth/signup/send-otp', {
-      country_code: param.country_code,
-      phone_number: param.phone_number,
-    });
-
-    const response = await fetch(`${AUTH_BASE_URL}/signup/send-otp`, {
+    const response = await fetch(`${AUTH_BASE_URL}/${authEndpoints.signupSendOtp}`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -161,20 +150,16 @@ const SendSignupOtpApi = async (
       return;
     }
 
-    console.log('[SendSignupOtpApi] Response:', parsedResponse);
-
     if (parsedResponse?.status === 1) {
       successToast(parsedResponse?.message || 'OTP sent successfully!');
-      // Navigate to OTP screen with data from response
       param.navigation.navigate(ScreenNameEnum.OtpScreen, {
         country_code: parsedResponse?.data?.country_code || param.country_code,
         phone_number: parsedResponse?.data?.phone_number || param.phone_number,
-        otp_code: parsedResponse?.data?.otp_code, // Pass the OTP code if provided (for testing)
+        otp_code: parsedResponse?.data?.otp_code,
         flowType: 'signup',
       });
     } else {
-      const msg = parsedResponse?.message || 'Failed to send OTP';
-      errorToast(msg);
+      errorToast(parsedResponse?.message || 'Failed to send OTP');
     }
   } catch (error) {
     console.error('[SendSignupOtpApi] error:', error);
@@ -184,12 +169,11 @@ const SendSignupOtpApi = async (
   }
 };
 
-// ─── Step 3: Verify OTP ──────────────────────────────────────────────────────
 const VerifySignupOtpApi = async (
   param: {
     country_code: string;
     phone_number: string;
-    code: string;          // the 4-digit OTP entered by the user
+    code: string;
     navigation: any;
   },
   setLoading: (loading: boolean) => void,
@@ -203,13 +187,7 @@ const VerifySignupOtpApi = async (
       code: param.code,
     }).toString();
 
-    console.log('[VerifySignupOtpApi] Calling POST /api/v1/auth/signup/verify-otp', {
-      country_code: param.country_code,
-      phone_number: param.phone_number,
-      code: param.code,
-    });
-
-    const response = await fetch(`${AUTH_BASE_URL}/signup/verify-otp`, {
+    const response = await fetch(`${AUTH_BASE_URL}/${authEndpoints.signupVerifyOtp}`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -227,36 +205,18 @@ const VerifySignupOtpApi = async (
       return;
     }
 
-    console.log('[VerifySignupOtpApi] Response:', parsedResponse);
-
     if (parsedResponse?.status === 1) {
       const { access_token, user } = parsedResponse.data || {};
-
-      console.log('[VerifySignupOtpApi] Success! Storing data:', {
-        token: access_token ? 'Extracted' : 'Missing',
-        user: user ? user.full_name : 'Missing'
-      });
-
       if (access_token) {
-        // 1. Store raw token for general API calls
         await AsyncStorage.setItem('token', access_token);
-
-        // 2. Store full auth data for session restoration
         await saveAuthData(user, access_token);
-
-        // 3. Update Redux state for UI reactivity
         dispatch(loginSuccess({ userData: user, token: access_token }));
-
         successToast(parsedResponse?.message || 'Verification successful!');
-
-        // 4. Navigate to main app
         param.navigation.reset({
           index: 0,
           routes: [{ name: ScreenNameEnum.HomeDashboard }],
         });
       } else {
-        // Some backends might just verify but not log you in yet. 
-        // If no token, we might need to go to Login, but for most apps, verification = login.
         successToast(parsedResponse?.message || 'Verified! Please login.');
         param.navigation.navigate(ScreenNameEnum.PhoneLogin as never);
       }
@@ -271,7 +231,6 @@ const VerifySignupOtpApi = async (
   }
 };
 
-// ─── Step 4: Login ───────────────────────────────────────────────────────────
 const LoginApi = async (
   param: {
     country_code: string;
@@ -287,12 +246,7 @@ const LoginApi = async (
       phone_number: param.phone_number,
     }).toString();
 
-    console.log('[LoginApi] Calling POST /api/v1/auth/login/send-otp', {
-      country_code: param.country_code,
-      phone_number: param.phone_number,
-    });
-
-    const response = await fetch(`${AUTH_BASE_URL}/login/send-otp`, {
+    const response = await fetch(`${AUTH_BASE_URL}/${authEndpoints.loginSendOtp}`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -310,15 +264,12 @@ const LoginApi = async (
       return;
     }
 
-    console.log('[LoginApi] Response:', parsedResponse);
-
     if (parsedResponse?.status === 1) {
       successToast(parsedResponse?.message || 'OTP sent successfully!');
-      // Navigate to OTP screen with data from response
       param.navigation.navigate(ScreenNameEnum.OtpScreen, {
         country_code: parsedResponse?.data?.country_code || param.country_code,
         phone_number: parsedResponse?.data?.phone_number || param.phone_number,
-        otp_code: parsedResponse?.data?.otp_code, // Pass the OTP code if provided (for testing)
+        otp_code: parsedResponse?.data?.otp_code,
         flowType: 'login',
       });
     } else {
@@ -332,7 +283,6 @@ const LoginApi = async (
   }
 };
 
-// ─── Step 5: Verify Login OTP ────────────────────────────────────────────────
 const VerifyLoginOtpApi = async (
   param: {
     country_code: string;
@@ -351,13 +301,7 @@ const VerifyLoginOtpApi = async (
       code: param.code,
     }).toString();
 
-    // console.log('[VerifyLoginOtpApi] Calling POST /api/v1/auth/login/verify-otp', {
-    //   country_code: param.country_code,
-    //   phone_number: param.phone_number,
-    //   code: param.code,
-    // });
-
-    const response = await fetch(`${AUTH_BASE_URL}/login/verify-otp`, {
+    const response = await fetch(`${AUTH_BASE_URL}/${authEndpoints.loginVerifyOtp}`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -375,24 +319,13 @@ const VerifyLoginOtpApi = async (
       return;
     }
 
-    console.log('[VerifyLoginOtpApi] Response:', parsedResponse);
-
     if (parsedResponse?.status === 1) {
       const { access_token, user } = parsedResponse.data || {};
-
-      console.log('[VerifyLoginOtpApi] Success! Storing data:', {
-        token: access_token ? 'Extracted' : 'Missing',
-        user: user ? user.full_name : 'Missing'
-      });
-
       if (access_token) {
         await AsyncStorage.setItem('token', access_token);
         await saveAuthData(user, access_token);
-
         dispatch(loginSuccess({ userData: user, token: access_token }));
-
         successToast(parsedResponse?.message || 'Login successful!');
-
         param.navigation.reset({
           index: 0,
           routes: [{ name: ScreenNameEnum.HomeDashboard }],
@@ -411,54 +344,71 @@ const VerifyLoginOtpApi = async (
   }
 };
 
-// ─── Legacy LogiApi (kept for PhoneLogin screen) ─────────────────────────────
-const LogiApi = async (
-  param: any,
-  setLoading: (loading: boolean) => void,
-) => {
+export const GetProfileMeApi = async (
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
   setLoading(true);
-
   try {
-    const formdata = new FormData();
-    formdata.append('countryCode', param?.code || '');
-    formdata.append('phoneNumber', param?.phone || '');
-    formdata.append('Type', param?.type || '');
-
-    const response = await fetch(`${base_url}/login`, {
-      method: 'POST',
-      headers: { Accept: 'application/json' },
-      body: formdata,
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${AUTH_BASE_URL}/${authEndpoints.me}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
     });
 
     const textResponse = await response.text();
     let parsedResponse: any;
     try {
       parsedResponse = JSON.parse(textResponse);
-    } catch (error) {
-      errorToast('Invalid server response');
-      return;
+    } catch {
+      throw new Error('Invalid server response');
     }
 
     if (parsedResponse?.status === 1) {
-      successToast(parsedResponse.message);
-      param.navigation.navigate(ScreenNameEnum.OtpScreen, {
-        code: param?.code,
-        phone: param?.phone,
-      });
-      return parsedResponse;
+      return parsedResponse.data;
     } else {
-      errorToast(parsedResponse.message);
-      return parsedResponse;
+      errorToast(parsedResponse?.message || 'Failed to fetch profile');
+      return null;
     }
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('[GetProfileMeApi] error:', error);
     errorToast('Network error. Please try again.');
+    return null;
   } finally {
     setLoading(false);
   }
 };
 
-// ─── Legacy Verifyotp (kept for backward compatibility) ───────────────────────
+// ─── Legacy APIs (Keeping as per user request for "proper all api call") ───
+
+const LogiApi = async (param: any, setLoading: (loading: boolean) => void) => {
+  setLoading(true);
+  try {
+    const formdata = new FormData();
+    formdata.append('countryCode', param?.code || '');
+    formdata.append('phoneNumber', param?.phone || '');
+    formdata.append('Type', param?.type || '');
+    const response = await fetch(`${base_url}/login`, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formdata,
+    });
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      successToast(parsed.message);
+      param.navigation.navigate(ScreenNameEnum.OtpScreen, { code: param?.code, phone: param?.phone });
+    } else {
+      errorToast(parsed?.message);
+    }
+  } catch (error) {
+    errorToast('Network error');
+  } finally {
+    setLoading(false);
+  }
+};
+
 const Verifyotp = async (param: any, setLoading: any, dispatch: any) => {
   setLoading(true);
   try {
@@ -466,485 +416,232 @@ const Verifyotp = async (param: any, setLoading: any, dispatch: any) => {
     formdata.append('countryCode', param?.code || '');
     formdata.append('phoneNumber', param?.phone || '');
     formdata.append('otp', param?.otp || '');
-
     const response = await fetch(`${base_url}/verify-otp`, {
       method: 'POST',
       headers: { Accept: 'application/json' },
       body: formdata,
     });
-
-    const textResponse = await response.text();
-    let parsedResponse: any;
-    try {
-      parsedResponse = JSON.parse(textResponse);
-    } catch (error) {
-      errorToast('Invalid server response');
-      return;
-    }
-    if (parsedResponse?.status == 1) {
-      successToast(parsedResponse?.message);
-      await AsyncStorage.setItem('token', parsedResponse?.token);
-      dispatch(loginSuccess({ userData: parsedResponse, token: parsedResponse?.token }));
-      await saveAuthData(parsedResponse, parsedResponse?.token);
-      if (parsedResponse?.type === 'Delivery') {
-        param.navigation.navigate(ScreenNameEnum.DeliveryTabNavigator);
-      } else {
-        param.navigation.navigate(ScreenNameEnum.TabNavigator);
-      }
+    const parsed = await response.json();
+    if (parsed?.status == 1) {
+      successToast(parsed?.message);
+      await AsyncStorage.setItem('token', parsed?.token);
+      dispatch(loginSuccess({ userData: parsed, token: parsed?.token }));
+      await saveAuthData(parsed, parsed?.token);
+      param.navigation.navigate(parsed?.type === 'Delivery' ? ScreenNameEnum.DeliveryTabNavigator : ScreenNameEnum.TabNavigator);
     } else {
-      errorToast(parsedResponse?.message);
+      errorToast(parsed?.message);
     }
-  } catch (error: any) {
-    console.error('Verifyotp error:', error);
-    errorToast('Network error. Please try again.');
+  } catch (error) {
+    errorToast('Network error');
   } finally {
     setLoading(false);
   }
 };
 
-// ─── Legacy Resend_otp (kept for backward compatibility) ──────────────────────
 const Resend_otp = async (param: any, setLoading: any) => {
   setLoading(true);
   try {
     const formdata = new FormData();
     formdata.append('countryCode', param?.code || '');
     formdata.append('phoneNumber', param?.phone || '');
-
     const response = await fetch(`${base_url}/resend-otp`, {
       method: 'POST',
       headers: { Accept: 'application/json' },
       body: formdata,
     });
-
-    const textResponse = await response.text();
-    let parsedResponse: any;
-    try {
-      parsedResponse = JSON.parse(textResponse);
-    } catch (error) {
-      errorToast('Invalid server response');
-      return;
-    }
-    if (parsedResponse?.status === 1) {
-      successToast(parsedResponse?.message);
-    } else {
-      errorToast(parsedResponse?.message);
-    }
-  } catch (error: any) {
-    console.error('Resend OTP error:', error);
-    errorToast('Network error. Please try again.');
+    const parsed = await response.json();
+    if (parsed?.status === 1) successToast(parsed?.message);
+    else errorToast(parsed?.message);
+  } catch (error) {
+    errorToast('Network error');
   } finally {
     setLoading(false);
   }
 };
 
-const UpdateProfile = async (
-  param: any,
-  setLoading: (loading: boolean) => void
-) => {
+const UpdateProfile = async (param: any, setLoading: (loading: boolean) => void) => {
   try {
     setLoading(true);
-
     const token = await AsyncStorage.getItem("token");
-
     const formdata = new FormData();
-
     if (param.username) formdata.append("firstName", param.username);
     if (param.email) formdata.append("email", param.email);
     if (param.address) formdata.append("address", param.address);
-
-    // ✅ Append image only if exists
-    if (param.imagePrfoile && param.imagePrfoile.uri) {
-      const fileName = param.imagePrfoile.fileName || "profile.jpg";
-      const fileType = param.imagePrfoile.type || "image/jpeg";
-
+    if (param.imagePrfoile?.uri) {
       formdata.append("imageFile", {
         uri: param.imagePrfoile.uri,
-        name: fileName,
-        type: fileType,
-      });
+        name: param.imagePrfoile.fileName || "profile.jpg",
+        type: param.imagePrfoile.type || "image/jpeg",
+      } as any);
     }
-
-    // ✅ Do NOT manually set 'Content-Type' header
-    const headers: any = {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-
-    // ✅ Use POST (most servers expect POST for FormData upload)
     const response = await fetch(`${base_url}/setup-profile`, {
       method: "POST",
-      headers,
+      headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
       body: formdata,
     });
-    console.log("response", response)
-    const textResponse = await response.text();
-    let parsedResponse;
-
-    try {
-      parsedResponse = JSON.parse(textResponse);
-    } catch {
-      throw new Error("Invalid server response");
-    }
-    console.log("parsedResponse", parsedResponse)
-
-    if (parsedResponse.status == "1") {
-      successToast(parsedResponse.message);
-      return parsedResponse;
+    const parsed = await response.json();
+    if (parsed.status == "1") {
+      successToast(parsed.message);
+      return parsed;
     } else {
-      errorToast(parsedResponse.message);
-      return parsedResponse;
+      errorToast(parsed.message);
+      return parsed;
     }
   } catch (error) {
-    console.log("parsedResponse", error)
-
-    console.error("UpdateProfile error:", error);
-    errorToast("Something went wrong. Please try again.");
+    errorToast("Something went wrong");
     return null;
   } finally {
     setLoading(false);
   }
 };
 
-
-
-const GetProfileApi = async (
-  setLoading: (loading: boolean) => void
-): Promise<any | null> => {
+const GetProfileApi = async (setLoading: (loading: boolean) => void) => {
   setLoading(true);
   const token = await AsyncStorage.getItem('token');
-  console.log("token", token);
   try {
     const response = await fetch(`${base_url}/setup-profile`, {
-      method: 'GET',  // agar get ho toh GET use karna
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
     });
-
-    const responseData = await response.json();
-    console.log("responseData", responseData);
-
-    if (responseData.status === "1" || responseData.status === 1) {
-      return responseData;
-    } else {
-      Toast(responseData.error || responseData.message || "Something went wrong", color.red, 10);
-      return null;
-    }
+    const parsed = await response.json();
+    if (parsed.status === "1" || parsed.status === 1) return parsed;
+    else return null;
   } catch (error) {
-    console.error("API call error:", error);
-    errorToast("Network error");
     return null;
   } finally {
     setLoading(false);
   }
 };
-
 
 const Privacypolicy = async (setLoading: any) => {
   setLoading(true);
   try {
-    const response = await fetch(`${base_url}/privacy-policy`, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const textResponse = await response.text();
-    const parsedResponse = JSON.parse(textResponse);
-
-    console.log("parsedResponse", parsedResponse);
-
-    if (parsedResponse?.status === 1) {
-      // successToast(parsedResponse?.message);
-      return parsedResponse; // ✅ Return the data
-    } else {
-      errorToast(parsedResponse?.message);
-      return null; // Optional: return null on failure
-    }
-
-  } catch (error: any) {
-    console.error('Privacy Policy error:', error);
-    errorToast(error.message);
+    const response = await fetch(`${base_url}/privacy-policy`, { method: 'GET' });
+    const parsed = await response.json();
+    return parsed?.status === 1 ? parsed : null;
+  } catch (error) {
     return null;
   } finally {
     setLoading(false);
   }
 };
-
 
 const Termsconditions = async (setLoading: any) => {
   setLoading(true);
   try {
-    const response = await fetch(`${base_url}/terms-and-conditions`, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const textResponse = await response.text();
-    const parsedResponse = JSON.parse(textResponse);
-
-    console.log("parsedResponse", parsedResponse);
-
-    if (parsedResponse?.status === 1) {
-      successToast(parsedResponse?.message);
-      return parsedResponse; // ✅ Return the data
-    } else {
-      errorToast(parsedResponse?.message);
-      return null; // Optional: return null on failure
-    }
-
-  } catch (error: any) {
-    console.error('Privacy Policy error:', error);
-    errorToast(error.message);
+    const response = await fetch(`${base_url}/terms-and-conditions`, { method: 'GET' });
+    const parsed = await response.json();
+    return parsed?.status === 1 ? parsed : null;
+  } catch (error) {
     return null;
   } finally {
     setLoading(false);
   }
 };
 
-
-const DeliveryUploadDocument = async (
-  param: any,
-  setLoading: (loading: boolean) => void
-) => {
+const DeliveryUploadDocument = async (param: any, setLoading: (loading: boolean) => void) => {
+  setLoading(true);
   try {
-    setLoading(true);
     const token = await AsyncStorage.getItem("token");
-
     const formdata = new FormData();
-
-    if (param.drivingLicense?.uri) {
-      formdata.append("drivingLicense", {
-        uri: param.drivingLicense.uri,
-        name: param.drivingLicense.name || "license.jpg",
-        type: param.drivingLicense.type || "image/jpeg",
-      });
-    }
-
-    if (param.idDocument?.uri) {
-      formdata.append("idDocument", {
-        uri: param.idDocument.uri,
-        name: param.idDocument.name || "id.jpg",
-        type: param.idDocument.type || "image/jpeg",
-      });
-    }
-
-    if (param.vehiclePapers?.uri) {
-      formdata.append("vehiclePapers", {
-        uri: param.vehiclePapers.uri,
-        name: "profile.jpg",
-        type: "image/jpeg",
-      });
-    }
-
-    const headers = {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-
+    ['drivingLicense', 'idDocument', 'vehiclePapers'].forEach(key => {
+      if (param[key]?.uri) {
+        formdata.append(key, {
+          uri: param[key].uri,
+          name: param[key].name || "doc.jpg",
+          type: param[key].type || "image/jpeg",
+        } as any);
+      }
+    });
     const response = await fetch(`${base_url}/upload-document`, {
       method: "POST",
-      headers,
+      headers: { Authorization: `Bearer ${token}` },
       body: formdata,
     });
-
-    const textResponse = await response.text();
-    let parsedResponse;
-
-    try {
-      parsedResponse = JSON.parse(textResponse);
-    } catch {
-      throw new Error("Invalid server response");
-    }
-    console.log("parsedResponse", parsedResponse);
-    if (parsedResponse.status == "1") {
-      successToast(parsedResponse.message);
-    }
-
-    return parsedResponse;
+    const parsed = await response.json();
+    if (parsed.status == "1") successToast(parsed.message);
+    return parsed;
   } catch (error) {
-    console.error("DeliveryUploadDocument error:", error);
-    errorToast("Something went wrong. Please try again.");
     return null;
   } finally {
     setLoading(false);
   }
 };
 
-
-const DeliveryVehicleDocument = async (
-  param: any,
-  setLoading: (loading: boolean) => void
-) => {
+const DeliveryVehicleDocument = async (param: any, setLoading: (loading: boolean) => void) => {
+  setLoading(true);
   try {
-    setLoading(true);
     const token = await AsyncStorage.getItem("token");
-
     const formdata = new FormData();
-
-    if (param.vehicleType) {
-      formdata.append("vehicleType", param.vehicleType);
-    }
-
-    if (param.vehicleNumber) {
-      formdata.append("vehicleNumber", param.vehicleNumber);
-    }
-
+    if (param.vehicleType) formdata.append("vehicleType", param.vehicleType);
+    if (param.vehicleNumber) formdata.append("vehicleNumber", param.vehicleNumber);
     if (param.vehicleRegistration?.uri) {
       formdata.append("vehicleRegistration", {
         uri: param.vehicleRegistration.uri,
-        name: param.vehicleRegistration.name || "vehicle_registration.jpg",
+        name: param.vehicleRegistration.name || "reg.jpg",
         type: param.vehicleRegistration.type || "image/jpeg",
-      });
+      } as any);
     }
-    const headers = {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-
     const response = await fetch(`${base_url}/vehicle-setup`, {
       method: "POST",
-      headers,
+      headers: { Authorization: `Bearer ${token}` },
       body: formdata,
     });
-
-    const textResponse = await response.text();
-    let parsedResponse;
-
-    try {
-      parsedResponse = JSON.parse(textResponse);
-    } catch {
-      throw new Error("Invalid server response");
-    }
-
-    console.log("Vehicle Upload Response:", parsedResponse);
-
-    if (parsedResponse.status == "1") {
-      successToast(parsedResponse.message || "Document uploaded successfully!");
-    } else {
-      errorToast(parsedResponse.message || "Upload failed.");
-    }
-
-    return parsedResponse;
+    const parsed = await response.json();
+    if (parsed.status == "1") successToast(parsed.message);
+    return parsed;
   } catch (error) {
-    console.error("DeliveryVehicleDocument error:", error);
-    errorToast("Something went wrong. Please try again.");
     return null;
   } finally {
     setLoading(false);
   }
 };
 
-const GetuploadDocument = async (
-  setLoading: (loading: boolean) => void
-): Promise<any | null> => {
+const GetuploadDocument = async (setLoading: (loading: boolean) => void) => {
   setLoading(true);
   const token = await AsyncStorage.getItem('token');
-  console.log("token", token);
   try {
     const response = await fetch(`${base_url}/upload-document`, {
-      method: 'GET',  // agar get ho toh GET use karna
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
     });
-
-    const responseData = await response.json();
-    console.log("responseData", responseData);
-
-    if (responseData.status === "1" || responseData.status === 1) {
-      return responseData;
-    } else {
-      Toast(responseData.error || responseData.message || "Something went wrong", color.red, 10);
-      return null;
-    }
+    return await response.json();
   } catch (error) {
-    console.error("API call error:", error);
-    errorToast("Network error");
     return null;
   } finally {
     setLoading(false);
   }
 };
+
 const AddParcelApi = async (param: any, setLoading: (loading: boolean) => void) => {
+  setLoading(true);
   try {
-    setLoading(true);
     const token = await AsyncStorage.getItem("token");
     const formdata = new FormData();
-    if (param?.image && param?.image?.uri) {
-      const fileName = param.image.fileName || "profile.jpg";
-      const fileType = param.image.type || "image/jpeg";
+    if (param?.image?.uri) {
       formdata.append("imageFile", {
         uri: param.image.uri,
-        name: fileName,
-        type: fileType,
-      });
+        name: param.image.fileName || "parcel.jpg",
+        type: param.image.type || "image/jpeg",
+      } as any);
     }
-    if (param?.pickupLocation) formdata.append("pickupLocation", param.pickupLocation?.address);
-    if (param?.dropLocation) formdata.append("dropLocation", param.dropLocation);
-    // image
-    if (param?.pickupLat?.latitude) formdata.append("pickupLocationLat", param.pickupLocation?.longitude);
-    if (param?.pickupLat?.longitude) formdata.append("pickupLocationLon", param.pickupLocation?.latitude);
-    if (param?.droplat?.latitude) formdata.append("dropLocationLat", param.droplat.latitude);
-    if (param?.droplat.longitude) formdata.append("dropLocationLon", param.droplat.longitude);
-    if (param.shipmentType) formdata.append("shipmentType", param.shipmentType);
-    if (param.senderName) formdata.append("senderName", param.senderName);
-    if (param.senderMobile) formdata.append("senderMobileNumber", param.senderMobile);
-    if (param.senderAddress) formdata.append("senderAddress", param.senderAddress);
-    if (param.pickupDate) {
-      formdata.append("pickupDate", param.pickupDate instanceof Date ? param.pickupDate.toISOString() : param.pickupDate);
-    }
-    if (param.pickupTime) {
-      formdata.append("pickupTime", param.pickupTime instanceof Date ? param.pickupTime.toISOString() : param.pickupTime);
-    }
-    if (param.consignmentType) formdata.append("consignmentType", param.consignmentType);
-    if (param.packageSize) formdata.append("packageSize", param.packageSize);
-    if (param.deliveryType) formdata.append("deliveryType", param.deliveryType);
-    if (param.price) formdata.append("price", param.price);
-
-    if (param.receiverName) formdata.append("receiverName", param.receiverName);
-    if (param.receiverMobile) formdata.append("receiverMobileNumber", param.receiverMobile);
-    if (param.receiverAddress) formdata.append("receiverAddress", param.receiverAddress);
-    if (param.extraMessage) formdata.append("message", param.extraMessage);
-
-    if (param.pickupLat) formdata.append("pickupLat", param.pickupLat.toString());
-    if (param.droplat) formdata.append("droplat", param.droplat.toString());
-    console.log("FormData:", formdata);
-    const headers: any = {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-
+    const fields = [
+      'shipmentType', 'senderName', 'senderMobileNumber', 'senderAddress',
+      'pickupDate', 'pickupTime', 'consignmentType', 'packageSize',
+      'deliveryType', 'price', 'receiverName', 'receiverMobileNumber',
+      'receiverAddress', 'message', 'pickupLocation', 'dropLocation',
+      'pickupLocationLat', 'pickupLocationLon', 'dropLocationLat', 'dropLocationLon'
+    ];
+    fields.forEach(f => { if (param[f]) formdata.append(f, param[f]); });
     const response = await fetch(`${base_url}/parcel-details`, {
       method: "POST",
-      headers,
+      headers: { Authorization: `Bearer ${token}` },
       body: formdata,
     });
-
-    const textResponse = await response.text();
-    let parsedResponse;
-    try {
-      parsedResponse = JSON.parse(textResponse);
-    } catch {
-      throw new Error("Invalid server response");
-    }
-    if (parsedResponse.status == "1") {
-      successToast(parsedResponse.message);
-      return parsedResponse;
-    } else {
-      errorToast(parsedResponse.message);
-      return parsedResponse;
-    }
+    const parsed = await response.json();
+    if (parsed.status == "1") successToast(parsed.message);
+    return parsed;
   } catch (error) {
-    console.error("AddParcelApi error:", error);
-    errorToast("Something went wrong. Please try again.");
     return null;
   } finally {
     setLoading(false);
@@ -952,142 +649,69 @@ const AddParcelApi = async (param: any, setLoading: (loading: boolean) => void) 
 };
 
 const GetApi = async (param: any, setLoading: (loading: boolean) => void) => {
-  // console.log("API PARAM:", param);
-
+  setLoading(true);
   try {
-    setLoading(true);
     const token = await AsyncStorage.getItem("token");
-    const myHeaders = new Headers();
-    myHeaders.append("Accept", "application/json");
-    myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Authorization", `Bearer ${token}`);
-
-    const requestOptions: any = {
+    const response = await fetch(base_url + param.url, {
       method: param.method || "GET",
-      headers: myHeaders,
-    };
-
-    // ✅ ADD BODY ONLY IF EXISTS
-    if (param.data && Object.keys(param.data).length > 0) {
-      requestOptions.body = JSON.stringify(param.data);
-    }
-
-    const response = await fetch(base_url + param.url, requestOptions);
-    const resText = await response.text();
-    const result = JSON.parse(resText);
-
-    // console.log("API RESPONSE:", result);
-
-    setLoading(false);
-    return result;
-
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      ...(param.data && { body: JSON.stringify(param.data) })
+    });
+    return await response.json();
   } catch (error) {
-    setLoading(false);
-    errorToast("Network error");
     return null;
+  } finally {
+    setLoading(false);
   }
 };
 
-export const PostApi = async (param, setLoading) => {
+export const PostApi = async (param: any, setLoading?: (loading: boolean) => void) => {
+  if (setLoading) setLoading(true);
   try {
-    setLoading && setLoading(true);
-
     const headers = {
       Accept: "application/json",
-      ...(param?.isFormData
-        ? { "Content-Type": "multipart/form-data" }
-        : { "Content-Type": "application/json" }),
+      ...(param?.isFormData ? { "Content-Type": "multipart/form-data" } : { "Content-Type": "application/json" }),
       ...(param?.token && { Authorization: `Bearer ${param.token}` }),
     };
-    console.log(base_url + param.url,
-      param.data,
-      { headers })
-    const response = await axios.post(
-      base_url + param.url,
-      param.data,
-      { headers }
-    );
-    console.log(response)
+    const response = await axios.post(base_url + param.url, param.data, { headers });
     return response.data;
-  } catch (error) {
-    console.log("POST API ERROR 👉", error?.response || error);
-
-    return {
-      status: false,
-      message:
-        error?.response?.data?.message ||
-        "Something went wrong. Please try again.",
-    };
+  } catch (error: any) {
+    return { status: false, message: error?.response?.data?.message || "Something went wrong" };
   } finally {
-    setLoading && setLoading(false);
+    if (setLoading) setLoading(false);
   }
 };
 
-
-
-
-const Parceldetails = async (
-  setLoading: (loading: boolean) => void
-): Promise<any | null> => {
+const Parceldetails = async (setLoading: (loading: boolean) => void) => {
   setLoading(true);
   const token = await AsyncStorage.getItem('token');
   try {
     const response = await fetch(`${base_url}/parcel-details`, {
-      method: 'GET',  // agar get ho toh GET use karna
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
     });
-
-    const responseData = await response.json();
-    console.log("responseData", responseData);
-
-    if (responseData.status == "1" || responseData.status == 1) {
-      return responseData;
-    } else {
-      Toast(responseData.error || responseData.message || "Something went wrong", color.red, 10);
-      return null;
-    }
+    return await response.json();
   } catch (error) {
-    console.error("API call error:", error);
-    errorToast("Network error");
     return null;
   } finally {
     setLoading(false);
   }
 };
 
-
-
-
-
-
-const DeliveryAvailableRequests = async (
-  setLoading: (loading: boolean) => void
-): Promise<any | null> => {
+const DeliveryAvailableRequests = async (setLoading: (loading: boolean) => void) => {
   setLoading(true);
   const token = await AsyncStorage.getItem('token');
   try {
     const response = await fetch(`${base_url}/delivery/available-requests`, {
-      method: 'GET',  // agar get ho toh GET use karna
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
     });
-
-    const responseData = await response.json();
-    console.log("responseData", responseData);
-
-    if (responseData.status === "1" || responseData.status === 1) {
-      return responseData;
-    } else {
-      Toast(responseData.error || responseData.message || "Something went wrong", color.red, 10);
-      return null;
-    }
+    return await response.json();
   } catch (error) {
-    errorToast("Network error");
     return null;
   } finally {
     setLoading(false);
@@ -1095,23 +719,21 @@ const DeliveryAvailableRequests = async (
 };
 
 export {
-  // BabbleBloom Auth
   SignUpApi,
   SendSignupOtpApi,
   VerifySignupOtpApi,
   LoginApi,
   VerifyLoginOtpApi,
-  // Legacy
+  handleLogout,
+  saveAuthData,
+  getAuthData,
   LogiApi,
   Verifyotp,
-  handleLogout,
-  getAuthData,
-  Termsconditions,
-  saveAuthData,
   Resend_otp,
+  UpdateProfile,
   GetProfileApi,
   Privacypolicy,
-  UpdateProfile,
+  Termsconditions,
   DeliveryUploadDocument,
   DeliveryVehicleDocument,
   GetuploadDocument,
@@ -1119,4 +741,4 @@ export {
   Parceldetails,
   DeliveryAvailableRequests,
   GetApi,
-}
+};

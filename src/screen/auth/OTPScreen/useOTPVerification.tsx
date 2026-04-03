@@ -24,7 +24,8 @@ export const useOtpVerification = (cellCount: number = 4) => {
   const resolvedCountryCode = country_code || legacyCode || '+91';
   const resolvedPhoneNumber = phone_number || legacyPhone || '';
 
-  const [value, setValue] = useState(otp_code || '');
+  const [value, setValue] = useState('');
+  // const [value, setValue] = useState(otp_code || '');
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const [timer, setTimer] = useState(30); // Start with 30 s countdown

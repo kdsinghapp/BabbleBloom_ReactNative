@@ -59,6 +59,7 @@ export type RegistrationStackParamList = {
   [ScreenNameEnum.LegalPoliciesScreen]: undefined;
   [ScreenNameEnum.NotificationsScreen]: undefined;
   [ScreenNameEnum.AddNewScript]: undefined;
+  [ScreenNameEnum.ParentInfo]: undefined;
   DrawerNavDriver: undefined;
   DrawerNav: undefined;
 };

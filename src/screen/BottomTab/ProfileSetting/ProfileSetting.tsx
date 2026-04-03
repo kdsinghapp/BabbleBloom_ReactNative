@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import imageIndex from '../../../assets/imageIndex';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,11 +14,14 @@ import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 import LogoutModal from '../../../compoent/LogoutModal';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RegistrationStackParamList } from '../../../navigators/RegistrationRoutes';
-import { useDispatch } from 'react-redux';
-import { handleLogout } from '../../../Api/apiRequest';
+import { useDispatch, useSelector } from 'react-redux';
+import { GetProfileMeApi, handleLogout } from '../../../Api/apiRequest';
+import { loginSuccess } from '../../../redux/feature/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { color } from '../../../constant';
 
 const MenuItem = ({ icon, title, subtitle, onPress }: { icon: any; title: string; subtitle?: string; onPress: () => void }) => (
   <TouchableOpacity style={styles.menuItem} onPress={onPress}>
@@ -32,116 +36,122 @@ const MenuItem = ({ icon, title, subtitle, onPress }: { icon: any; title: string
   </TouchableOpacity>
 );
 
+const DetailRow = ({ label, value }: { label: string; value: string }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>{label}</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
+
 export default function ProfileSetting() {
   const dispatch = useDispatch()
   const navigation = useNavigation<NativeStackNavigationProp<RegistrationStackParamList>>();
   const [visible, setVisible] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const userData = useSelector((state: any) => state.auth.userData);
+
+  const getProfileData = async () => {
+    try {
+      const response = await GetProfileMeApi(setLoading);
+      if (response) {
+        const token = await AsyncStorage.getItem("token") || "";
+        dispatch(loginSuccess({ userData: response, token }));
+      }
+    } catch (error) {
+      console.error("[ProfileSetting] Fetch error:", error);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      getProfileData();
+    }, [])
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBarComponent />
       <CustomHeader label="Profile" />
 
-
       <ScrollView showsVerticalScrollIndicator={false}
         style={{ paddingHorizontal: 20, marginTop: 10 }}
       >
-
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <Image
-            source={{ uri: 'https://i.pravatar.cc/100' }}
+            source={userData?.image ? { uri: userData.image } : imageIndex.prfile}
             style={styles.avatar}
           />
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>Itunuoluwa Abidoye</Text>
-            <Text style={styles.username}>@itunuoluwa</Text>
+            <Text style={styles.name}>{userData?.full_name || 'User Name'}</Text>
+            <Text style={styles.username}>{userData?.email || userData?.phone_number || ''}</Text>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate(ScreenNameEnum.EditProfile)}
-          >
+          <TouchableOpacity onPress={() => navigation.navigate(ScreenNameEnum.EditProfile)}>
             <Image source={imageIndex.pencle} style={styles.editIcon} />
           </TouchableOpacity>
         </View>
 
-        {/* Menu */}
-        <View style={styles.card}>
-          <MenuItem
-            icon={imageIndex.MyAccount}
-            title="Parent info"
-            onPress={() => navigation.navigate(ScreenNameEnum.EditProfile)}
-          />
-          <MenuItem
-            icon={imageIndex.MyAccount}
-            title="Child info"
-            onPress={() => navigation.navigate(ScreenNameEnum.MyProfile)}
-          />
-          <MenuItem
-            icon={imageIndex.nofication}
-            title="Notification"
-            onPress={() => navigation.navigate(ScreenNameEnum.NotificationsScreen)}
+        {loading && !userData ? (
+          <ActivityIndicator color={color.primary} size="large" style={{ marginVertical: 20 }} />
+        ) : (
+          <>
 
-          />
-          <MenuItem
-            icon={imageIndex.ContactUs}
-            title="Contact Us"
-            onPress={() => navigation.navigate(ScreenNameEnum.SupportScreen)}
-          />
-        </View>
+            {/* Menu */}
+            <View style={styles.card}>
+              <MenuItem
+                icon={imageIndex.MyAccount}
+                title="Parent info"
+                onPress={() => navigation.navigate(ScreenNameEnum.ParentInfo)}
+              />
+              <MenuItem
+                icon={imageIndex.MyAccount}
+                title="Child info"
+                onPress={() => navigation.navigate(ScreenNameEnum.MyProfile)}
+              />
+              <MenuItem
+                icon={imageIndex.nofication}
+                title="Notification"
+                onPress={() => navigation.navigate(ScreenNameEnum.NotificationsScreen)}
+              />
+              <MenuItem
+                icon={imageIndex.ContactUs}
+                title="Contact Us"
+                onPress={() => navigation.navigate(ScreenNameEnum.SupportScreen)}
+              />
+            </View>
 
-        <View style={styles.card}>
-          <MenuItem
-            icon={imageIndex.FAQs}
-            title="FAQs"
-            onPress={() => navigation.navigate(ScreenNameEnum.FAQs)}
-          />
-          <MenuItem
-            icon={imageIndex.logout}
-            title="Log out"
-            subtitle="Further secure your account for safety"
-            onPress={() => setVisible(true)}
-          />
-        </View>
+            <View style={styles.card}>
+              <MenuItem
+                icon={imageIndex.FAQs}
+                title="FAQs"
+                onPress={() => navigation.navigate(ScreenNameEnum.FAQs)}
+              />
+              <MenuItem
+                icon={imageIndex.logout}
+                title="Log out"
+                subtitle="Further secure your account for safety"
+                onPress={() => setVisible(true)}
+              />
+            </View>
+          </>
+        )}
+
         <LogoutModal visible={visible}
           onLogout={() => {
             handleLogout(dispatch, navigation, setVisible);
           }}
           onCancel={() => setVisible(false)}
         />
-
-
       </ScrollView>
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-
   },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-
-  backBtn: {
-    backgroundColor: '#d9f99d',
-    padding: 10,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-
-  backIcon: {
-    width: 16,
-    height: 16,
-  },
-
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -151,80 +161,98 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 12
   },
-
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
     marginRight: 10,
   },
-
   name: {
     color: '#fff',
     fontWeight: '600',
   },
-
   username: {
     color: '#ccc',
     fontSize: 12,
   },
-
   editIcon: {
     width: 18,
     height: 18,
     tintColor: '#fff',
   },
-
   card: {
     backgroundColor: '#fff',
     borderRadius: 15,
     marginBottom: 20,
     padding: 12,
-
-    // iOS Shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
-
-    // Android Shadow
     elevation: 8,
   },
-
   menuItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 12,
   },
-
   menuLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-
   icon: {
     width: 44,
     height: 44,
     marginRight: 12,
   },
-
   arrow: {
     width: 16,
     height: 16,
-    color: 'black',
   },
-
   menuText: {
     fontSize: 14,
     fontWeight: '500',
     color: 'black',
-
   },
-
   subText: {
     fontSize: 11,
     color: 'black',
-
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    marginTop: 5,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+    marginLeft: 10,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#eee',
+    marginVertical: 12,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 5,
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '600',
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 20,
   },
 });

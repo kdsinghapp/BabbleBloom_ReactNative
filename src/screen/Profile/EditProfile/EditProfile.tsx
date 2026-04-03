@@ -22,7 +22,7 @@ import CustomInput from "../../../compoent/CustomInput";
 import CustomButton from "../../../compoent/CustomButton";
 import ImagePickerModal from "../../../compoent/ImagePickerModal";
 import imageIndex from "../../../assets/imageIndex";
-import { GetProfileApi, UpdateProfile } from "../../../Api/apiRequest";
+import { GetProfileMeApi, UpdateProfile } from "../../../Api/apiRequest";
 import { loginSuccess } from "../../../redux/feature/authSlice";
 import { errorToast } from "../../../utils/customToast";
 
@@ -30,7 +30,7 @@ const EditProfile = () => {
   const navigation = useNavigation();
   const userData: any = useSelector((state: any) => state.auth.userData);
 
-  const [fullName, setFullName] = useState(userData?.firstName || "");
+  const [fullName, setFullName] = useState(userData?.full_name || "");
   const [email, setEmail] = useState(userData?.email || "");
   const [address, setAddress] = useState(userData?.address || "");
   const [image, setImage] = useState<any>(userData?.image || null);
@@ -39,15 +39,15 @@ const EditProfile = () => {
   const dispatch = useDispatch();
   const [fullNameError, setFullNameError] = useState("");
   const [emailError, setEmailError] = useState("");
-  const getProfileApi = async () => {
+  const getProfileData = async () => {
     try {
-      const response = await GetProfileApi(setIsLoading);
+      const response = await GetProfileMeApi(setIsLoading);
       if (response) {
         const token = await AsyncStorage.getItem("token") || "";
         dispatch(loginSuccess({ userData: response, token }));
       }
     } catch (error) {
-      console.error("GetProfileApi error:", error);
+      console.error("GetProfileMeApi error:", error);
     }
   };
   const pickImageFromGallery = () => {
@@ -72,35 +72,36 @@ const EditProfile = () => {
   };
 
   const handleSave = async () => {
-    let hasError = false;
-    if (!fullName.trim()) {
-      setFullNameError("Full name required");
-      hasError = true;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim() || !emailRegex.test(email)) {
-      setEmailError("Invalid email address");
-      hasError = true;
-    }
+    navigation.goBack();
+    // let hasError = false;
+    // if (!fullName.trim()) {
+    //   setFullNameError("Full name required");
+    //   hasError = true;
+    // }
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (!email.trim() || !emailRegex.test(email)) {
+    //   setEmailError("Invalid email address");
+    //   hasError = true;
+    // }
 
-    if (hasError) return;
+    // if (hasError) return;
 
-    try {
-       const params = {
-        username: fullName,
-        email: email,
-        address: address,
-        imagePrfoile: image,
-      };
-      const response = await UpdateProfile(params, setIsLoading);
+    // try {
+    //    const params = {
+    //     username: fullName,
+    //     email: email,
+    //     address: address,
+    //     imagePrfoile: image,
+    //   };
+    //   const response = await UpdateProfile(params, setIsLoading);
 
-      if (response) {
-        getProfileApi();
-        navigation.goBack();
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error);
-    }
+    //   if (response) {
+    //     await getProfileData();
+    //     navigation.goBack();
+    //   }
+    // } catch (error) {
+    //   console.error("Error updating profile:", error);
+    // }
   };
 
   return (
@@ -111,30 +112,29 @@ const EditProfile = () => {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0} // adjust offset if needed
-
       >
-        <ScrollView contentContainerStyle={styles.container}
-
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.container}
         >
           <View style={styles.profileContainer}>
-            <Image
-              source={image ? { uri: image.uri || image } : imageIndex.prfile}
-              style={styles.profileImage}
-              resizeMode="cover"
-            />
-
-            {/* Edit Icon */}
-            <TouchableOpacity
-              style={styles.editIconContainer}
-              onPress={() => setIsModalVisible(true)}
-            >
+            <View style={styles.avatarWrapper}>
               <Image
-                source={imageIndex.eoditphots}
-                style={styles.editIcon}
-                resizeMode="contain"
+                source={image ? { uri: image.uri || image } : imageIndex.prfile}
+                style={styles.profileImage}
+                resizeMode="cover"
               />
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.editIconContainer}
+                onPress={() => setIsModalVisible(true)}
+              >
+                <Image
+                  source={imageIndex.eoditphots}
+                  style={styles.editIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.inputContainer}>
               <CustomInput
@@ -147,9 +147,9 @@ const EditProfile = () => {
                 leftIcon={<Image source={imageIndex.profiel} style={styles.icon} />}
               />
               {fullNameError ? <Text style={styles.errorText}>{fullNameError}</Text> : null}
-              
+
               <CustomInput
-                placeholder="Email"
+                placeholder="Email Address"
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
@@ -172,7 +172,12 @@ const EditProfile = () => {
       </KeyboardAvoidingView>
 
       <View style={styles.buttonContainer}>
-        <CustomButton title="Update" onPress={handleSave} loading={isLoading} />
+        <CustomButton
+          title="Update Profile"
+          onPress={handleSave}
+          loading={isLoading}
+          style={styles.updateBtn}
+        />
       </View>
     </SafeAreaView>
   );
@@ -184,50 +189,71 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   container: {
-    alignItems: "center",
-    paddingVertical: 20,
+    paddingHorizontal: 25,
+    paddingBottom: 40,
   },
   profileContainer: {
     alignItems: "center",
-    marginTop: 20,
-    position: "relative", // needed for absolute edit icon
+    paddingVertical: 40,
   },
-  profileImage: {
+  avatarWrapper: {
     width: 120,
     height: 120,
-    borderRadius: 120,
-  },
-  editIconContainer: {
-    position: "relative",
-    bottom: 20,
-    right: 0,
-    padding: 5,
-    left: 16
+    borderRadius: 60,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
 
   },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+  },
+  editIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#E03B65',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
   editIcon: {
-    width: 33,
-    height: 33,
-    tintColor: "#E03B65"
+    width: 16,
+    height: 16,
+    tintColor: "#fff",
   },
   inputContainer: {
     marginTop: 20,
-    width: "90%",
+    width: "100%",
   },
   icon: {
-    width: 18,
-    height: 18,
-    tintColor: "#E03B65"
+    width: 20,
+    height: 20,
+    tintColor: "#E03B65",
   },
   buttonContainer: {
-    marginBottom: 30,
-    marginHorizontal: 15,
+    paddingHorizontal: 25,
+    paddingBottom: 35,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  updateBtn: {
+    borderRadius: 16,
+    backgroundColor: '#E03B65',
   },
   errorText: {
-    color: "red",
+    color: "#E03B65",
     fontSize: 12,
     marginTop: -5,
-    marginBottom: 10,
+    marginBottom: 15,
     marginLeft: 5,
   },
 });

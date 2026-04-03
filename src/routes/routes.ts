@@ -13,6 +13,7 @@ import EditProfile from "../screen/Profile/EditProfile/EditProfile";
 import MyProfile from "../screen/auth/MyProfile/MyProfile";
 import HomeDashboard from "../screen/BottomTab/DashBoard/HomeDashboard";
 import AddNewScript from "../screen/BottomTab/DashBoard/AddNewScript/AddNewScript";
+import ParentInfoScreen from "../screen/Profile/ParentInfo/ParentInfoScreen";
 import ProgressScreen from "../screen/BottomTab/Progress/ProgressScreen";
 import LibraryScreen from "../screen/BottomTab/LibraryScreen/LibraryScreen";
 import Activity from "../screen/BottomTab/Activity/Activity";
@@ -151,6 +152,10 @@ const _routes: any = {
     {
       name: ScreenNameEnum.AddNewScript,
       Component: AddNewScript,
+    },
+    {
+      name: ScreenNameEnum.ParentInfo,
+      Component: ParentInfoScreen,
     },
 
 
