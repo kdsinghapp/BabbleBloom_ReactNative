@@ -12,13 +12,11 @@ import { useDispatch } from 'react-redux';
 import { restoreLogin } from '../../../redux/feature/authSlice';
 import { getAuthData } from '../../../Api/apiRequest';
 import { SafeAreaView } from 'react-native-safe-area-context';
- 
-type RootStackParamList = {
-  Home: undefined;
-};
+
+import { RegistrationStackParamList } from '../../../navigators/RegistrationRoutes';
 
 const Splash: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RegistrationStackParamList>>();
   const dispatch = useDispatch();
 
   // Animation reference
@@ -36,17 +34,13 @@ const Splash: React.FC = () => {
     const timer = setTimeout(async () => {
       try {
         const storedAuth = await getAuthData();
- 
+
         if (storedAuth?.token) {
           dispatch(restoreLogin(storedAuth));
-          if (storedAuth.userData?.type == "Delivery") {
-                     navigation.replace(ScreenNameEnum.OnboardingScreen);
-
-          } else {
-          navigation.replace(ScreenNameEnum.OnboardingScreen);
-            
-          }
+          console.log('[Splash] User session restored, navigating to Home');
+          navigation.replace(ScreenNameEnum.HomeDashboard);
         } else {
+          console.log('[Splash] No session found, navigating to Onboarding');
           navigation.replace(ScreenNameEnum.OnboardingScreen);
         }
       } catch (error) {
@@ -61,7 +55,7 @@ const Splash: React.FC = () => {
   return (
     <SafeAreaView
       style={styles.container}
-     >
+    >
       <StatusBarComponent backgroundColor={color.white} />
 
       {/* Center content */}
@@ -75,10 +69,9 @@ const Splash: React.FC = () => {
         </Animated.View>
       </View>
 
-    
+
     </SafeAreaView>
   );
 };
 
 export default Splash;
- 

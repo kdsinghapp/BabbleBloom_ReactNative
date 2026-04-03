@@ -113,9 +113,9 @@ export default function OtpScreen() {
 
           {/* Resend OTP link — outside card */}
           {timer === 0 && (
-            <TouchableOpacity 
-            // onPress={handleResendOTP}
-             style={styles.resendLink}>
+            <TouchableOpacity
+              onPress={handleResendOTP}
+              style={styles.resendLink}>
               <Text style={styles.resendLinkText}>Resend OTP</Text>
             </TouchableOpacity>
           )}

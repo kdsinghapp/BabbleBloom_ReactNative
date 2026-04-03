@@ -14,8 +14,12 @@ import CustomHeader from '../../../compoent/CustomHeader';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 import LogoutModal from '../../../compoent/LogoutModal';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RegistrationStackParamList } from '../../../navigators/RegistrationRoutes';
+import { useDispatch } from 'react-redux';
+import { handleLogout } from '../../../Api/apiRequest';
 
-const MenuItem = ({ icon, title, subtitle, onPress }) => (
+const MenuItem = ({ icon, title, subtitle, onPress }: { icon: any; title: string; subtitle?: string; onPress: () => void }) => (
   <TouchableOpacity style={styles.menuItem} onPress={onPress}>
     <View style={styles.menuLeft}>
       <Image source={icon} style={styles.icon} />
@@ -29,7 +33,8 @@ const MenuItem = ({ icon, title, subtitle, onPress }) => (
 );
 
 export default function ProfileSetting() {
-  const navigation = useNavigation();
+  const dispatch = useDispatch()
+  const navigation = useNavigation<NativeStackNavigationProp<RegistrationStackParamList>>();
   const [visible, setVisible] = React.useState(false);
   return (
     <SafeAreaView style={styles.container}>
@@ -97,8 +102,7 @@ export default function ProfileSetting() {
         </View>
         <LogoutModal visible={visible}
           onLogout={() => {
-            setVisible(false);
-            // Handle logout logic here
+            handleLogout(dispatch, navigation, setVisible);
           }}
           onCancel={() => setVisible(false)}
         />
@@ -145,7 +149,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 40,
     marginBottom: 20,
-    marginTop:12
+    marginTop: 12
   },
 
   avatar: {

@@ -11,20 +11,14 @@ import StatusBarComponent from "../../../compoent/StatusBarCompoent";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import Constcounty from "./Constcounty";
-import { LogiApi } from "../../../Api/apiRequest";
+import { LogiApi, LoginApi } from "../../../Api/apiRequest";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingModal from "../../../utils/Loader";
 import { color } from "../../../constant";
 import ScreenNameEnum from "../../../routes/screenName.enum";
 const PhoneLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
-  //  d
-  //  const [phoneNumber, setPhoneNumber] = useState("8644545549");   
-  // user
-  // del
-  // const [phoneNumber, setPhoneNumber] = useState("9663566532");  
-  // const [phoneNumber, setPhoneNumber] = useState("676543765437");  
-  // const [phoneNumber, setPhoneNumber] = useState("96084084307");  
+
   //  const [phoneNumber, setPhoneNumber] = useState("");  
   const [countryCode, setCountryCode] = useState("IN");
   const [callingCode, setCallingCode] = useState("+91");
@@ -57,7 +51,7 @@ const PhoneLogin = () => {
   const handleContinue = async () => {
 
 
-  
+
     const trimmedNumber = phoneNumber.trim();
 
     // Local Validation for Inline Message
@@ -68,7 +62,7 @@ const PhoneLogin = () => {
       setError("Please enter a valid phone number (6-15 digits).");
       return;
     }
-    
+
     setError(""); // Clear error if valid
     const userRole = await AsyncStorage.getItem('selectedRole') || 'User';
 
@@ -142,10 +136,28 @@ const PhoneLogin = () => {
 
         {/* Continue Button */}
         <View style={{ marginTop: 20 }}>
-          <CustomButton title={"Continue"} onPress={()=>{
-                navigation.navigate(ScreenNameEnum.OtpScreen);
-          }} />
-          {/* <CustomButton title={"Continue"} onPress={handleContinue} /> */}
+          <CustomButton
+            title={"Continue"}
+            onPress={async () => {
+              const trimmedNumber = phoneNumber.trim();
+              if (!trimmedNumber) {
+                setError("Please enter your phone number.");
+                return;
+              } else if (trimmedNumber.length < 6 || trimmedNumber.length > 15) {
+                setError("Please enter a valid phone number (6-15 digits).");
+                return;
+              }
+              setError("");
+              await LoginApi(
+                {
+                  country_code: callingCode.replace('+', ''),
+                  phone_number: trimmedNumber,
+                  navigation: navigation,
+                },
+                setLoading,
+              );
+            }}
+          />
         </View>
 
         <TouchableOpacity>

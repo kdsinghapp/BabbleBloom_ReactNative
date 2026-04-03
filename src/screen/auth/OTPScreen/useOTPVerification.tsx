@@ -2,21 +2,36 @@ import { useEffect, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
 import { useDispatch } from 'react-redux';
-import { Resend_otp, Verifyotp } from '../../../Api/apiRequest';
-import Dashboard from '../../BottomTab/DashBoard/HomeDashboard';
+import { VerifySignupOtpApi, VerifyLoginOtpApi, SendSignupOtpApi, Resend_otp } from '../../../Api/apiRequest';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 
 export const useOtpVerification = (cellCount: number = 4) => {
   const navigation = useNavigation();
   const route: any = useRoute();
-  const { phone, code } = route.params || {};
-  const [value, setValue] = useState('');
+
+  // Supports both new signup OTP params (country_code / phone_number)
+  // and old legacy params (code / phone) for backward compatibility
+  const {
+    country_code,
+    phone_number,
+    otp_code,
+    flowType, // 'signup' or 'login'
+    // legacy fallbacks
+    code: legacyCode,
+    phone: legacyPhone,
+  } = route.params || {};
+
+  const resolvedCountryCode = country_code || legacyCode || '+91';
+  const resolvedPhoneNumber = phone_number || legacyPhone || '';
+
+  const [value, setValue] = useState(otp_code || '');
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
-  const [timer, setTimer] = useState(0);
+  const [timer, setTimer] = useState(30); // Start with 30 s countdown
+
   // Timer countdown logic
   useEffect(() => {
-    let interval;
+    let interval: ReturnType<typeof setInterval>;
     if (timer > 0) {
       interval = setInterval(() => {
         setTimer(prev => prev - 1);
@@ -24,13 +39,17 @@ export const useOtpVerification = (cellCount: number = 4) => {
     }
     return () => clearInterval(interval);
   }, [timer]);
+
+  // Data for display in OTP screen
   const data = {
-    mob: phone,
-    code: code
-  }
+    mob: resolvedPhoneNumber,
+    code: resolvedCountryCode,
+  };
+
   const [errorMessage, setErrorMessage] = useState('');
   const ref = useBlurOnFulfill({ value, cellCount });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({ value, setValue });
+
   const handleChangeText = (text: string) => {
     setValue(text);
     setErrorMessage(text.length < cellCount ? 'Please enter 4 digit otp' : '');
@@ -40,9 +59,15 @@ export const useOtpVerification = (cellCount: number = 4) => {
     if (timer > 0) return; // prevent multiple clicks during countdown
     setIsLoading(true);
     try {
-      const params = { phone, code };
-      await Resend_otp(params, setIsLoading);
-      setTimer(30); // start 30 seconds timer
+      await SendSignupOtpApi(
+        {
+          country_code: resolvedCountryCode,
+          phone_number: resolvedPhoneNumber,
+          navigation,
+        },
+        setIsLoading,
+      );
+      setTimer(30); // restart 30 s timer
     } catch (error) {
       console.error('OTP resend error:', error);
     } finally {
@@ -51,20 +76,41 @@ export const useOtpVerification = (cellCount: number = 4) => {
   };
 
   const handleVerifyOTP = async () => {
-    navigation.navigate(ScreenNameEnum.HomeDashboard)
-    //  if (value.length !== cellCount) {
-    //   setErrorMessage('Please enter 4 digit otp');
-    //   return;
-    // }
+    if (value.length !== cellCount) {
+      setErrorMessage('Please enter 4 digit otp');
+      return;
+    }
 
-    // setIsLoading(true);
-    // try {
-    //         setIsLoading(false)
-    //   const params = { phone, otp: value, navigation, code  };
-    //    await Verifyotp(params, setIsLoading,dispatch);
-    // } catch (error) {
-    //   setIsLoading(false)
-    //  }
+    setIsLoading(true);
+    try {
+      if (flowType === 'login') {
+        await VerifyLoginOtpApi(
+          {
+            country_code: resolvedCountryCode,
+            phone_number: resolvedPhoneNumber,
+            code: value,
+            navigation,
+          },
+          setIsLoading,
+          dispatch,
+        );
+      } else {
+        await VerifySignupOtpApi(
+          {
+            country_code: resolvedCountryCode,
+            phone_number: resolvedPhoneNumber,
+            code: value,
+            navigation,
+          },
+          setIsLoading,
+          dispatch,
+        );
+      }
+    } catch (error) {
+      console.error('OTP verify error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return {
@@ -80,6 +126,6 @@ export const useOtpVerification = (cellCount: number = 4) => {
     navigation,
     handleResendOTP,
     data,
-    timer
+    timer,
   };
 };

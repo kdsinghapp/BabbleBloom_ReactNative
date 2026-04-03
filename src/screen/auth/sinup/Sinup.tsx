@@ -9,10 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import FastImage from 'react-native-fast-image';
+import Constcounty from '../PhoneLogin/Constcounty';
 
 import imageIndex from '../../../assets/imageIndex';
 import { color } from '../../../constant';
@@ -22,7 +25,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomHeader from '../../../compoent/CustomHeader';
 import LoadingModal from '../../../utils/Loader';
 import CustomButton from '../../../compoent/CustomButton';
-import { LogiApi } from '../../../Api/apiRequest';
+import { LogiApi, SignUpApi } from '../../../Api/apiRequest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
@@ -36,15 +39,44 @@ const SignUp: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [callingCode, setCallingCode] = useState("+91");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [filteredCountries, setFilteredCountries] = useState(Constcounty);
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Error States
   const [firstNameError, setFirstNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [termsError, setTermsError] = useState('');
+
+  React.useEffect(() => {
+    if (searchText === "") {
+      setFilteredCountries(Constcounty);
+    } else {
+      const filtered = Constcounty?.filter((c) =>
+        c?.country?.toLowerCase().includes(searchText?.toLowerCase()) ||
+        c?.dial_code?.includes(searchText)
+      );
+      setFilteredCountries(filtered);
+    }
+  }, [searchText]);
+
+  const handleSelectCountry = (country: any) => {
+    setCallingCode(country.dial_code);
+    setModalVisible(false);
+    setSearchText("");
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -159,15 +191,18 @@ const SignUp: React.FC = () => {
 
             {/* Phone */}
             <View style={styles.inputWrapper}>
-              <Image source={imageIndex.Phone1}
-                style={{
-                  width: 22,
-                  height: 22,
-                  marginRight: 8,
-                  opacity: 0.6,
-                  tintColor: "#50C878"
-                }}
-              />
+              <TouchableOpacity 
+                onPress={() => setModalVisible(true)} 
+                style={styles.countryPickerTrigger}
+              >
+                <Text style={styles.callingCodeText}>{callingCode}</Text>
+                <Image 
+                  source={imageIndex.dounArroww}
+                  style={styles.dropdownIcon}
+                />
+                <View style={styles.verticalSeparator} />
+              </TouchableOpacity>
+              
               <TextInput
                 style={styles.input}
                 placeholder="Phone Number"
@@ -181,8 +216,6 @@ const SignUp: React.FC = () => {
               />
             </View>
             {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
-
-            {/* Terms Checkbox */}
             <TouchableOpacity
               style={styles.termsRow}
               onPress={() => {
@@ -205,7 +238,7 @@ const SignUp: React.FC = () => {
 
             {/* Sign Up Button */}
             <View style={{ marginTop: 20 }}>
-              <CustomButton title={"Sign Up"} 
+              <CustomButton title={"Sign Up"}
                 onPress={async () => {
                   let hasError = false;
                   if (!firstName.trim()) {
@@ -225,6 +258,7 @@ const SignUp: React.FC = () => {
                     setPhoneError("Valid phone (6-15 digits) required");
                     hasError = true;
                   }
+
                   if (!agreed) {
                     setTermsError("You must agree to continue");
                     hasError = true;
@@ -232,17 +266,17 @@ const SignUp: React.FC = () => {
 
                   if (hasError) return;
 
-                  const userRole = await AsyncStorage.getItem('selectedRole') || 'User';
-                  
-                  let data = {
-                    code: "+91", 
-                    phone: phone.trim(),
-                    navigation: navigation,
-                    type: userRole
-                  };
-
                   try {
-                    await LogiApi(data, setLoading);
+                    await SignUpApi(
+                      {
+                        full_name: `${firstName.trim()} ${lastName.trim()}`,
+                        email: email.trim(),
+                        country_code: callingCode.replace('+', ''),
+                        phone_number: phone.trim(),
+                        navigation,
+                      },
+                      setLoading,
+                    );
                   } catch (err) {
                     console.log("Signup error:", err);
                   }
@@ -263,6 +297,45 @@ const SignUp: React.FC = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Country Selection Modal */}
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Country</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styles.modalCancel}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              placeholder="Search country or code"
+              value={searchText}
+              onChangeText={setSearchText}
+              style={styles.searchInput}
+              placeholderTextColor={"#999"}
+            />
+
+            <FlatList
+              data={filteredCountries}
+              keyExtractor={(item) => item.code}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => handleSelectCountry(item)}
+                >
+                  <Text style={styles.countryItemText}>
+                    {item.flag} {item.country} ({item.dial_code})
+                  </Text>
+                </TouchableOpacity>
+              )}
+              style={{ marginTop: 10 }}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -378,9 +451,9 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     fontSize: 13,
-     marginLeft: 4,
+    marginLeft: 4,
     marginBottom: 4,
-   },
+  },
   errorRow: {
     flexDirection: 'row',
     gap: 12,
@@ -389,7 +462,78 @@ const styles = StyleSheet.create({
   halfError: {
     flex: 1,
     paddingLeft: 4,
-  }
+  },
+  // Modal & Picker Styles
+  countryPickerTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 10,
+  },
+  callingCodeText: {
+    fontSize: 16,
+    color: '#1A1A2E',
+    fontWeight: '600',
+  },
+  dropdownIcon: {
+    width: 14,
+    height: 14,
+    marginLeft: 6,
+    tintColor: '#8A9BA8',
+  },
+  verticalSeparator: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#E8EEEC',
+    marginLeft: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    height: "70%",
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: "#1A1A2E",
+  },
+  modalCancel: {
+    fontSize: 15,
+    color: PRIMARY_PINK,
+    fontWeight: '600',
+  },
+  searchInput: {
+    backgroundColor: '#F7F8F8',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: "#1A1A2E",
+    borderWidth: 1,
+    borderColor: '#E8EEEC',
+  },
+  modalItem: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F7F8F8",
+  },
+  countryItemText: {
+    fontSize: 16,
+    color: "#1A1A2E",
+    fontWeight: '500',
+  },
 });
 
 export default SignUp;

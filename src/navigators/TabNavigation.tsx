@@ -1,32 +1,31 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, Platform,   Image } from 'react-native';
- import ScreenNameEnum from '../routes/screenName.enum';
+import { Text, Platform, Image } from 'react-native';
+import ScreenNameEnum from '../routes/screenName.enum';
 import HomeStack from './HomeStack';
 import font from '../theme/font';
 import SvgIndex from '../assets/svgIndex';
- import { useSafeAreaInsets } from 'react-native-safe-area-context';
- import Inbox from '../screen/BottomTab/Inbox/Inbox';
-import UserProfile from '../screen/BottomTab/Profile/UserProfile';
- 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+
 const Tab = createBottomTabNavigator();
 
-const TAB_CONFIG:any = {
+const TAB_CONFIG: any = {
   [ScreenNameEnum.HomeStack]: {
     label: 'Home',
-    iconActive: SvgIndex.HomeAtive, 
-    iconInactive: SvgIndex.Home, 
+    iconActive: SvgIndex.HomeAtive,
+    iconInactive: SvgIndex.Home,
   },
- 
-  
+
+
   Inbox: {
     label: 'Inbox',
-    iconActive: SvgIndex.MessageActive, 
+    iconActive: SvgIndex.MessageActive,
     iconInactive: SvgIndex.Message,
   },
   Profile: {
     label: 'Profile',
-    iconActive: SvgIndex.UserActive, 
+    iconActive: SvgIndex.UserActive,
     iconInactive: SvgIndex.User,
   },
 };
@@ -76,39 +75,39 @@ export default function TabNavigator() {
             position: 'absolute',
             left: 20,
             right: 20,
-             backgroundColor: 'white', // your desired background
+            backgroundColor: 'white', // your desired background
             height: TAB_BAR_HEIGHT + insets.bottom, // safe height including bottom inset
             paddingBottom: insets.bottom,
             paddingTop: 8,
-          
+
             // Rounded corners
             borderTopLeftRadius: 10,
             borderTopRightRadius: 10,
-          
+
             // Borders
-        
+
             borderTopColor: 'rgba(125, 154, 155, 0.15)',
             borderLeftColor: 'rgba(125, 154, 155, 0.15)',
             borderRightColor: 'rgba(125, 154, 155, 0.15)',
-          
+
             // Optional shadow for iOS
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.05,
             shadowRadius: 4,
-          
+
             // Optional elevation for Android
             elevation: 4,
-          
-       
+
+
           },
         };
       }}
     >
       <Tab.Screen name={ScreenNameEnum.HomeStack} component={HomeStack} />
       {/* <Tab.Screen name="MyTrack" component={MyTrack} /> */}
-        <Tab.Screen name="Inbox" component={Inbox} />
-       <Tab.Screen name="Profile" component={UserProfile} />
-     </Tab.Navigator>
+      {/* <Tab.Screen name="Inbox" component={Inbox} />
+       <Tab.Screen name="Profile" component={UserProfile} /> */}
+    </Tab.Navigator>
   );
 }

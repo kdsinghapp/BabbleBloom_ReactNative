@@ -1,21 +1,39 @@
 
 import { base_url } from './index';
+
+// ─── BabbleBloom Auth Base URL ───────────────────────────────────────────────
+const AUTH_BASE_URL = 'https://python.aitechnotech.in/bubblebloom/api/v1/auth';
 import ScreenNameEnum from '../routes/screenName.enum';
 import { loginSuccess, logout } from '../redux/feature/authSlice';
 import { errorToast, successToast } from '../utils/customToast';
- import AsyncStorage from '@react-native-async-storage/async-storage';
- import { Toast } from '../utils/Toast';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Toast } from '../utils/Toast';
 import { color } from '../constant';
 import axios from 'axios';
- const handleLogout = async (dispatch: any) => {
+const handleLogout = async (dispatch: any, navigation: any, setvisible: (val: boolean) => void) => {
   try {
-     dispatch(logout());    // reset Redux state
-   } catch (error) {
+    // 1. Clear all persistence layers
+    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('authData');
+    if (setvisible) setvisible(false);
+    
+    // 2. Reset Redux state
+    dispatch(logout());    
+ 
+    // 3. Reset navigation stack to the beginning
+    navigation.reset({
+      index: 0,
+      routes: [{ name: ScreenNameEnum.OnboardingScreen }],
+    });
+
+    successToast('Logged out successfully');
+  } catch (error) {
     console.error('Error during logout:', error);
+    errorToast('An error occurred during logout.');
   }
 };
 
- const saveAuthData = async (userData:any, token:any) => {
+const saveAuthData = async (userData: any, token: any) => {
   try {
     await AsyncStorage.setItem('authData', JSON.stringify({ userData, token }));
     console.log('Auth data saved successfully');
@@ -23,7 +41,7 @@ import axios from 'axios';
     console.error('Error saving auth data:', error);
   }
 };
- const getAuthData = async () => {
+const getAuthData = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem('authData');
     return jsonValue != null ? JSON.parse(jsonValue) : null;
@@ -33,6 +51,367 @@ import axios from 'axios';
   }
 };
 
+// ─── Step 1: Signup (register user) ─────────────────────────────────────────
+const SignUpApi = async (
+  param: {
+    full_name: string;
+    email: string;
+    country_code: string;
+    phone_number: string;
+    password: string;
+    navigation: any;
+  },
+  setLoading: (loading: boolean) => void,
+) => {
+  setLoading(true);
+  try {
+    // API requires application/x-www-form-urlencoded
+    const body = new URLSearchParams({
+      full_name: param.full_name,
+      email: param.email,
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+      password: param.password,
+    }).toString();
+
+    console.log('[SignUpApi] Calling POST /api/v1/auth/signup', {
+      full_name: param.full_name,
+      email: param.email,
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+    });
+
+    const response = await fetch(`${AUTH_BASE_URL}/signup`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    const textResponse = await response.text();
+    let parsedResponse: any;
+    try {
+      parsedResponse = JSON.parse(textResponse);
+    } catch {
+      errorToast('Invalid server response');
+      return;
+    }
+
+    console.log('[SignUpApi] Response:', parsedResponse);
+
+    if (parsedResponse?.status === 1) {
+      successToast(parsedResponse?.message || 'Signup successful. Please verify OTP.');
+      // Navigate to OTP screen with data from response
+      param.navigation.navigate(ScreenNameEnum.OtpScreen, {
+        country_code: parsedResponse?.data?.country_code || param.country_code,
+        phone_number: parsedResponse?.data?.phone_number || param.phone_number,
+        otp_code: parsedResponse?.data?.otp_code, // Pass the OTP code if provided (for testing)
+        flowType: 'signup',
+      });
+    } else {
+      const msg = parsedResponse?.message || 'Signup failed';
+      errorToast(msg);
+    }
+  } catch (error) {
+    console.error('[SignUpApi] error:', error);
+    errorToast('Network error. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ─── Step 2: Send OTP ────────────────────────────────────────────────────────
+const SendSignupOtpApi = async (
+  param: {
+    country_code: string;
+    phone_number: string;
+    navigation: any;
+  },
+  setLoading: (loading: boolean) => void,
+) => {
+  setLoading(true);
+  try {
+    const body = new URLSearchParams({
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+    }).toString();
+
+    console.log('[SendSignupOtpApi] Calling POST /api/v1/auth/signup/send-otp', {
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+    });
+
+    const response = await fetch(`${AUTH_BASE_URL}/signup/send-otp`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    const textResponse = await response.text();
+    let parsedResponse: any;
+    try {
+      parsedResponse = JSON.parse(textResponse);
+    } catch {
+      errorToast('Invalid server response');
+      return;
+    }
+
+    console.log('[SendSignupOtpApi] Response:', parsedResponse);
+
+    if (parsedResponse?.status === 1) {
+      successToast(parsedResponse?.message || 'OTP sent successfully!');
+      // Navigate to OTP screen with data from response
+      param.navigation.navigate(ScreenNameEnum.OtpScreen, {
+        country_code: parsedResponse?.data?.country_code || param.country_code,
+        phone_number: parsedResponse?.data?.phone_number || param.phone_number,
+        otp_code: parsedResponse?.data?.otp_code, // Pass the OTP code if provided (for testing)
+        flowType: 'signup',
+      });
+    } else {
+      const msg = parsedResponse?.message || 'Failed to send OTP';
+      errorToast(msg);
+    }
+  } catch (error) {
+    console.error('[SendSignupOtpApi] error:', error);
+    errorToast('Network error. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ─── Step 3: Verify OTP ──────────────────────────────────────────────────────
+const VerifySignupOtpApi = async (
+  param: {
+    country_code: string;
+    phone_number: string;
+    code: string;          // the 4-digit OTP entered by the user
+    navigation: any;
+  },
+  setLoading: (loading: boolean) => void,
+  dispatch: any,
+) => {
+  setLoading(true);
+  try {
+    const body = new URLSearchParams({
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+      code: param.code,
+    }).toString();
+
+    console.log('[VerifySignupOtpApi] Calling POST /api/v1/auth/signup/verify-otp', {
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+      code: param.code,
+    });
+
+    const response = await fetch(`${AUTH_BASE_URL}/signup/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    const textResponse = await response.text();
+    let parsedResponse: any;
+    try {
+      parsedResponse = JSON.parse(textResponse);
+    } catch {
+      errorToast('Invalid server response');
+      return;
+    }
+
+    console.log('[VerifySignupOtpApi] Response:', parsedResponse);
+
+    if (parsedResponse?.status === 1) {
+      const { access_token, user } = parsedResponse.data || {};
+
+      console.log('[VerifySignupOtpApi] Success! Storing data:', {
+        token: access_token ? 'Extracted' : 'Missing',
+        user: user ? user.full_name : 'Missing'
+      });
+
+      if (access_token) {
+        // 1. Store raw token for general API calls
+        await AsyncStorage.setItem('token', access_token);
+
+        // 2. Store full auth data for session restoration
+        await saveAuthData(user, access_token);
+
+        // 3. Update Redux state for UI reactivity
+        dispatch(loginSuccess({ userData: user, token: access_token }));
+
+        successToast(parsedResponse?.message || 'Verification successful!');
+
+        // 4. Navigate to main app
+        param.navigation.reset({
+          index: 0,
+          routes: [{ name: ScreenNameEnum.HomeDashboard }],
+        });
+      } else {
+        // Some backends might just verify but not log you in yet. 
+        // If no token, we might need to go to Login, but for most apps, verification = login.
+        successToast(parsedResponse?.message || 'Verified! Please login.');
+        param.navigation.navigate(ScreenNameEnum.PhoneLogin as never);
+      }
+    } else {
+      errorToast(parsedResponse?.message || 'OTP verification failed');
+    }
+  } catch (error: any) {
+    console.error('[VerifySignupOtpApi] error:', error);
+    errorToast('Network error. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ─── Step 4: Login ───────────────────────────────────────────────────────────
+const LoginApi = async (
+  param: {
+    country_code: string;
+    phone_number: string;
+    navigation: any;
+  },
+  setLoading: (loading: boolean) => void,
+) => {
+  setLoading(true);
+  try {
+    const body = new URLSearchParams({
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+    }).toString();
+
+    console.log('[LoginApi] Calling POST /api/v1/auth/login/send-otp', {
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+    });
+
+    const response = await fetch(`${AUTH_BASE_URL}/login/send-otp`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    const textResponse = await response.text();
+    let parsedResponse: any;
+    try {
+      parsedResponse = JSON.parse(textResponse);
+    } catch {
+      errorToast('Invalid server response');
+      return;
+    }
+
+    console.log('[LoginApi] Response:', parsedResponse);
+
+    if (parsedResponse?.status === 1) {
+      successToast(parsedResponse?.message || 'OTP sent successfully!');
+      // Navigate to OTP screen with data from response
+      param.navigation.navigate(ScreenNameEnum.OtpScreen, {
+        country_code: parsedResponse?.data?.country_code || param.country_code,
+        phone_number: parsedResponse?.data?.phone_number || param.phone_number,
+        otp_code: parsedResponse?.data?.otp_code, // Pass the OTP code if provided (for testing)
+        flowType: 'login',
+      });
+    } else {
+      errorToast(parsedResponse?.message || 'Login failed');
+    }
+  } catch (error) {
+    console.error('[LoginApi] error:', error);
+    errorToast('Network error. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ─── Step 5: Verify Login OTP ────────────────────────────────────────────────
+const VerifyLoginOtpApi = async (
+  param: {
+    country_code: string;
+    phone_number: string;
+    code: string;
+    navigation: any;
+  },
+  setLoading: (loading: boolean) => void,
+  dispatch: any,
+) => {
+  setLoading(true);
+  try {
+    const body = new URLSearchParams({
+      country_code: param.country_code,
+      phone_number: param.phone_number,
+      code: param.code,
+    }).toString();
+
+    // console.log('[VerifyLoginOtpApi] Calling POST /api/v1/auth/login/verify-otp', {
+    //   country_code: param.country_code,
+    //   phone_number: param.phone_number,
+    //   code: param.code,
+    // });
+
+    const response = await fetch(`${AUTH_BASE_URL}/login/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    const textResponse = await response.text();
+    let parsedResponse: any;
+    try {
+      parsedResponse = JSON.parse(textResponse);
+    } catch {
+      errorToast('Invalid server response');
+      return;
+    }
+
+    console.log('[VerifyLoginOtpApi] Response:', parsedResponse);
+
+    if (parsedResponse?.status === 1) {
+      const { access_token, user } = parsedResponse.data || {};
+
+      console.log('[VerifyLoginOtpApi] Success! Storing data:', {
+        token: access_token ? 'Extracted' : 'Missing',
+        user: user ? user.full_name : 'Missing'
+      });
+
+      if (access_token) {
+        await AsyncStorage.setItem('token', access_token);
+        await saveAuthData(user, access_token);
+
+        dispatch(loginSuccess({ userData: user, token: access_token }));
+
+        successToast(parsedResponse?.message || 'Login successful!');
+
+        param.navigation.reset({
+          index: 0,
+          routes: [{ name: ScreenNameEnum.HomeDashboard }],
+        });
+      } else {
+        errorToast('Token missing from server response');
+      }
+    } else {
+      errorToast(parsedResponse?.message || 'OTP verification failed');
+    }
+  } catch (error: any) {
+    console.error('[VerifyLoginOtpApi] error:', error);
+    errorToast('Network error. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ─── Legacy LogiApi (kept for PhoneLogin screen) ─────────────────────────────
 const LogiApi = async (
   param: any,
   setLoading: (loading: boolean) => void,
@@ -40,32 +419,18 @@ const LogiApi = async (
   setLoading(true);
 
   try {
-    // ✅ Create FormData object
     const formdata = new FormData();
     formdata.append('countryCode', param?.code || '');
     formdata.append('phoneNumber', param?.phone || '');
     formdata.append('Type', param?.type || '');
 
-    console.log('FormData:', {
-      countryCode: param?.code,
-      phoneNumber: param?.phone,
-      Type: param?.type,
-    });
-
-    // ✅ Send FormData instead of JSON
-    const response = await fetch(`${base_url}/register`, {
+    const response = await fetch(`${base_url}/login`, {
       method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        // ❌ Do NOT set Content-Type manually for FormData
-        // The browser/react-native will handle the correct boundary automatically
-      },
+      headers: { Accept: 'application/json' },
       body: formdata,
     });
 
     const textResponse = await response.text();
-
-    // ✅ Try parsing response safely
     let parsedResponse: any;
     try {
       parsedResponse = JSON.parse(textResponse);
@@ -74,7 +439,6 @@ const LogiApi = async (
       return;
     }
 
-    // ✅ Handle API response
     if (parsedResponse?.status === 1) {
       successToast(parsedResponse.message);
       param.navigation.navigate(ScreenNameEnum.OtpScreen, {
@@ -86,7 +450,6 @@ const LogiApi = async (
       errorToast(parsedResponse.message);
       return parsedResponse;
     }
-
   } catch (error) {
     console.error('Login error:', error);
     errorToast('Network error. Please try again.');
@@ -95,22 +458,18 @@ const LogiApi = async (
   }
 };
 
+// ─── Legacy Verifyotp (kept for backward compatibility) ───────────────────────
 const Verifyotp = async (param: any, setLoading: any, dispatch: any) => {
   setLoading(true);
-
   try {
-    // ✅ Create FormData
     const formdata = new FormData();
     formdata.append('countryCode', param?.code || '');
     formdata.append('phoneNumber', param?.phone || '');
     formdata.append('otp', param?.otp || '');
-        // formdata.append('otp', "9999" || '');
 
     const response = await fetch(`${base_url}/verify-otp`, {
       method: 'POST',
-      headers: {
-        Accept: 'application/json',
-       },
+      headers: { Accept: 'application/json' },
       body: formdata,
     });
 
@@ -126,53 +485,38 @@ const Verifyotp = async (param: any, setLoading: any, dispatch: any) => {
       successToast(parsedResponse?.message);
       await AsyncStorage.setItem('token', parsedResponse?.token);
       dispatch(loginSuccess({ userData: parsedResponse, token: parsedResponse?.token }));
-       await saveAuthData(parsedResponse, parsedResponse?.token);
-       if(parsedResponse?.type === "Delivery"){
+      await saveAuthData(parsedResponse, parsedResponse?.token);
+      if (parsedResponse?.type === 'Delivery') {
         param.navigation.navigate(ScreenNameEnum.DeliveryTabNavigator);
-       }else{
+      } else {
         param.navigation.navigate(ScreenNameEnum.TabNavigator);
-       }
-      // console.log(first)
-        //  param.navigation.navigate(ScreenNameEnum.ProfileSetup);
-     
-     } else {
+      }
+    } else {
       errorToast(parsedResponse?.message);
     }
-
   } catch (error: any) {
-    console.error('Login error:', error);
+    console.error('Verifyotp error:', error);
     errorToast('Network error. Please try again.');
   } finally {
     setLoading(false);
   }
 };
 
+// ─── Legacy Resend_otp (kept for backward compatibility) ──────────────────────
 const Resend_otp = async (param: any, setLoading: any) => {
   setLoading(true);
   try {
-    // ✅ Create FormData
     const formdata = new FormData();
     formdata.append('countryCode', param?.code || '');
     formdata.append('phoneNumber', param?.phone || '');
 
-    console.log('FormData:', {
-      countryCode: param?.code,
-      phoneNumber: param?.phone,
-    });
-
-    // ✅ Send FormData
     const response = await fetch(`${base_url}/resend-otp`, {
       method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        // ❌ Do NOT set Content-Type manually for FormData
-      },
+      headers: { Accept: 'application/json' },
       body: formdata,
     });
 
     const textResponse = await response.text();
-
-    // ✅ Parse safely
     let parsedResponse: any;
     try {
       parsedResponse = JSON.parse(textResponse);
@@ -180,16 +524,11 @@ const Resend_otp = async (param: any, setLoading: any) => {
       errorToast('Invalid server response');
       return;
     }
-
-    console.log('parsedResponse', parsedResponse);
-
-    // ✅ Handle response
     if (parsedResponse?.status === 1) {
       successToast(parsedResponse?.message);
     } else {
       errorToast(parsedResponse?.message);
     }
-
   } catch (error: any) {
     console.error('Resend OTP error:', error);
     errorToast('Network error. Please try again.');
@@ -198,7 +537,7 @@ const Resend_otp = async (param: any, setLoading: any) => {
   }
 };
 
- const UpdateProfile = async (
+const UpdateProfile = async (
   param: any,
   setLoading: (loading: boolean) => void
 ) => {
@@ -237,7 +576,7 @@ const Resend_otp = async (param: any, setLoading: any) => {
       headers,
       body: formdata,
     });
-console.log("response",response)
+    console.log("response", response)
     const textResponse = await response.text();
     let parsedResponse;
 
@@ -246,7 +585,7 @@ console.log("response",response)
     } catch {
       throw new Error("Invalid server response");
     }
-console.log("parsedResponse",parsedResponse)
+    console.log("parsedResponse", parsedResponse)
 
     if (parsedResponse.status == "1") {
       successToast(parsedResponse.message);
@@ -256,7 +595,7 @@ console.log("parsedResponse",parsedResponse)
       return parsedResponse;
     }
   } catch (error) {
-    console.log("parsedResponse",error)
+    console.log("parsedResponse", error)
 
     console.error("UpdateProfile error:", error);
     errorToast("Something went wrong. Please try again.");
@@ -266,8 +605,8 @@ console.log("parsedResponse",parsedResponse)
   }
 };
 
-  
-    
+
+
 const GetProfileApi = async (
   setLoading: (loading: boolean) => void
 ): Promise<any | null> => {
@@ -301,8 +640,8 @@ const GetProfileApi = async (
   }
 };
 
- 
- const Privacypolicy = async (setLoading: any) => {
+
+const Privacypolicy = async (setLoading: any) => {
   setLoading(true);
   try {
     const response = await fetch(`${base_url}/privacy-policy`, {
@@ -336,7 +675,7 @@ const GetProfileApi = async (
 };
 
 
- const Termsconditions = async (setLoading: any) => {
+const Termsconditions = async (setLoading: any) => {
   setLoading(true);
   try {
     const response = await fetch(`${base_url}/terms-and-conditions`, {
@@ -370,7 +709,7 @@ const GetProfileApi = async (
 };
 
 
- const DeliveryUploadDocument = async (
+const DeliveryUploadDocument = async (
   param: any,
   setLoading: (loading: boolean) => void
 ) => {
@@ -400,7 +739,7 @@ const GetProfileApi = async (
       formdata.append("vehiclePapers", {
         uri: param.vehiclePapers.uri,
         name: "profile.jpg",
-        type:"image/jpeg",
+        type: "image/jpeg",
       });
     }
 
@@ -426,7 +765,7 @@ const GetProfileApi = async (
     console.log("parsedResponse", parsedResponse);
     if (parsedResponse.status == "1") {
       successToast(parsedResponse.message);
-    }  
+    }
 
     return parsedResponse;
   } catch (error) {
@@ -439,7 +778,7 @@ const GetProfileApi = async (
 };
 
 
- const DeliveryVehicleDocument = async (
+const DeliveryVehicleDocument = async (
   param: any,
   setLoading: (loading: boolean) => void
 ) => {
@@ -535,7 +874,7 @@ const GetuploadDocument = async (
   }
 };
 const AddParcelApi = async (param: any, setLoading: (loading: boolean) => void) => {
-    try {
+  try {
     setLoading(true);
     const token = await AsyncStorage.getItem("token");
     const formdata = new FormData();
@@ -553,14 +892,14 @@ const AddParcelApi = async (param: any, setLoading: (loading: boolean) => void) 
     // image
     if (param?.pickupLat?.latitude) formdata.append("pickupLocationLat", param.pickupLocation?.longitude);
     if (param?.pickupLat?.longitude) formdata.append("pickupLocationLon", param.pickupLocation?.latitude);
- if (param?.droplat?.latitude) formdata.append("dropLocationLat", param.droplat.latitude);
+    if (param?.droplat?.latitude) formdata.append("dropLocationLat", param.droplat.latitude);
     if (param?.droplat.longitude) formdata.append("dropLocationLon", param.droplat.longitude);
     if (param.shipmentType) formdata.append("shipmentType", param.shipmentType);
     if (param.senderName) formdata.append("senderName", param.senderName);
     if (param.senderMobile) formdata.append("senderMobileNumber", param.senderMobile);
     if (param.senderAddress) formdata.append("senderAddress", param.senderAddress);
     if (param.pickupDate) {
-       formdata.append("pickupDate", param.pickupDate instanceof Date ? param.pickupDate.toISOString() : param.pickupDate);
+      formdata.append("pickupDate", param.pickupDate instanceof Date ? param.pickupDate.toISOString() : param.pickupDate);
     }
     if (param.pickupTime) {
       formdata.append("pickupTime", param.pickupTime instanceof Date ? param.pickupTime.toISOString() : param.pickupTime);
@@ -576,8 +915,8 @@ const AddParcelApi = async (param: any, setLoading: (loading: boolean) => void) 
     if (param.extraMessage) formdata.append("message", param.extraMessage);
 
     if (param.pickupLat) formdata.append("pickupLat", param.pickupLat.toString());
-     if (param.droplat) formdata.append("droplat", param.droplat.toString());
-console.log("FormData:", formdata);
+    if (param.droplat) formdata.append("droplat", param.droplat.toString());
+    console.log("FormData:", formdata);
     const headers: any = {
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
@@ -591,12 +930,12 @@ console.log("FormData:", formdata);
 
     const textResponse = await response.text();
     let parsedResponse;
-     try {
+    try {
       parsedResponse = JSON.parse(textResponse);
     } catch {
       throw new Error("Invalid server response");
     }
-     if (parsedResponse.status == "1") {
+    if (parsedResponse.status == "1") {
       successToast(parsedResponse.message);
       return parsedResponse;
     } else {
@@ -613,86 +952,86 @@ console.log("FormData:", formdata);
 };
 
 const GetApi = async (param: any, setLoading: (loading: boolean) => void) => {
-    // console.log("API PARAM:", param);
+  // console.log("API PARAM:", param);
 
-    try {
-        setLoading(true);
-const token = await AsyncStorage.getItem("token");
-        const myHeaders = new Headers();
-        myHeaders.append("Accept", "application/json");
-        myHeaders.append("Content-Type", "application/json");
-        myHeaders.append("Authorization", `Bearer ${token}`);
+  try {
+    setLoading(true);
+    const token = await AsyncStorage.getItem("token");
+    const myHeaders = new Headers();
+    myHeaders.append("Accept", "application/json");
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${token}`);
 
-        const requestOptions: any = {
-            method: param.method || "GET",
-            headers: myHeaders,
-        };
+    const requestOptions: any = {
+      method: param.method || "GET",
+      headers: myHeaders,
+    };
 
-        // ✅ ADD BODY ONLY IF EXISTS
-        if (param.data && Object.keys(param.data).length > 0) {
-            requestOptions.body = JSON.stringify(param.data);
-        }
-
-        const response = await fetch(base_url + param.url, requestOptions);
-        const resText = await response.text();
-        const result = JSON.parse(resText);
-
-        // console.log("API RESPONSE:", result);
-
-        setLoading(false);
-        return result;
-
-    } catch (error) {
-         setLoading(false);
-        errorToast("Network error");
-        return null;
+    // ✅ ADD BODY ONLY IF EXISTS
+    if (param.data && Object.keys(param.data).length > 0) {
+      requestOptions.body = JSON.stringify(param.data);
     }
+
+    const response = await fetch(base_url + param.url, requestOptions);
+    const resText = await response.text();
+    const result = JSON.parse(resText);
+
+    // console.log("API RESPONSE:", result);
+
+    setLoading(false);
+    return result;
+
+  } catch (error) {
+    setLoading(false);
+    errorToast("Network error");
+    return null;
+  }
 };
 
 export const PostApi = async (param, setLoading) => {
-    try {
-        setLoading && setLoading(true);
+  try {
+    setLoading && setLoading(true);
 
-        const headers = {
-            Accept: "application/json",
-            ...(param?.isFormData
-                ? { "Content-Type": "multipart/form-data" }
-                : { "Content-Type": "application/json" }),
-            ...(param?.token && { Authorization: `Bearer ${param.token}` }),
-        };
-console.log(  base_url + param.url,
-            param.data,
-            { headers })
-        const response = await axios.post(
-            base_url + param.url,
-            param.data,
-            { headers }
-        );
-        console.log(response)
-        return response.data;
-    } catch (error) {
-        console.log("POST API ERROR 👉", error?.response || error);
+    const headers = {
+      Accept: "application/json",
+      ...(param?.isFormData
+        ? { "Content-Type": "multipart/form-data" }
+        : { "Content-Type": "application/json" }),
+      ...(param?.token && { Authorization: `Bearer ${param.token}` }),
+    };
+    console.log(base_url + param.url,
+      param.data,
+      { headers })
+    const response = await axios.post(
+      base_url + param.url,
+      param.data,
+      { headers }
+    );
+    console.log(response)
+    return response.data;
+  } catch (error) {
+    console.log("POST API ERROR 👉", error?.response || error);
 
-        return {
-            status: false,
-            message:
-                error?.response?.data?.message ||
-                "Something went wrong. Please try again.",
-        };
-    } finally {
-        setLoading && setLoading(false);
-    }
+    return {
+      status: false,
+      message:
+        error?.response?.data?.message ||
+        "Something went wrong. Please try again.",
+    };
+  } finally {
+    setLoading && setLoading(false);
+  }
 };
 
 
 
-    
+
 const Parceldetails = async (
   setLoading: (loading: boolean) => void
 ): Promise<any | null> => {
   setLoading(true);
   const token = await AsyncStorage.getItem('token');
-   try {
+  try {
     const response = await fetch(`${base_url}/parcel-details`, {
       method: 'GET',  // agar get ho toh GET use karna
       headers: {
@@ -723,13 +1062,13 @@ const Parceldetails = async (
 
 
 
-    
+
 const DeliveryAvailableRequests = async (
   setLoading: (loading: boolean) => void
 ): Promise<any | null> => {
   setLoading(true);
   const token = await AsyncStorage.getItem('token');
-   try {
+  try {
     const response = await fetch(`${base_url}/delivery/available-requests`, {
       method: 'GET',  // agar get ho toh GET use karna
       headers: {
@@ -748,29 +1087,36 @@ const DeliveryAvailableRequests = async (
       return null;
     }
   } catch (error) {
-     errorToast("Network error");
+    errorToast("Network error");
     return null;
   } finally {
     setLoading(false);
   }
 };
 
- export {
-  LogiApi,  
-   Verifyotp,
-handleLogout,
-getAuthData,
-Termsconditions,
-saveAuthData,
-Resend_otp,
-     GetProfileApi,  
- Privacypolicy,
-UpdateProfile ,
-DeliveryUploadDocument,
-DeliveryVehicleDocument,
-GetuploadDocument,
-AddParcelApi,
-Parceldetails ,
-DeliveryAvailableRequests,
-GetApi
-}  
+export {
+  // BabbleBloom Auth
+  SignUpApi,
+  SendSignupOtpApi,
+  VerifySignupOtpApi,
+  LoginApi,
+  VerifyLoginOtpApi,
+  // Legacy
+  LogiApi,
+  Verifyotp,
+  handleLogout,
+  getAuthData,
+  Termsconditions,
+  saveAuthData,
+  Resend_otp,
+  GetProfileApi,
+  Privacypolicy,
+  UpdateProfile,
+  DeliveryUploadDocument,
+  DeliveryVehicleDocument,
+  GetuploadDocument,
+  AddParcelApi,
+  Parceldetails,
+  DeliveryAvailableRequests,
+  GetApi,
+}
