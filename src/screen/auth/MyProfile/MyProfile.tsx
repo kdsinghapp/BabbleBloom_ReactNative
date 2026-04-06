@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ import CustomHeader from "../../../compoent/CustomHeader";
 import LoadingModal from "../../../utils/Loader";
 import ImagePickerModal from "../../../compoent/ImagePickerModal";
 import { openCamera, openGallery } from "../../../utils/cameraHelper";
-import { AddChildApi } from "../../../Api/apiRequest";
+import { AddChildApi, UpdateChildApi, BASE_URLIMAGE } from "../../../Api/apiRequest";
 
 const COLORS = {
   primary: "#E03B65",       // green accent (profile border, back button)
@@ -133,7 +133,8 @@ const MyProfile = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  const { flowType = null } = route?.params || {};
+  const { flowType = null, childData = null } = (route?.params as any) || {};
+  const isEdit = !!childData;
   // States
   const [childName, setChildName] = useState("");
   const [age, setAge] = useState("");
@@ -155,6 +156,24 @@ const MyProfile = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState(birthDate || new Date());
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isEdit && childData) {
+      setChildName(childData.full_name || "");
+      if (childData.date_of_birth) {
+        const dob = new Date(childData.date_of_birth);
+        setBirthDate(dob);
+        setAge(calculateAge(dob));
+        setTempDate(dob);
+      }
+      setInterests(childData.interests || "");
+      setGender(childData.gender || "");
+      setCommLevel(childData.communication_level || "");
+      if (childData.profile_image) {
+        setProfileImage({ uri: `${BASE_URLIMAGE}/${childData.profile_image}` });
+      }
+    }
+  }, [isEdit, childData]);
 
   // Handlers
   const onDateChange = (event: any, selectedDate?: Date) => {
@@ -197,7 +216,7 @@ const MyProfile = () => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
-      <CustomHeader label={'Add Children'} />
+      <CustomHeader label={isEdit ? 'Edit Children' : 'Add Children'} />
       <LoadingModal visible={loading} />
 
       <KeyboardAvoidingView
@@ -335,22 +354,29 @@ const MyProfile = () => {
               profile_image: profileImage,
             };
 
-            const res = await AddChildApi(params, setLoading);
-            console.log("res",res)
-            if (res?.parent_id) {
-  if (flowType === "signup") {
-    navigation.reset({
-      index: 0,
-      routes: [
-        {
-          name: ScreenNameEnum.HomeDashboard,
-        },
-      ],
-    });
-  } else {
-    navigation.goBack()
-  }
-}
+            if (isEdit && childData?.id) {
+              const res = await UpdateChildApi(childData.id, params, setLoading);
+              if (res) {
+                navigation.goBack();
+              }
+            } else {
+              const res = await AddChildApi(params, setLoading);
+              console.log("res", res)
+              if (res?.parent_id) {
+                if (flowType === "signup") {
+                  navigation.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: ScreenNameEnum.HomeDashboard,
+                      },
+                    ],
+                  });
+                } else {
+                  navigation.goBack()
+                }
+              }
+            }
           }}
         />
 

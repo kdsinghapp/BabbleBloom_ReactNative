@@ -627,6 +627,62 @@ export const AddChildApi = async (
   }
 };
 
+export const UpdateChildApi = async (
+  childId: number,
+  param: {
+    full_name: string;
+    date_of_birth: string;
+    gender: string;
+    interests: string;
+    communication_level: string;
+    profile_image?: any;
+  },
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const formdata = new FormData();
+    formdata.append('full_name', param.full_name);
+    formdata.append('date_of_birth', param.date_of_birth);
+    formdata.append('gender', param.gender);
+    formdata.append('interests', param.interests);
+    formdata.append('communication_level', param.communication_level);
+
+    if (param.profile_image?.uri && (param.profile_image.uri.startsWith('file://') || param.profile_image.uri.startsWith('content://'))) {
+      formdata.append('profile_image', {
+        uri: param.profile_image.uri,
+        name: param.profile_image.fileName || 'child.jpg',
+        type: param.profile_image.type || 'image/jpeg',
+      } as any);
+    }
+
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.children}/${childId}`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formdata,
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      successToast(parsed?.message || 'Child updated successfully');
+      return parsed.data;
+    } else {
+      errorToast(parsed?.message || 'Failed to update child');
+      return null;
+    }
+  } catch (error) {
+    console.error('[UpdateChildApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 export const GetChildDetailApi = async (
   childId: number,
   setLoading: (loading: boolean) => void

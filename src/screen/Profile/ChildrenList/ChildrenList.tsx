@@ -97,13 +97,22 @@ const ChildrenList = () => {
               )}
             </View>
           </View>
-          {/* <TouchableOpacity
-            style={styles.deleteBtn}
-            activeOpacity={0.7}
-            onPress={() => handleDeleteChild(item.id)}
-          >
-            <Image source={imageIndex.delete} style={styles.deleteIcon} />
-          </TouchableOpacity> */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate(ScreenNameEnum.MyProfile, { childData: item })}
+            >
+              <Image source={imageIndex.Editpen} style={styles.editIcon} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              activeOpacity={0.7}
+              onPress={() => handleDeleteChild(item.id)}
+            >
+              <Image source={imageIndex.delete} style={styles.deleteIcon} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.cardContent}>
@@ -279,13 +288,25 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: '500',
   },
-  deleteBtn: {
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionBtn: {
     padding: 8,
-    marginLeft: 8,
+    borderRadius: 8,
+    backgroundColor: '#F9FAFB',
+  },
+  editIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#4B5563',
   },
   deleteIcon: {
-    width: 22,
-    height: 22,
+    width: 20,
+    height: 20,
+    tintColor: '#E03B65',
   },
   addFAB: {
     position: 'absolute',
