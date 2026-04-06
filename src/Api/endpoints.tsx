@@ -11,4 +11,5 @@ export const authEndpoints = {
 export const commonEndpoints = {
   faqs: 'faqs',
   contactUs: 'contact-us',
+  parentProfile: 'parent/profile',
 };

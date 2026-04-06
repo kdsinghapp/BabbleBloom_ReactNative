@@ -22,9 +22,9 @@ import CustomInput from "../../../compoent/CustomInput";
 import CustomButton from "../../../compoent/CustomButton";
 import ImagePickerModal from "../../../compoent/ImagePickerModal";
 import imageIndex from "../../../assets/imageIndex";
-import { GetProfileMeApi, UpdateProfile } from "../../../Api/apiRequest";
+import { GetParentProfileApi, UpdateParentProfileApi } from "../../../Api/apiRequest";
 import { loginSuccess } from "../../../redux/feature/authSlice";
-import { errorToast } from "../../../utils/customToast";
+import { errorToast, successToast } from "../../../utils/customToast";
 
 const EditProfile = () => {
   const navigation = useNavigation();
@@ -32,8 +32,10 @@ const EditProfile = () => {
 
   const [fullName, setFullName] = useState(userData?.full_name || "");
   const [email, setEmail] = useState(userData?.email || "");
-  const [address, setAddress] = useState(userData?.address || "");
-  const [image, setImage] = useState<any>(userData?.image || null);
+  console.log("userData",userData)
+  const [countryCode, setCountryCode] = useState(userData?.country_code || userData?.countryCode || "");
+  const [phoneNumber, setPhoneNumber] = useState(userData?.phone_number || userData?.phoneNumber || "");
+  const [image, setImage] = useState<any>(userData?.profile_image || userData?.image || null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -41,7 +43,7 @@ const EditProfile = () => {
   const [emailError, setEmailError] = useState("");
   const getProfileData = async () => {
     try {
-      const response = await GetProfileMeApi(setIsLoading);
+      const response = await GetParentProfileApi(setIsLoading);
       if (response) {
         const token = await AsyncStorage.getItem("token") || "";
         dispatch(loginSuccess({ userData: response, token }));
@@ -72,36 +74,29 @@ const EditProfile = () => {
   };
 
   const handleSave = async () => {
-    navigation.goBack();
-    // let hasError = false;
-    // if (!fullName.trim()) {
-    //   setFullNameError("Full name required");
-    //   hasError = true;
-    // }
-    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    // if (!email.trim() || !emailRegex.test(email)) {
-    //   setEmailError("Invalid email address");
-    //   hasError = true;
-    // }
+    if (!fullName.trim()) {
+      setFullNameError("Full name required");
+      return;
+    }
 
-    // if (hasError) return;
+    try {
+      const params = {
+        full_name: fullName,
+        email: email,
+        country_code: countryCode,
+        phone_number: phoneNumber,
+        profile_image: image,
+      };
 
-    // try {
-    //    const params = {
-    //     username: fullName,
-    //     email: email,
-    //     address: address,
-    //     imagePrfoile: image,
-    //   };
-    //   const response = await UpdateProfile(params, setIsLoading);
+      const response = await UpdateParentProfileApi(params, setIsLoading);
 
-    //   if (response) {
-    //     await getProfileData();
-    //     navigation.goBack();
-    //   }
-    // } catch (error) {
-    //   console.error("Error updating profile:", error);
-    // }
+      if (response) {
+        await getProfileData();
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
 
   return (
@@ -120,7 +115,7 @@ const EditProfile = () => {
           <View style={styles.profileContainer}>
             <View style={styles.avatarWrapper}>
               <Image
-                source={image ? { uri: image.uri || image } : imageIndex.prfile}
+                source={image?.uri ? { uri: image.uri } : (typeof image === 'string' && image ? { uri: image } : imageIndex.prfile)}
                 style={styles.profileImage}
                 resizeMode="cover"
               />

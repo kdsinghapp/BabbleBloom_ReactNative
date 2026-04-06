@@ -447,6 +447,90 @@ export const ContactUsApi = async (
   }
 };
 
+export const GetParentProfileApi = async (
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.parentProfile}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      errorToast(parsed?.message || 'Failed to fetch profile');
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetParentProfileApi] error:', error);
+    errorToast('Network error. Please try again.');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const UpdateParentProfileApi = async (
+  param: {
+    full_name: string;
+    email?: string;
+    country_code: string;
+    phone_number: string;
+    profile_image?: any;
+  },
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const formdata = new FormData();
+    formdata.append('full_name', param.full_name);
+    if (param.email) formdata.append('email', param.email);
+    formdata.append('country_code', param.country_code);
+    formdata.append('phone_number', param.phone_number);
+
+    if (param.profile_image?.uri) {
+      formdata.append('profile_image', {
+        uri: param.profile_image.uri,
+        name: param.profile_image.fileName || 'profile.jpg',
+        type: param.profile_image.type || 'image/jpeg',
+      } as any);
+    }
+
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.parentProfile}`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formdata,
+    });
+
+    const parsed = await response.json();
+    console.log('[UpdateParentProfileApi] response:', parsed);
+    if (parsed?.status === 1) {
+      successToast(parsed?.message || 'Profile updated successfully');
+      return parsed.data;
+    } else {
+      errorToast(parsed?.message || 'Update failed');
+      return null;
+    }
+  } catch (error) {
+    console.error('[UpdateParentProfileApi] error:', error);
+    errorToast('Network error. Please try again.');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 // ─── Legacy APIs (Keeping as per user request for "proper all api call") ───
 
 const LogiApi = async (param: any, setLoading: (loading: boolean) => void) => {
