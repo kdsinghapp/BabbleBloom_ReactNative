@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -184,11 +185,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#F3F4F6',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+  shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+ 
+     shadowOffset: { width: 0, height: 1 },
+     shadowOpacity: 0.06,
+     shadowRadius: 4,
+     elevation: 10,
   },
   cardHeader: {
     flexDirection: 'row',

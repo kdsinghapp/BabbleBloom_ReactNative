@@ -123,7 +123,9 @@ const GenderSelector = ({ selected, onSelect, error }: { selected: string; onSel
         </TouchableOpacity>
       ))}
     </View>
-    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    {error ? <Text style={[styles.errorText,{
+      marginTop:12
+    }]}>{error}</Text> : null}
   </View>
 );
 
@@ -334,9 +336,21 @@ const MyProfile = () => {
             };
 
             const res = await AddChildApi(params, setLoading);
-            if (res) {
-              navigation.navigate(ScreenNameEnum.TabNavigator as never);
-            }
+            console.log("res",res)
+            if (res?.parent_id) {
+  if (flowType === "signup") {
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: ScreenNameEnum.HomeDashboard,
+        },
+      ],
+    });
+  } else {
+    navigation.goBack()
+  }
+}
           }}
         />
 
@@ -481,13 +495,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 60,
-    borderWidth: 1,
-    borderColor: "#F1F5F9",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
+       shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 10,
   },
   fieldInput: {
     flex: 1,
@@ -528,10 +541,9 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     fontSize: 13,
-    marginTop: -8,
-    marginBottom: 8,
+     marginBottom: 8,
     marginLeft: 4,
-  },
+   },
   genderRow: {
     flexDirection: "row",
     gap: 12,
@@ -545,11 +557,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+     shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowRadius: 4,
+    elevation: 10,
+   
   },
   malePillActive: {
     backgroundColor: "#EBF5FF",

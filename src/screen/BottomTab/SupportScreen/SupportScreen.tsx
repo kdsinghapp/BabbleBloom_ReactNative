@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -95,6 +96,7 @@ export default function SupportScreen() {
             placeholder="Write your message..."
             multiline
             style={styles.input}
+            placeholderTextColor={"black"}
           />
         </View>
         <View style={{ marginTop: 20, marginBottom: 40 }}>
@@ -206,6 +208,12 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
     marginBottom: 5,
+     shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        elevation: 10,
   },
 
   singleInput: {

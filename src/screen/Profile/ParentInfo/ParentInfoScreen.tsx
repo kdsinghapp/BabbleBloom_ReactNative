@@ -6,6 +6,7 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -129,10 +130,11 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 25,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
+ shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 10,
   },
   avatarBorder: {
@@ -197,11 +199,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 15,
     paddingVertical: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 5,
+ shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 10,
   },
   infoItem: {
     flexDirection: 'row',

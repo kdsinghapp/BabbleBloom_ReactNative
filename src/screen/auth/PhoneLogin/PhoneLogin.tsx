@@ -17,7 +17,8 @@ import LoadingModal from "../../../utils/Loader";
 import { color } from "../../../constant";
 import ScreenNameEnum from "../../../routes/screenName.enum";
 const PhoneLogin = () => {
-  const [phoneNumber, setPhoneNumber] = useState("787655445545");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  // const [phoneNumber, setPhoneNumber] = useState("787655445545");
   // 787655445545
   //  const [phoneNumber, setPhoneNumber] = useState("");  
   const [countryCode, setCountryCode] = useState("IN");
@@ -192,7 +193,7 @@ const PhoneLogin = () => {
                 value={searchText}
                 onChangeText={setSearchText}
                 style={styles.searchInput}
-                placeholderTextColor={"#999"}
+                placeholderTextColor={"black"}
               />
 
               {/* Country List */}
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
   modalTitle: { fontWeight: '500', fontSize: 18, color: "#000" },
   modalCancel: { fontWeight: '500', fontSize: 15, color: "#E03B65" },
-  searchInput: { borderWidth: 1, borderColor: "#ccc", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 15, fontSize: 14, color: "#000" },
+  searchInput: { borderWidth: 1, borderColor: "#ccc", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 15, fontSize: 15, color: "black" },
   modalItem: { paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: "#ddd" },
   countryText: { fontWeight: '500', fontSize: 16, color: "#000", fontFamily: font.MonolithRegular },
   errorText: {

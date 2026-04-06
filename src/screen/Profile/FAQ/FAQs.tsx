@@ -174,11 +174,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#E8F5E9',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+ shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
     shadowRadius: 4,
+    elevation: 10,
   },
 
   faqHeader: {
@@ -195,9 +196,11 @@ const styles = StyleSheet.create({
   },
 
   answer: {
-    marginTop: 8,
+    marginTop: 9,
     fontSize: 12,
-    color: '#666',
+    color: 'black',
+    lineHeight:11
+    
   },
 
   arrow: {
