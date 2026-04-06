@@ -163,7 +163,7 @@ const MyProfile = () => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
-      <CustomHeader label={'Add Children Profile'} />
+      <CustomHeader label={'Add Children'} />
       <LoadingModal visible={loading} />
 
       <KeyboardAvoidingView

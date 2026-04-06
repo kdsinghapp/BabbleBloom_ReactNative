@@ -18,7 +18,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RegistrationStackParamList } from '../../../navigators/RegistrationRoutes';
 import { useDispatch, useSelector } from 'react-redux';
-import { GetProfileMeApi, handleLogout } from '../../../Api/apiRequest';
+import { BASE_URLIMAGE, GetProfileMeApi, handleLogout } from '../../../Api/apiRequest';
 import { loginSuccess } from '../../../redux/feature/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { color } from '../../../constant';
@@ -78,10 +78,17 @@ export default function ProfileSetting() {
       >
         {/* Profile Card */}
         <View style={styles.profileCard}>
-          <Image
-            source={userData?.image ? { uri: userData.image } : imageIndex.prfile}
-            style={styles.avatar}
-          />
+                      <Image
+  source={
+    userData?.profile_image
+      ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
+      : imageIndex.prfile
+  }
+             style={styles.avatar}
+
+/>
+         
+          
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{userData?.full_name || 'User Name'}</Text>
             <Text style={styles.username}>{userData?.email || userData?.phone_number || ''}</Text>
@@ -162,9 +169,9 @@ const styles = StyleSheet.create({
     marginTop: 12
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 55,
+    height: 55,
+    borderRadius: 55,
     marginRight: 10,
   },
   name: {

@@ -14,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import screenNameEnum from '../../../routes/screenName.enum';
 import { useNavigation } from '@react-navigation/native';
 import useDashboard from './useDashboard';
+import { BASE_URLIMAGE } from '../../../Api/apiRequest';
+import { useSelector } from 'react-redux';
 
 // ─── Icon placeholders (replace with react-native-vector-icons or expo icons) ───
 const PlusCircle = () => (
@@ -122,10 +124,10 @@ function RecentScripts() {
         </TouchableOpacity>
       </View>
       {recentScripts.map((item) => (
-        <ScriptItem key={item.id} item={item} 
-        
-        
-        navigator={navigator}
+        <ScriptItem key={item.id} item={item}
+
+
+          navigator={navigator}
         />
       ))}
     </View>
@@ -218,6 +220,8 @@ export default function HomeScreen() {
       </TouchableOpacity>
     );
   }
+  const userData = useSelector((state: any) => state.auth.userData);
+
   function Header() {
     return (
       <View style={styles.header}>
@@ -236,9 +240,13 @@ export default function HomeScreen() {
             navigator.navigate(screenNameEnum.ProfileSetting as never)
           }}>
             <View style={styles.avatar}>
-              <Image source={imageIndex.Ellipse}
-
-                style={{ width: 44, height: 44 }}
+              <Image
+                source={
+                  userData?.profile_image
+                    ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
+                    : imageIndex.prfile
+                }
+                style={{ width: 55, height: 55, borderRadius: 50 }}
               />
             </View>
           </TouchableOpacity>
@@ -440,7 +448,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
-           shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
@@ -486,7 +494,7 @@ const styles = StyleSheet.create({
     backgroundColor: C.white,
     borderRadius: 14,
     padding: 14,
-          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
