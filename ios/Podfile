@@ -10,6 +10,20 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+def setup_permissions(permissions)
+  permissions.each do |permission|
+    pod "Permission-#{permission}", :path => "../node_modules/react-native-permissions/ios/#{permission}"
+  end
+end
+
+setup_permissions([
+  'Camera',
+  'PhotoLibrary',
+  'Microphone',
+  'LocationWhenInUse',
+  'LocationAlways',
+])
+
 platform :ios, '15.1'
 prepare_react_native_project!
 

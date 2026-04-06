@@ -9,7 +9,7 @@ import { loginSuccess, logout } from '../redux/feature/authSlice';
 import { errorToast, successToast } from '../utils/customToast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Toast } from '../utils/Toast';
-import { color } from '../constant';
+
 import axios from 'axios';
 import { authEndpoints } from './endpoints';
 
@@ -21,10 +21,10 @@ const handleLogout = async (dispatch: any, navigation: any, setvisible: (val: bo
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('authData');
     if (setvisible) setvisible(false);
-    
+
     // 2. Reset Redux state
-    dispatch(logout());    
- 
+    dispatch(logout());
+
     // 3. Reset navigation stack to the beginning
     navigation.reset({
       index: 0,
