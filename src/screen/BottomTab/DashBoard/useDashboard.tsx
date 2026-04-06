@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
-import { GetProfileApi } from '../../../Api/apiRequest';
+import { GetChildrenApi, GetProfileApi } from '../../../Api/apiRequest';
 import { loginSuccess } from '../../../redux/feature/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDashboardContext } from '../../../context/DashboardContext';
@@ -18,6 +18,8 @@ const useDashboard = () => {
   const [isLoading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const locationRef: any = useRef(null);
+  const [children, setChildren] = useState<any[]>([]);
+  const [activeChild, setActiveChild] = useState<any>(null);
 
   const orderData = ctx?.orderData ?? [];
   const counterOfferAcceptedModal = ctx?.counterOfferAcceptedModal ?? { visible: false, data: null };
@@ -32,6 +34,7 @@ const useDashboard = () => {
 
   useEffect(() => {
     getProfileApi();
+    fetchChildren();
   }, []);
 
   useEffect(() => {
@@ -51,12 +54,24 @@ const useDashboard = () => {
     try {
       const response = await GetProfileApi(setLoading);
       if (response) {
-        dispatch(loginSuccess({ userData: response }));
+        const token = await AsyncStorage.getItem('token') || "";
+        dispatch(loginSuccess({ userData: response, token }));
         setLoading(false)
       }
     } catch (error) {
       setLoading(false)
+    }
+  };
 
+  const fetchChildren = async () => {
+    try {
+      const response = await GetChildrenApi(setLoading);
+      if (response && response.length > 0) {
+        setChildren(response);
+        setActiveChild(response[0]);
+      }
+    } catch (error) {
+      console.error('[useDashboard] fetchChildren error:', error);
     }
   };
   // Inside your component
@@ -102,6 +117,8 @@ const useDashboard = () => {
     counterOfferAcceptedModal,
     setCounterOfferAcceptedModal,
     getParceldetailsApi: fetchParcels,
+    children,
+    activeChild,
   };
 };
 

@@ -22,7 +22,7 @@ import CustomInput from "../../../compoent/CustomInput";
 import CustomButton from "../../../compoent/CustomButton";
 import ImagePickerModal from "../../../compoent/ImagePickerModal";
 import imageIndex from "../../../assets/imageIndex";
-import { GetParentProfileApi, UpdateParentProfileApi } from "../../../Api/apiRequest";
+import { BASE_URLIMAGE, GetParentProfileApi, UpdateParentProfileApi } from "../../../Api/apiRequest";
 import { loginSuccess } from "../../../redux/feature/authSlice";
 import { errorToast, successToast } from "../../../utils/customToast";
 
@@ -32,7 +32,7 @@ const EditProfile = () => {
 
   const [fullName, setFullName] = useState(userData?.full_name || "");
   const [email, setEmail] = useState(userData?.email || "");
-  console.log("userData",userData)
+  console.log("userData", userData)
   const [countryCode, setCountryCode] = useState(userData?.country_code || userData?.countryCode || "");
   const [phoneNumber, setPhoneNumber] = useState(userData?.phone_number || userData?.phoneNumber || "");
   const [image, setImage] = useState<any>(userData?.profile_image || userData?.image || null);
@@ -115,7 +115,8 @@ const EditProfile = () => {
           <View style={styles.profileContainer}>
             <View style={styles.avatarWrapper}>
               <Image
-                source={image?.uri ? { uri: image.uri } : (typeof image === 'string' && image ? { uri: image } : imageIndex.prfile)}
+                
+                source={userData?.profile_image ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` } : (typeof image === 'string' && image ? { uri: image } : imageIndex.prfile)}
                 style={styles.profileImage}
                 resizeMode="cover"
               />
@@ -124,7 +125,7 @@ const EditProfile = () => {
                 onPress={() => setIsModalVisible(true)}
               >
                 <Image
-                  source={imageIndex.eoditphots}
+                  source={imageIndex.pencle}
                   style={styles.editIcon}
                   resizeMode="contain"
                 />
@@ -220,9 +221,8 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   editIcon: {
-    width: 16,
-    height: 16,
-    tintColor: "#fff",
+    width: 22,
+    height: 22,
   },
   inputContainer: {
     marginTop: 20,

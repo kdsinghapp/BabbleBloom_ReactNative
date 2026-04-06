@@ -22,10 +22,11 @@ import CustomHeader from "../../../compoent/CustomHeader";
 import LoadingModal from "../../../utils/Loader";
 import ImagePickerModal from "../../../compoent/ImagePickerModal";
 import { openCamera, openGallery } from "../../../utils/cameraHelper";
+import { AddChildApi } from "../../../Api/apiRequest";
 
 const COLORS = {
-  primary: "#A1D14A",       // green accent (profile border, back button)
-  saveBtn: "#E8456A",       // pink-red save button
+  primary: "#E03B65",       // green accent (profile border, back button)
+  saveBtn: "#E03B65",       // pink-red save button
   labelBlue: "#4A90E2",     // "Child Name" label blue
   text: "#1A1A2E",
   subText: "#9E9E9E",
@@ -116,14 +117,15 @@ const MyProfile = () => {
 
   // Modal & Picker States
   const [imageModalVisible, setImageModalVisible] = useState(false);
-  const [profileImage, setProfileImage] = useState("https://i.pravatar.cc/200?img=11");
+  const [profileImage, setProfileImage] = useState<any>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState(birthDate || new Date());
+  const [loading, setLoading] = useState(false);
 
   // Handlers
   const handleImageResult = (result: any) => {
     if (result.asset) {
-      setProfileImage(result.asset.uri);
+      setProfileImage(result.asset);
     } else if (result.error) {
       console.log("Image Error:", result.error);
     }
@@ -161,8 +163,8 @@ const MyProfile = () => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
-      <CustomHeader label={'My Profile'} />
-      <LoadingModal visible={false} />
+      <CustomHeader label={'Add Children Profile'} />
+      <LoadingModal visible={loading} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -176,7 +178,7 @@ const MyProfile = () => {
           <View style={styles.avatarSection}>
             <View style={styles.avatarRing}>
               <Image
-                source={{ uri: profileImage }}
+                source={profileImage?.uri ? { uri: profileImage.uri } : imageIndex.prfile}
                 style={styles.avatar}
                 resizeMode="cover"
               />
@@ -248,7 +250,8 @@ const MyProfile = () => {
       <View style={{ marginTop: 20, marginHorizontal: 15, marginBottom: 20 }}>
         <CustomButton
           title={"Save"}
-          onPress={() => {
+          loading={loading}
+          onPress={async () => {
             let hasError = false;
             if (!childName.trim()) {
               setChildNameError("Child's name required");
@@ -275,9 +278,18 @@ const MyProfile = () => {
 
             if (hasError) return;
 
-            // Proper real-time feedback with Success Toast (once implementation is final)
-            // successToast("Profile saved successfully");
-            navigation.navigate(ScreenNameEnum.PhoneLogin as never);
+            const params = {
+                full_name: childName,
+                dob: birthDate ? birthDate.toISOString().split('T')[0] : '',
+                interests: interests,
+                communication_level: commLevel,
+                profile_image: profileImage,
+            };
+
+            const res = await AddChildApi(params, setLoading);
+            if (res) {
+                navigation.navigate(ScreenNameEnum.TabNavigator as never);
+            }
           }}
         />
       </View>
@@ -358,14 +370,10 @@ const styles = StyleSheet.create({
     width: 124,
     height: 124,
     borderRadius: 62,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: COLORS.primary,
     padding: 3,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 8,
+  
     backgroundColor: COLORS.white,
   },
   avatar: {

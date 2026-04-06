@@ -11,9 +11,9 @@ import {
 import imageIndex from '../../../assets/imageIndex';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ScreenNameEnum from '../../../routes/screenName.enum';
-import { useNavigation } from '@react-navigation/native';
 import screenNameEnum from '../../../routes/screenName.enum';
+import { useNavigation } from '@react-navigation/native';
+import useDashboard from './useDashboard';
 
 // ─── Icon placeholders (replace with react-native-vector-icons or expo icons) ───
 const PlusCircle = () => (
@@ -168,7 +168,7 @@ function WeeklyInsight() {
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const navigator = useNavigation()
+  const { activeChild, navigation: navigator } = useDashboard();
   function QuickActions() {
     const quickActions = [
       {
@@ -190,7 +190,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               key={label}
               onPress={() => {
-                navigator.navigate(name)
+                navigator.navigate(name as never)
               }}
               style={[styles.quickCard, { backgroundColor: color }]}
               activeOpacity={0.85}
@@ -208,7 +208,7 @@ export default function HomeScreen() {
       <TouchableOpacity style={styles.addBtn} activeOpacity={0.88}
 
         onPress={() => {
-          navigator.navigate(ScreenNameEnum.AddNewScript)
+          navigator.navigate(screenNameEnum.AddNewScript as never)
         }}
       >
         <View style={styles.addBtnInner}>
@@ -223,7 +223,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Good Morning</Text>
-          <Text style={styles.subGreeting}>Let's support Emma today</Text>
+          <Text style={styles.subGreeting}>Let's support {activeChild?.full_name || 'Emma'} today</Text>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.bellBtn}>
@@ -233,7 +233,7 @@ export default function HomeScreen() {
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
-            navigator.navigate(screenNameEnum.ProfileSetting)
+            navigator.navigate(screenNameEnum.ProfileSetting as never)
           }}>
             <View style={styles.avatar}>
               <Image source={imageIndex.Ellipse}

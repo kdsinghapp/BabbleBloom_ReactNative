@@ -3,6 +3,8 @@ import { base_url } from './index';
 
 // ─── BabbleBloom Base URL ───────────────────────────────────────────────
 const BUBBLEBLOOM_BASE_URL = 'https://python.aitechnotech.in/bubblebloom/api/v1';
+const BASE_URLIMAGE = 'https://python.aitechnotech.in/bubblebloom';
+
 const AUTH_BASE_URL = `${BUBBLEBLOOM_BASE_URL}/auth`;
 
 import ScreenNameEnum from '../routes/screenName.enum';
@@ -531,6 +533,114 @@ export const UpdateParentProfileApi = async (
   }
 };
 
+export const GetChildrenApi = async (setLoading: (loading: boolean) => void): Promise<any[] | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.children}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetChildrenApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const AddChildApi = async (
+  param: {
+    full_name: string;
+    dob: string;
+    interests: string;
+    communication_level: string;
+    profile_image?: any;
+  },
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const formdata = new FormData();
+    formdata.append('full_name', param.full_name);
+    formdata.append('dob', param.dob);
+    formdata.append('interests', param.interests);
+    formdata.append('communication_level', param.communication_level);
+
+    if (param.profile_image?.uri) {
+      formdata.append('profile_image', {
+        uri: param.profile_image.uri,
+        name: param.profile_image.fileName || 'child.jpg',
+        type: param.profile_image.type || 'image/jpeg',
+      } as any);
+    }
+
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.children}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formdata,
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      successToast(parsed?.message || 'Child added successfully');
+      return parsed.data;
+    } else {
+      errorToast(parsed?.message || 'Failed to add child');
+      return null;
+    }
+  } catch (error) {
+    console.error('[AddChildApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const GetChildDetailApi = async (
+  childId: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.children}/${childId}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetChildDetailApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 // ─── Legacy APIs (Keeping as per user request for "proper all api call") ───
 
 const LogiApi = async (param: any, setLoading: (loading: boolean) => void) => {
@@ -890,5 +1000,6 @@ export {
   AddParcelApi,
   Parceldetails,
   DeliveryAvailableRequests,
-  GetApi
+  GetApi ,
+  BASE_URLIMAGE
 };

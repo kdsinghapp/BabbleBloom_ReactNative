@@ -15,11 +15,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import imageIndex from '../../../assets/imageIndex';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
-import CustomButton from '../../../compoent/CustomButton';
-import ScreenNameEnum from '../../../routes/screenName.enum';
+ import ScreenNameEnum from '../../../routes/screenName.enum';
 import { RegistrationStackParamList } from '../../../navigators/RegistrationRoutes';
-import { color } from '../../../constant';
-
+import { BASE_URLIMAGE } from '../../../Api/apiRequest';
+ 
 const InfoItem = ({ label, value, icon, isLast = false }: { label: string; value: string; icon?: any; isLast?: boolean }) => (
   <View style={[styles.infoItem, !isLast && styles.borderBottom]}>
     <View style={styles.iconCircle}>
@@ -46,10 +45,18 @@ const ParentInfoScreen = () => {
         {/* Profile Card Section */}
         <View style={styles.headerCard}>
           <View style={styles.avatarBorder}>
-            <Image
-              source={userData?.image ? { uri: userData.image } : imageIndex.prfile}
+            {/* <Image
+              source={userData.profile_image ? { uri: userData.profile_image } : imageIndex.prfile}
               style={styles.avatar}
-            />
+            /> */}
+            <Image
+  source={
+    userData?.profile_image
+      ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
+      : imageIndex.prfile
+  }
+  style={{ width: 100, height: 100, borderRadius: 50 }}
+/>
           </View>
           <Text style={styles.userName}>{userData?.full_name || 'User Name'}</Text>
           <Text style={styles.userEmail}>{userData?.email || 'N/A'}</Text>
@@ -132,8 +139,8 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    borderWidth: 4,
-    borderColor: '#FEE2E2',
+    borderWidth: 1.5,
+    borderColor: '#E03B65',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
