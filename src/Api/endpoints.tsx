@@ -7,3 +7,8 @@ export const authEndpoints = {
   loginVerifyOtp: 'login/verify-otp',
   me: 'me',
 };
+
+export const commonEndpoints = {
+  faqs: 'faqs',
+  contactUs: 'contact-us',
+};

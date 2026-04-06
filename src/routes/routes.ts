@@ -3,7 +3,6 @@ import ScreenNameEnum from "./screenName.enum";
 import NotificationsScreen from "../screen/Notification/Notification";
 import Sinup from "../screen/auth/sinup/Sinup";
 import ChangePassword from "../screen/Profile/ChangePassword/ChangePassword";
-import HelpScreen from "../screen/Profile/Help/Helps";
 import Splash from "../screen/auth/Splash/Splash";
 import PhoneLogin from "../screen/auth/PhoneLogin/PhoneLogin";
 import OtpScreen from "../screen/auth/OTPScreen/OtpScreen";
@@ -124,10 +123,7 @@ const _routes: any = {
       Component: ChangePassword,
     },
 
-    {
-      name: ScreenNameEnum.Help,
-      Component: HelpScreen,
-    },
+
 
 
     {

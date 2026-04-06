@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,19 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  ActivityIndicator,
 } from 'react-native';
 import imageIndex from '../../../assets/imageIndex';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
+import { GetFAQsApi } from '../../../Api/apiRequest';
+import LoadingModal from '../../../utils/Loader';
 
 if (Platform.OS === 'android') {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
 }
 const FAQItem = ({ question, answer }: any) => {
   const [open, setOpen] = useState(false);
@@ -40,39 +45,28 @@ const FAQItem = ({ question, answer }: any) => {
   );
 };
 export default function FAQs() {
-  const faqs = [
-    {
-      question: 'What services do you offer?',
-      answer: 'We offer design, development and consulting services.',
-    },
-    {
-      question: 'How can I get a quote for your services?',
-      answer: 'You can contact us via the contact page.',
-    },
-    {
-      question: 'What industries do you cater to?',
-      answer: 'We work across multiple industries.',
-    },
-    {
-      question: 'How can I contact your customer support?',
-      answer: 'Email or call our support team.',
-    },
-    {
-      question: 'What is your refund policy?',
-      answer: 'Refunds depend on project terms.',
-    },
-    {
-      question: 'How long does it take to complete a project?',
-      answer: 'It depends on project scope.',
-    },
-  ];
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      setLoading(true)
+      const data = await GetFAQsApi(setLoading);
+      if (data) {
+        setLoading(false)
+        setFaqs(data);
+      }
+    };
+    fetchFaqs();
+  }, []);
+
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBarComponent />
       <CustomHeader label="FAQ" />
       {/* Header */}
-
+      <LoadingModal visible={loading} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
 
@@ -92,13 +86,20 @@ export default function FAQs() {
 
         {/* FAQ List */}
         <View style={styles.card}>
-          {faqs.map((item, index) => (
-            <FAQItem
-              key={index}
-              question={item.question}
-              answer={item.answer}
-            />
-          ))}
+          {loading ? (
+            <ActivityIndicator size="large" color="#8BC34A" style={{ marginTop: 20 }} />
+          ) : faqs.length > 0 ? (
+            faqs.map((item, index) => (
+              <FAQItem
+                key={index}
+                question={item.question}
+                answer={item.answer}
+              />
+            ))
+          ) : (
+            <Text style={styles.noData}>No FAQs found</Text>
+          )
+          }
         </View>
 
       </ScrollView>
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     height: 155,
     alignSelf: 'center',
     marginBottom: 20,
-    marginTop:11
+    marginTop: 11
   },
 
   title: {
@@ -169,6 +170,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
   },
+  faqItemOpen: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E8F5E9',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
 
   faqHeader: {
     flexDirection: 'row',
@@ -193,6 +204,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     marginLeft: 10,
+  },
+  noData: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 14,
+    color: '#888',
   },
 });
 

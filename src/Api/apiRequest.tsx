@@ -1,8 +1,9 @@
 
 import { base_url } from './index';
 
-// ─── BabbleBloom Auth Base URL ───────────────────────────────────────────────
-const AUTH_BASE_URL = 'https://python.aitechnotech.in/bubblebloom/api/v1/auth';
+// ─── BabbleBloom Base URL ───────────────────────────────────────────────
+const BUBBLEBLOOM_BASE_URL = 'https://python.aitechnotech.in/bubblebloom/api/v1';
+const AUTH_BASE_URL = `${BUBBLEBLOOM_BASE_URL}/auth`;
 
 import ScreenNameEnum from '../routes/screenName.enum';
 import { loginSuccess, logout } from '../redux/feature/authSlice';
@@ -11,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Toast } from '../utils/Toast';
 
 import axios from 'axios';
-import { authEndpoints } from './endpoints';
+import { authEndpoints, commonEndpoints } from './endpoints';
 
 // ─── Session Management ──────────────────────────────────────────────────────
 
@@ -381,6 +382,71 @@ export const GetProfileMeApi = async (
   }
 };
 
+export const GetFAQsApi = async (setLoading: (loading: boolean) => void): Promise<any[] | null> => {
+  setLoading(true);
+  const token = await AsyncStorage.getItem('token');
+  try {
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.faqs}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+    });
+
+    const parsed = await response.json();
+    console.log('[GetFAQsApi] response:', parsed);
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      // errorToast(parsed?.message || 'Failed to fetch FAQs');
+      return null;
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const ContactUsApi = async (
+  param: { name: string; email?: string; message: string },
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  const token = await AsyncStorage.getItem('token');
+  try {
+    const body = new URLSearchParams({
+      name: param.name,
+      email: param.email || '',
+      message: param.message,
+    }).toString();
+
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.contactUs}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+      body,
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      successToast(parsed?.message || 'Message sent successfully');
+      return parsed;
+    } else {
+      errorToast(parsed?.message || 'Failed to send message');
+      return parsed;
+    }
+  } catch (error) {
+    console.error('[ContactUsApi] error:', error);
+    errorToast('Network error. Please try again.');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 // ─── Legacy APIs (Keeping as per user request for "proper all api call") ───
 
 const LogiApi = async (param: any, setLoading: (loading: boolean) => void) => {
@@ -740,5 +806,5 @@ export {
   AddParcelApi,
   Parceldetails,
   DeliveryAvailableRequests,
-  GetApi,
+  GetApi
 };
