@@ -45,6 +45,7 @@ export type RegistrationStackParamList = {
   [ScreenNameEnum.ProfileSetting]: undefined;
   [ScreenNameEnum.FAQs]: undefined;
   [ScreenNameEnum.SupportScreen]: undefined;
+  [ScreenNameEnum.ChildrenList]: undefined;
   [ScreenNameEnum.LibraryScreen]: undefined;
   [ScreenNameEnum.MoreViewDetails]: undefined;
   [ScreenNameEnum.ScriptDetailsScreen]: undefined;

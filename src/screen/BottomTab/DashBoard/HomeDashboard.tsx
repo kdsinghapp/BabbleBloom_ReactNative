@@ -124,10 +124,10 @@ function RecentScripts() {
         </TouchableOpacity>
       </View>
       {recentScripts.map((item) => (
-        <ScriptItem key={item.id} item={item}
-
-
-          navigator={navigator}
+        <ScriptItem key={item.id} item={item} 
+        
+        
+        navigator={navigator}
         />
       ))}
     </View>
@@ -144,7 +144,7 @@ function WeeklyInsight() {
           <Text style={[styles.insightLabel, {
             color: "#000000"
           }]}>Scripts this week</Text>
-          <Text style={styles.insightNumber}>12</Text>
+          <Text style={styles.insightNumber}>00</Text>
         </View>
         {/* Right card */}
         <View style={[styles.insightCard, { flex: 1, marginLeft: 8 }]}>
@@ -220,7 +220,7 @@ export default function HomeScreen() {
       </TouchableOpacity>
     );
   }
-  const userData = useSelector((state: any) => state.auth.userData);
+    const userData = useSelector((state: any) => state.auth.userData);
 
   function Header() {
     return (
@@ -240,14 +240,14 @@ export default function HomeScreen() {
             navigator.navigate(screenNameEnum.ProfileSetting as never)
           }}>
             <View style={styles.avatar}>
-              <Image
-                source={
-                  userData?.profile_image
-                    ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
-                    : imageIndex.prfile
-                }
-                style={{ width: 55, height: 55, borderRadius: 50 }}
-              />
+                <Image
+  source={
+    userData?.profile_image
+      ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
+      : imageIndex.prfile
+  }
+  style={{ width: 55, height: 55, borderRadius: 50 }}
+/>
             </View>
           </TouchableOpacity>
         </View>
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
-    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
+           shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
 
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     backgroundColor: C.white,
     borderRadius: 14,
     padding: 14,
-    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
+          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
 
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,

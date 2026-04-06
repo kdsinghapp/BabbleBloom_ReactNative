@@ -3,7 +3,7 @@ import { base_url } from './index';
 
 // ─── BabbleBloom Base URL ───────────────────────────────────────────────
 const BUBBLEBLOOM_BASE_URL = 'https://python.aitechnotech.in/bubblebloom/api/v1';
-const BASE_URLIMAGE = 'https://python.aitechnotech.in/bubblebloom';
+export const BASE_URLIMAGE = 'https://python.aitechnotech.in/bubblebloom';
 
 const AUTH_BASE_URL = `${BUBBLEBLOOM_BASE_URL}/auth`;
 
@@ -574,9 +574,9 @@ export const AddChildApi = async (
     const token = await AsyncStorage.getItem('token');
     const formdata = new FormData();
     formdata.append('full_name', param.full_name);
-    formdata.append('dob', param.dob);
+    formdata.append('age', param.dob);
     formdata.append('interests', param.interests);
-    formdata.append('communication_level', param.communication_level);
+    formdata.append('gender', param.communication_level);
 
     if (param.profile_image?.uri) {
       formdata.append('profile_image', {
@@ -586,6 +586,7 @@ export const AddChildApi = async (
       } as any);
     }
 
+    console.log("formdata",formdata)
     const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.children}`, {
       method: 'POST',
       headers: {
@@ -1000,6 +1001,5 @@ export {
   AddParcelApi,
   Parceldetails,
   DeliveryAvailableRequests,
-  GetApi ,
-  BASE_URLIMAGE
+  GetApi
 };

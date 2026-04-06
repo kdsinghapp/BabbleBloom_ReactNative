@@ -23,6 +23,7 @@ import BirdNestRescueScreen from "../screen/BottomTab/BirdNestRescueScreen/BirdN
 import ProfileSetting from "../screen/BottomTab/ProfileSetting/ProfileSetting";
 import FAQs from "../screen/Profile/FAQ/FAQs";
 import SupportScreen from "../screen/BottomTab/SupportScreen/SupportScreen";
+import ChildrenList from "../screen/Profile/ChildrenList/ChildrenList";
 
 const _routes: any = {
   REGISTRATION_ROUTE: [
@@ -152,6 +153,10 @@ const _routes: any = {
     {
       name: ScreenNameEnum.ParentInfo,
       Component: ParentInfoScreen,
+    },
+    {
+      name: ScreenNameEnum.ChildrenList,
+      Component: ChildrenList,
     },
 
 

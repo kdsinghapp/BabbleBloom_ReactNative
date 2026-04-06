@@ -36,12 +36,6 @@ const MenuItem = ({ icon, title, subtitle, onPress }: { icon: any; title: string
   </TouchableOpacity>
 );
 
-const DetailRow = ({ label, value }: { label: string; value: string }) => (
-  <View style={styles.detailRow}>
-    <Text style={styles.detailLabel}>{label}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
-  </View>
-);
 
 export default function ProfileSetting() {
   const dispatch = useDispatch()
@@ -78,17 +72,17 @@ export default function ProfileSetting() {
       >
         {/* Profile Card */}
         <View style={styles.profileCard}>
-                      <Image
-  source={
-    userData?.profile_image
-      ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
-      : imageIndex.prfile
-  }
-             style={styles.avatar}
+          <Image
+            source={
+              userData?.profile_image
+                ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
+                : imageIndex.prfile
+            }
+            style={styles.avatar}
 
-/>
-         
-          
+          />
+
+
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{userData?.full_name || 'User Name'}</Text>
             <Text style={styles.username}>{userData?.email || userData?.phone_number || ''}</Text>
@@ -112,8 +106,13 @@ export default function ProfileSetting() {
               />
               <MenuItem
                 icon={imageIndex.MyAccount}
-                title="Child info"
+                title="Add Child"
                 onPress={() => navigation.navigate(ScreenNameEnum.MyProfile)}
+              />
+              <MenuItem
+                icon={imageIndex.MyAccount}
+                title="Child info"
+                onPress={() => navigation.navigate(ScreenNameEnum.ChildrenList)}
               />
               <MenuItem
                 icon={imageIndex.nofication}
