@@ -6,15 +6,33 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ScreenNameEnum from '../../../routes/screenName.enum';
-import { GetChildrenApi, BASE_URLIMAGE } from '../../../Api/apiRequest';
+import { GetChildrenApi, DeleteChildApi, BASE_URLIMAGE } from '../../../Api/apiRequest';
 import CustomHeader from '../../../compoent/CustomHeader';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import imageIndex from '../../../assets/imageIndex';
 import LoadingModal from '../../../utils/Loader';
+
+// ─── Age Calculation Helper ──────────────────────────────────────────────
+const calculateDetailedAge = (dob: string) => {
+  if (!dob) return "Age not set";
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months = today.getMonth() - birthDate.getMonth();
+  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+    years--;
+    months += 12;
+  }
+  if (years > 0) {
+    return `${years} ${years === 1 ? 'Year' : 'Years'}${months > 0 ? `, ${months} ${months === 1 ? 'Month' : 'Months'}` : ''}`;
+  }
+  return `${months} ${months === 1 ? 'Month' : 'Months'}`;
+};
 
 const ChildrenList = () => {
   const navigation = useNavigation<any>();
@@ -34,8 +52,29 @@ const ChildrenList = () => {
     }, [])
   );
 
+  const handleDeleteChild = (id: number) => {
+    Alert.alert(
+      'Delete Child',
+      'Are you sure you want to delete this child profile? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const success = await DeleteChildApi(id, setIsLoading);
+            if (success) {
+              fetchChildrenData();
+            }
+          }
+        },
+      ]
+    );
+  };
+
 
   const renderChildItem = ({ item }: { item: any }) => {
+    const isMale = item.gender === 'Male';
     return (
       <View style={styles.childCard}>
         <View style={styles.cardHeader}>
@@ -44,10 +83,10 @@ const ChildrenList = () => {
             style={styles.childImage}
           />
           <View style={styles.childMainInfo}>
-            <Text style={styles.childName}>{item.full_name}</Text>
+            <Text style={styles.childName} numberOfLines={1}>{item.full_name}</Text>
             <View style={styles.infoRow}>
               <Text style={styles.childDetailText}>
-                {item.age ? `${item.age} years old` : 'Age not set'}
+                {calculateDetailedAge(item.date_of_birth)}
               </Text>
               {item.gender && (
                 <>
@@ -57,33 +96,53 @@ const ChildrenList = () => {
               )}
             </View>
           </View>
+          {/* <TouchableOpacity
+            style={styles.deleteBtn}
+            activeOpacity={0.7}
+            onPress={() => handleDeleteChild(item.id)}
+          >
+            <Image source={imageIndex.delete} style={styles.deleteIcon} />
+          </TouchableOpacity> */}
+        </View>
+
+        <View style={styles.cardContent}>
+          <View style={styles.detailRow}>
+            {/* <Image source={imageIndex.Toys} style={styles.detailIcon} /> */}
+            <Text style={styles.detailText} numberOfLines={1}>Interests: {item.interests || 'Not set'}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            {/* <Image source={imageIndex.speak} style={styles.detailIcon} /> */}
+            <Text style={styles.detailText} numberOfLines={1}>Comm: {item.communication_level || 'Not set'}</Text>
+          </View>
         </View>
 
         <View style={styles.cardFooter}>
           <View style={[
             styles.statusBadge,
-            { backgroundColor: item.gender === 'Male' ? '#EBF5FF' : '#FFF1F2' }
+
           ]}>
+            <View style={[styles.statusDot, { backgroundColor: '#E03B65' }]} />
             <Text style={[
               styles.statusText,
-              { color: item.gender === 'Male' ? '#2563EB' : '#E03B65' }
+              { color: '#E03B65' }
             ]}>
               {item.gender || 'Unknown'}
             </Text>
           </View>
           <Text style={styles.timeText}>
-            Added {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recently'}
+            Added {item.created_at ? new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently'}
           </Text>
         </View>
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBarComponent />
-      <CustomHeader label="My Children" />
-      <LoadingModal visible={isLoading} />
+<CustomHeader label="My Child Profile" />   
+
+   <LoadingModal visible={isLoading} />
 
       <FlatList
         data={children}
@@ -103,7 +162,7 @@ const ChildrenList = () => {
         style={styles.addFAB}
         onPress={() => navigation.navigate(ScreenNameEnum.MyProfile)}
       >
-        <Text style={styles.fabText}>+</Text>
+        <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -120,45 +179,45 @@ const styles = StyleSheet.create({
   },
   childCard: {
     backgroundColor: '#fff',
-    borderRadius: 20,
     padding: 16,
-    marginBottom: 20,
+    borderRadius: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
   },
   childImage: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    borderWidth: 2,
-    borderColor: '#E03B65',
+    marginRight: 12,
   },
   childMainInfo: {
     flex: 1,
-    marginLeft: 15,
   },
   childName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: '#1F2937',
+    marginBottom: 4,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
   },
   childDetailText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
+    fontWeight: '500',
   },
   dotSeparator: {
     width: 4,
@@ -167,48 +226,83 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1D5DB',
     marginHorizontal: 8,
   },
+  cardContent: {
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#F9FAFB',
+    paddingVertical: 12,
+    marginBottom: 12,
+    gap: 8,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  detailIcon: {
+    width: 14,
+    height: 14,
+    marginRight: 8,
+    tintColor: '#9CA3AF',
+  },
+  detailText: {
+    fontSize: 13,
+    color: '#4B5563',
+    fontWeight: '500',
+    flex: 1,
+  },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 15,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
   },
   statusBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   timeText: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: 'black',
+    fontWeight: '500',
+  },
+  deleteBtn: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  deleteIcon: {
+    width: 22,
+    height: 22,
   },
   addFAB: {
     position: 'absolute',
     bottom: 30,
-    right: 30,
+    right: 20,
     width: 60,
     height: 60,
     borderRadius: 30,
     backgroundColor: '#E03B65',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#E03B65',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+
   },
-  fabText: {
-    fontSize: 32,
-    color: '#fff',
-    marginBottom: 4,
+  fabIcon: {
+
+    color: 'white',
+    textAlign: "center",
+    fontSize: 24 ,
+    fontWeight:"600"
   },
   emptyContainer: {
     flex: 1,
@@ -217,7 +311,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#9CA3AF',
+    color: 'black',
   },
 });
 

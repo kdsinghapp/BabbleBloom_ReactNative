@@ -178,6 +178,7 @@ const VerifySignupOtpApi = async (
     phone_number: string;
     code: string;
     navigation: any;
+ 
   },
   setLoading: (loading: boolean) => void,
   dispatch: any,
@@ -215,10 +216,21 @@ const VerifySignupOtpApi = async (
         await saveAuthData(user, access_token);
         dispatch(loginSuccess({ userData: user, token: access_token }));
         successToast(parsedResponse?.message || 'Verification successful!');
-        param.navigation.reset({
-          index: 0,
-          routes: [{ name: ScreenNameEnum.HomeDashboard }],
-        });
+      param.navigation.reset({
+  index: 0,
+  routes: [
+    {
+      name: ScreenNameEnum.MyProfile,
+      params: {
+        flowType: "signup",
+      },
+    },
+  ],
+});
+        // param.navigation.reset({
+        //   index: 0,
+        //   routes: [{ name: ScreenNameEnum.HomeDashboard }],
+        // });
       } else {
         successToast(parsedResponse?.message || 'Verified! Please login.');
         param.navigation.navigate(ScreenNameEnum.PhoneLogin as never);
@@ -562,7 +574,8 @@ export const GetChildrenApi = async (setLoading: (loading: boolean) => void): Pr
 export const AddChildApi = async (
   param: {
     full_name: string;
-    dob: string;
+    date_of_birth: string;
+    gender: string;
     interests: string;
     communication_level: string;
     profile_image?: any;
@@ -574,9 +587,10 @@ export const AddChildApi = async (
     const token = await AsyncStorage.getItem('token');
     const formdata = new FormData();
     formdata.append('full_name', param.full_name);
-    formdata.append('age', param.dob);
+    formdata.append('date_of_birth', param.date_of_birth);
+    formdata.append('gender', param.gender);
     formdata.append('interests', param.interests);
-    formdata.append('gender', param.communication_level);
+    formdata.append('communication_level', param.communication_level);
 
     if (param.profile_image?.uri) {
       formdata.append('profile_image', {
@@ -586,7 +600,7 @@ export const AddChildApi = async (
       } as any);
     }
 
-    console.log("formdata",formdata)
+    console.log("add formdata --  ",formdata)
     const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.children}`, {
       method: 'POST',
       headers: {
@@ -637,6 +651,38 @@ export const GetChildDetailApi = async (
   } catch (error) {
     console.error('[GetChildDetailApi] error:', error);
     return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const DeleteChildApi = async (
+  childId: number,
+  setLoading: (loading: boolean) => void
+): Promise<boolean> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.children}/${childId}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      successToast(parsed?.message || 'Child deleted successfully');
+      return true;
+    } else {
+      errorToast(parsed?.message || 'Failed to delete child');
+      return false;
+    }
+  } catch (error) {
+    console.error('[DeleteChildApi] error:', error);
+    errorToast('Network error');
+    return false;
   } finally {
     setLoading(false);
   }

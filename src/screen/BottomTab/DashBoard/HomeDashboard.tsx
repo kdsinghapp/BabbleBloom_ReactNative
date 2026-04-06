@@ -50,8 +50,8 @@ const C = {
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 const recentScripts = [
-  { id: '1', text: '"Want juice want juice"', time: '2 hours ago' },
-  { id: '2', text: '"Want juice want juice"', time: '2 hours ago' },
+  // { id: '1', text: '"Want juice want juice"', time: '2 hours ago' },
+  // { id: '2', text: '"Want juice want juice"', time: '2 hours ago' },
 ];
 
 
@@ -123,13 +123,14 @@ function RecentScripts() {
           }]}>See All</Text>
         </TouchableOpacity>
       </View>
-      {recentScripts.map((item) => (
-        <ScriptItem key={item.id} item={item} 
-        
-        
-        navigator={navigator}
-        />
-      ))}
+      {recentScripts.length > 0 ? (
+        recentScripts.map((item) => (
+          <ScriptItem key={item.id} item={item} navigator={navigator} />
+        ))
+      ) : (
+           <Text style={styles.emptyScriptsText}>No recent scripts found</Text>
+    
+      )}
     </View>
   );
 }
@@ -560,5 +561,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 13,
     letterSpacing: 0.2,
+  },
+  emptyScriptsContainer: {
+    backgroundColor: C.white,
+    borderRadius: 14,
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    borderStyle: 'dashed',
+  },
+  emptyScriptsText: {
+    color: 'black',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign:"center"
   },
 });

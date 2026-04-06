@@ -117,7 +117,7 @@ const ParentInfoScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: 'white',
   },
   scrollContent: {
     paddingBottom: 40,

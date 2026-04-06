@@ -115,8 +115,13 @@ const EditProfile = () => {
           <View style={styles.profileContainer}>
             <View style={styles.avatarWrapper}>
               <Image
-                
-                source={userData?.profile_image ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` } : (typeof image === 'string' && image ? { uri: image } : imageIndex.prfile)}
+                source={
+                   image?.uri 
+                    ? { uri: image.uri } 
+                    : (typeof image === 'string' && image 
+                        ? { uri: `${BASE_URLIMAGE}/${image}` } 
+                        : imageIndex.prfile)
+                }
                 style={styles.profileImage}
                 resizeMode="cover"
               />
