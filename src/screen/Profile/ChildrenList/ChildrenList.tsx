@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { setChildren } from '../../../redux/feature/childrenSlice';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 import { GetChildrenApi, DeleteChildApi, BASE_URLIMAGE } from '../../../Api/apiRequest';
 import CustomHeader from '../../../compoent/CustomHeader';
@@ -37,13 +39,15 @@ const calculateDetailedAge = (dob: string) => {
 
 const ChildrenList = () => {
   const navigation = useNavigation<any>();
-  const [children, setChildren] = useState<any[]>([]);
+  const dispatch = useDispatch();
+  const [children, setChildrenLocal] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchChildrenData = async () => {
     const res = await GetChildrenApi(setIsLoading);
     if (res) {
-      setChildren(res);
+      setChildrenLocal(res);
+      dispatch(setChildren(res));
     }
   };
 
@@ -105,13 +109,13 @@ const ChildrenList = () => {
             >
               <Image source={imageIndex.Editpen} style={styles.editIcon} />
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.actionBtn}
               activeOpacity={0.7}
               onPress={() => handleDeleteChild(item.id)}
             >
               <Image source={imageIndex.delete} style={styles.deleteIcon} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
 
@@ -168,12 +172,12 @@ const ChildrenList = () => {
         }
       />
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.addFAB}
         onPress={() => navigation.navigate(ScreenNameEnum.MyProfile)}
       >
         <Text style={styles.fabIcon}>+</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </SafeAreaView>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-   View,
+  View,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -15,14 +15,35 @@ import CustomHeader from '../../../compoent/CustomHeader';
 import imageIndex from '../../../assets/imageIndex';
 import Tts from 'react-native-tts';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useFocusEffect } from '@react-navigation/native';
- 
+import { useFocusEffect, useRoute } from '@react-navigation/native';
+import { GetScriptDetailApi } from '../../../Api/apiRequest';
+import moment from 'moment';
+import LoadingModal from '../../../utils/Loader';
+
 
 const ScriptDetailsScreen = () => {
+  const route: any = useRoute();
+  const { scriptItem } = route?.params || {};
+
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [isMuted, setIsMuted] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [scriptDetail, setScriptDetail] = React.useState<any>(null);
 
-  const scriptText = "Nana... juice... gogo's";
+  const displayData = scriptDetail || scriptItem;
+
+  React.useEffect(() => {
+    if (scriptItem?.id) {
+      fetchDetail();
+    }
+  }, [scriptItem?.id]);
+
+  const fetchDetail = async () => {
+    const res = await GetScriptDetailApi(scriptItem.id, setIsLoading);
+    if (res) {
+      setScriptDetail(res);
+    }
+  };
 
   React.useEffect(() => {
     Tts.getInitStatus().then(() => {
@@ -66,148 +87,182 @@ const ScriptDetailsScreen = () => {
 
   const handleSpeech = () => {
     if (isPlaying) {
-      if (Platform.OS === 'android') {
-        Tts.stop();
-      }
+      Tts.stop();
       setIsPlaying(false);
     } else {
-      if (!isMuted) {
-        Tts.speak(scriptText);
+      if (!isMuted && displayData?.data?.script_text) {
+        Tts.speak(displayData?.data?.script_text);
       }
     }
   };
 
   const toggleMute = () => {
-    const nextMuted = !isMuted;
-    setIsMuted(nextMuted);
-    if (nextMuted && isPlaying) {
-      if (Platform.OS === 'android') {
-        Tts.stop();
-      }
+    setIsMuted(!isMuted);
+    if (!isMuted && isPlaying) {
+      Tts.stop();
       setIsPlaying(false);
     }
   };
 
+  const getEmotionImage = (state: string) => {
+    if (!state) return imageIndex.Happy;
+    const firstState = state.split(',')[0].toLowerCase().trim();
+    switch (firstState) {
+      case 'happy': return imageIndex.Happy;
+      case 'sad': return imageIndex.Sad;
+      case 'angry': return imageIndex.Angry;
+      case 'anxious': return imageIndex.Anxious;
+      case 'excited': return imageIndex.Excited;
+      case 'neutral': return imageIndex.Neutral;
+      default: return imageIndex.Happy;
+    }
+  };
+  console.log("displayData", displayData)
+
   return (
     <SafeAreaView style={styles.container}>
-   <StatusBarComponent />
+      <LoadingModal visible={isLoading} />
+      <StatusBarComponent />
       <CustomHeader label="Script Details" />
 
-  
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
         {/* Script Card */}
         <View style={styles.scriptCard}>
-          <Text style={styles.moodText}>Happy</Text>
+          <Text style={[styles.moodText, { textTransform: 'capitalize' }]}>
+            {displayData?.data?.emotional_state || 'Happy'}
+          </Text>
 
           <View style={styles.scriptRow}>
-            <Image source={{uri:"https://i.pravatar.cc/200?img=11"}} 
-            style={styles.avatar}
+            <Image source={getEmotionImage(displayData?.data?.emotional_state)}
+              style={styles.avatar}
             />
-            
 
             <View style={styles.scriptInfo}>
               <Text style={styles.scriptTitle} numberOfLines={1}>
-                "Nana... juice... gogo's"
+                {displayData?.data?.script_text}
               </Text>
-              <Text style={styles.scriptTime}>Today 6:29 PM</Text>
+              <Text style={styles.scriptTime}>
+                {displayData?.data?.created_at ? moment(displayData.data.created_at).calendar() : 'Just now'}
+              </Text>
             </View>
 
             <View style={styles.actionButtons}>
 
-              <TouchableOpacity 
-                style={styles.playButton} 
+              <TouchableOpacity
+                style={styles.playButton}
                 onPress={handleSpeech}
               >
-                <Image 
-                  source={imageIndex.voice1} 
+                <Image
+                  source={imageIndex.voice1}
                   style={[
-                    { width: 30, height: 30 , tintColor: "black"  },
+                    { width: 30, height: 30, tintColor: "black" },
                     isMuted && { tintColor: "#E03B65" }
-                  ]} 
+                  ]}
                 />
               </TouchableOpacity>
-              
+
             </View>
           </View>
-                       
- <TouchableOpacity 
-                style={[styles.muteButton,{
-                  marginTop:5
-                }]} 
-                onPress={toggleMute}
-              >
-                <Icon 
-                  name={isMuted ? "volume-off" : "volume-high"} 
-                  size={20} 
-                  color={isMuted ? "#FF6B6B" : "#E03B65"} 
-                />
-              </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.muteButton, {
+              marginTop: 5
+            }]}
+            onPress={toggleMute}
+          >
+            <Icon
+              name={isMuted ? "volume-off" : "volume-high"}
+              size={20}
+              color={isMuted ? "#FF6B6B" : "#E03B65"}
+            />
+          </TouchableOpacity>
         </View>
 
+        {/* Additional Details */}
+
+
         {/* Meaning */}
-        <Text style={styles.sectionTitle}>You Means</Text>
+        <Text style={styles.sectionTitle}>Meaning</Text>
         <View style={styles.meaningBox}>
           <Text style={styles.meaningText}>
-            "The child wants apple juice immediately from the fridge."
+            {displayData?.data?.ai_result?.interpreted_meaning || displayData?.data?.interpreted_meaning || 'Analyzing script meaning...'}
           </Text>
         </View>
 
         {/* Analysis */}
         <Text style={styles.sectionTitle}>Script Sense Analysis</Text>
 
-        <View style={[styles.analysisCard, { backgroundColor: '#FDF2F5' }]}>
-          <View style={styles.analysisHeader}>
-            <View style={styles.iconCircle}>
-            <Image source={imageIndex.Validation} style={{width:25,height:25}} />
+        {displayData?.data?.ai_result?.suggestions?.validation && (
+          <View style={[styles.analysisCard, { backgroundColor: '#FDF2F5' }]}>
+            <View style={styles.analysisHeader}>
+              <View style={styles.iconCircle}>
+                <Image source={imageIndex.Validation} style={{ width: 25, height: 25 }} />
+              </View>
+              <View>
+                <Text style={styles.analysisTitle}>Validation</Text>
+                <Text style={styles.analysisSubtitle}>Acknowledge the feeling</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.analysisTitle}>Validation</Text>
-              <Text style={styles.analysisSubtitle}>Acknowledge the feeling</Text>
-            </View>
+            <Text style={styles.analysisText}>
+              {displayData?.data?.ai_result.suggestions.validation}
+            </Text>
           </View>
+        )}
 
-          <Text style={styles.analysisText}>
-            This appears to be echolalia combined with a clear request. Try
-            responding with:
-          </Text>
-        </View>
-
-        <View style={[styles.analysisCard, { backgroundColor: '#EEFCFA' }]}>
-          <View style={styles.analysisHeader}>
-            <View style={styles.iconCircle}>
-               <Image source={imageIndex.Regulation} style={{width:25,height:25}} />
+        {displayData?.data?.ai_result?.suggestions?.regulation && (
+          <View style={[styles.analysisCard, { backgroundColor: '#EEFCFA' }]}>
+            <View style={styles.analysisHeader}>
+              <View style={styles.iconCircle}>
+                <Image source={imageIndex.Regulation} style={{ width: 25, height: 25 }} />
+              </View>
+              <View>
+                <Text style={styles.analysisTitle}>Regulation</Text>
+                <Text style={styles.analysisSubtitle}>Calm down strategies</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.analysisTitle}>Regulation</Text>
-              <Text style={styles.analysisSubtitle}>Acknowledge the feeling</Text>
-            </View>
+            <Text style={styles.analysisText}>
+              {displayData?.data?.ai_result?.suggestions?.regulation}
+            </Text>
           </View>
+        )}
 
-          <Text style={styles.analysisText}>
-            This appears to be echolalia combined with a clear request. Try
-            responding with:
-          </Text>
-        </View>
-
-        <View style={[styles.analysisCard, { backgroundColor: '#F5F2FD' }]}>
-          <View style={styles.analysisHeader}>
-            <View style={styles.iconCircle}>
-             <Image source={imageIndex.modelingIcon} style={{width:27,height:27}} />
+        {displayData?.data?.ai_result?.suggestions?.modeling && (
+          <View style={[styles.analysisCard, { backgroundColor: '#F5F2FD' }]}>
+            <View style={styles.analysisHeader}>
+              <View style={styles.iconCircle}>
+                <Image source={imageIndex.modelingIcon} style={{ width: 27, height: 27 }} />
+              </View>
+              <View>
+                <Text style={styles.analysisTitle}>Modeling</Text>
+                <Text style={styles.analysisSubtitle}>Demonstrate behavior</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.analysisTitle}>Modeling</Text>
-              <Text style={styles.analysisSubtitle}>Calm down strategies</Text>
-            </View>
+            <Text style={styles.analysisText}>
+              {displayData?.data?.ai_result?.suggestions?.modeling}
+            </Text>
           </View>
+        )}
 
-          <Text style={styles.analysisText}>
-            Take a deep breath with them. Let&apos;s wait 3 seconds while I open
-            the fridge. 1... 2... 3...
-          </Text>
-        </View>
+        {displayData?.data?.ai_result?.notes_for_parent && (
+          <View style={[styles.analysisCard, { backgroundColor: '#FFF9E6' }]}>
+            <View style={styles.analysisHeader}>
+              <View style={styles.iconCircle}>
+                <Icon name="notebook-outline" size={20} color="#FFB800" />
+              </View>
+              <View>
+                <Text style={styles.analysisTitle}>Notes for Parent</Text>
+                <Text style={styles.analysisSubtitle}>Additional guidance</Text>
+              </View>
+            </View>
+            <Text style={styles.analysisText}>
+              {displayData?.data?.ai_result?.notes_for_parent}
+            </Text>
+          </View>
+        )}
 
         {/* Button */}
         <TouchableOpacity style={styles.button}>
@@ -330,6 +385,21 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: '#333',
   },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  detailLabel: {
+    fontSize: 13,
+    color: '#8A8A8A',
+    width: 90,
+  },
+  detailValue: {
+    fontSize: 13,
+    color: '#333',
+    flex: 1,
+    fontWeight: '500',
+  },
   analysisCard: {
     borderRadius: 14,
     padding: 14,
@@ -344,14 +414,14 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-     justifyContent: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
   },
   analysisTitle: {
     fontSize: 13,
     fontWeight: '700',
-   },
+  },
   analysisSubtitle: {
     fontSize: 12,
     color: '#8A8A8A',

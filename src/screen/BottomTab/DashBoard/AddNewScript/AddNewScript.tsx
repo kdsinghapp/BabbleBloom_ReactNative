@@ -14,8 +14,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import imageIndex from '../../../../assets/imageIndex';
+import { CreateScriptApi } from '../../../../Api/apiRequest';
 import StatusBarComponent from '../../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../../compoent/CustomHeader';
+import LoadingModal from '../../../../utils/Loader';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -55,19 +57,19 @@ const FREQUENCIES = ['New', 'Repeated', 'Variation'];
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-const SectionHeader = ({ title, subtitle }) => (
+const SectionHeader = ({ title, subtitle }: { title?: string; subtitle?: string }) => (
   <View style={s.sectionHeader}>
     {title && <Text style={s.sectionTitle}>{title}</Text>}
-    {subtitle ? <Text style={[s.sectionSub,{
-      color:"black",
-      fontSize:15,
-      fontWeight:"600",
-      marginTop:7
+    {subtitle ? <Text style={[s.sectionSub, {
+      color: "black",
+      fontSize: 15,
+      fontWeight: "600",
+      marginTop: 7
     }]}>{subtitle}</Text> : null}
   </View>
 );
 
-const ContextChip = ({ item, selected, onPress }) => (
+const ContextChip = ({ item, selected, onPress }: { item: any; selected: boolean; onPress: () => void }) => (
   <TouchableOpacity
     style={[s.contextChip, selected && s.contextChipSelected]}
     onPress={onPress}
@@ -80,7 +82,7 @@ const ContextChip = ({ item, selected, onPress }) => (
   </TouchableOpacity>
 );
 
-const EmotionButton = ({ item, selected, onPress }) => (
+const EmotionButton = ({ item, selected, onPress }: { item: any; selected: boolean; onPress: () => void }) => (
   <TouchableOpacity
     style={[
       s.emotionBtn,
@@ -89,9 +91,9 @@ const EmotionButton = ({ item, selected, onPress }) => (
     onPress={onPress}
     activeOpacity={0.8}
   >
-    <Image 
-      source={item?.image} 
-      style={{ width: 44, height: 44, marginBottom: 6,  }}
+    <Image
+      source={item?.image}
+      style={{ width: 44, height: 44, marginBottom: 6, }}
     />
     <Text style={[s.emotionLabel, selected && { color: item.color, fontWeight: '700' }]}>
       {item.label}
@@ -99,18 +101,18 @@ const EmotionButton = ({ item, selected, onPress }) => (
   </TouchableOpacity>
 );
 
-const SourceChip = ({ item, selected, onPress }) => (
+const SourceChip = ({ item, selected, onPress }: { item: any; selected: boolean; onPress: () => void }) => (
   <TouchableOpacity
     style={[s.sourceChip, selected && s.sourceChipSelected]}
     onPress={onPress}
     activeOpacity={0.8}
   >
-    <Image source={item.icon}  style={{
-      height:30,
-      width:30
-    }}  />
-    <Text style={[s.sourceLabel, selected && s.sourceLabelSelected,{
-      marginLeft:5 ,
+    <Image source={item.icon} style={{
+      height: 30,
+      width: 30
+    }} />
+    <Text style={[s.sourceLabel, selected && s.sourceLabelSelected, {
+      marginLeft: 5,
 
     }]}>
       {item.label}
@@ -118,7 +120,7 @@ const SourceChip = ({ item, selected, onPress }) => (
   </TouchableOpacity>
 );
 
-const FreqButton = ({ label, selected, onPress }) => (
+const FreqButton = ({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) => (
   <TouchableOpacity
     style={[s.freqBtn, selected && s.freqBtnSelected]}
     onPress={onPress}
@@ -130,30 +132,29 @@ const FreqButton = ({ label, selected, onPress }) => (
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
-export default function AddNewScriptScreen({ navigation }: any) {
+export default function AddNewScriptScreen({ navigation, route }: any) {
+  const child_id = route?.params?.child_id;
   const [currentStep, setCurrentStep] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
-// ── Data ─────────────────────────────────────────────────────────────────────
-const CONTEXTS = [
-  { id: 'home', label: 'Home', emoji: '🏠', },
-  { id: 'school', label: 'School', emoji: '🏫' },
-  { id: 'car', label: 'Car', emoji: '🚗' },
-  { id: 'bedtime', label: 'Bedtime', emoji: '🌙' },
- 
-];
+  // ── Data ─────────────────────────────────────────────────────────────────────
+  const CONTEXTS = [
+    { id: 'home', label: 'Home', emoji: '🏠', },
+    { id: 'school', label: 'School', emoji: '🏫' },
+    { id: 'car', label: 'Car', emoji: '🚗' },
+    { id: 'bedtime', label: 'Bedtime', emoji: '🌙' },
+
+  ];
   // Form States
   const [scriptText, setScriptText] = useState('');
   const [selectedContext, setSelectedContext] = useState('home');
-  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
-  const [selectedSource, setSelectedSource] = useState<string | null>(null);
+  const [selectedEmotion, setSelectedEmotion] = useState('happy');
+  const [selectedSource, setSelectedSource] = useState('song');
   const [selectedFreq, setSelectedFreq] = useState('New');
   const [meaning, setMeaning] = useState('');
   const [notes, setNotes] = useState('');
 
-  const toggleEmotion = (id: string) =>
-    setSelectedEmotions((prev) =>
-      prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id]
-    );
+  const toggleEmotion = (id: string) => setSelectedEmotion(id);
 
   const goToStep = (step: number) => {
     if (step >= 0 && step <= 2) {
@@ -162,18 +163,31 @@ const CONTEXTS = [
     }
   };
 
-  const handleSave = () => {
-    const data = {
-      scriptText,
+  const handleSave = async () => {
+    if (!child_id) {
+      console.warn('Child ID is missing');
+      return;
+    }
+
+    const param = {
+      child_id: Number(child_id),
+      script_text: scriptText,
       context: selectedContext,
-      emotions: selectedEmotions,
-      source: selectedSource,
+      emotional_state: selectedEmotion,
+      source: selectedSource || 'unknown',
       frequency: selectedFreq,
-      meaning,
-      notes,
+      user_guess: meaning,
+      notes: notes,
+      media_file: null,
     };
-    console.log('Saved Script:', data);
-    navigation?.goBack();
+    console.log("param", param)
+
+    const res = await CreateScriptApi(param, setIsLoading);
+    console.log("res", res)
+
+    if (res) {
+      navigation?.goBack();
+    }
   };
 
   const renderStep = ({ item: stepIndex }: { item: number }) => {
@@ -218,14 +232,14 @@ const CONTEXTS = [
         </View>
       );
     }
-const EMOTIONS = [
-  { id: 'happy', label: 'Happy', color: C.happy , image :imageIndex.Happy },
-  { id: 'sad', label: 'Sad', color: C.sad ,image :imageIndex.Sad  },
-  { id: 'angry', label: 'Angry', color: C.angry,image :imageIndex.Angry  },
-  { id: 'anxious', label: 'Anxious', color: C.anxious ,image :imageIndex.Anxious  },
-  { id: 'excited', label: 'Excited', color: C.excited ,image :imageIndex.Excited },
-  { id: 'neutral', label: 'Neutral', color: C.neutral ,image :imageIndex.Neutral },
-];
+    const EMOTIONS = [
+      { id: 'happy', label: 'Happy', color: C.happy, image: imageIndex.Happy },
+      { id: 'sad', label: 'Sad', color: C.sad, image: imageIndex.Sad },
+      { id: 'angry', label: 'Angry', color: C.angry, image: imageIndex.Angry },
+      { id: 'anxious', label: 'Anxious', color: C.anxious, image: imageIndex.Anxious },
+      { id: 'excited', label: 'Excited', color: C.excited, image: imageIndex.Excited },
+      { id: 'neutral', label: 'Neutral', color: C.neutral, image: imageIndex.Neutral },
+    ];
 
     if (stepIndex === 1) {
       return (
@@ -237,7 +251,7 @@ const EMOTIONS = [
                 <EmotionButton
                   key={item.id}
                   item={item}
-                  selected={selectedEmotions.includes(item.id)}
+                  selected={selectedEmotion === item.id}
                   onPress={() => toggleEmotion(item.id)}
                 />
               ))}
@@ -285,7 +299,7 @@ const EMOTIONS = [
             placeholderTextColor={"black"}
             value={meaning}
             onChangeText={setMeaning}
-            
+
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -293,13 +307,13 @@ const EMOTIONS = [
         </View>
 
         <View style={s.card}>
-          <SectionHeader title="Notes" />
+          <SectionHeader title="Notes" subtitle="" />
           <TextInput
             style={s.textArea}
             placeholder="Any other observations?"
-             value={notes}
+            value={notes}
             onChangeText={setNotes}
-                        placeholderTextColor={"black"}
+            placeholderTextColor={"black"}
 
             multiline
             numberOfLines={4}
@@ -312,23 +326,24 @@ const EMOTIONS = [
 
   return (
     <SafeAreaView style={s.safe}>
-     <StatusBarComponent />
+      <StatusBarComponent />
+      <LoadingModal visible={isLoading} />
       <CustomHeader label="Add New Script" />
       {/* ── Header ── */}
-    
-        <View style={[s.progressContainer,{
-          alignItems:"center",
-          justifyContent:"center"
-        }]}>
-           <View style={s.stepDots}>
-            {[0, 1, 2].map((i) => (
-              <View key={i} style={[s.dot, currentStep === i && s.activeDot]} />
-            ))}
-          </View>
+
+      <View style={[s.progressContainer, {
+        alignItems: "center",
+        justifyContent: "center"
+      }]}>
+        <View style={s.stepDots}>
+          {[0, 1, 2].map((i) => (
+            <View key={i} style={[s.dot, currentStep === i && s.activeDot]} />
+          ))}
         </View>
-  
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
+      </View>
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <FlatList
@@ -345,8 +360,8 @@ const EMOTIONS = [
         {/* ── Footer ── */}
         <View style={s.footer}>
           {currentStep > 0 ? (
-            <TouchableOpacity 
-              style={s.secondaryBtn} 
+            <TouchableOpacity
+              style={s.secondaryBtn}
               onPress={() => goToStep(currentStep - 1)}
             >
               <Text style={s.secondaryBtnText}>Back</Text>
@@ -356,8 +371,8 @@ const EMOTIONS = [
           )}
 
           {currentStep < 2 ? (
-            <TouchableOpacity 
-              style={s.primaryBtn} 
+            <TouchableOpacity
+              style={s.primaryBtn}
               onPress={() => goToStep(currentStep + 1)}
             >
               <Text style={s.primaryBtnText}>Next Step</Text>
@@ -390,7 +405,7 @@ const s = StyleSheet.create({
   stepDots: { flexDirection: 'row', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.border },
   activeDot: { width: 16, backgroundColor: C.primary },
-  
+
   backBtn: {
     width: 40,
     height: 40,
@@ -398,7 +413,7 @@ const s = StyleSheet.create({
     backgroundColor: C.card,
     alignItems: 'center',
     justifyContent: 'center',
-          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOpacity: 0.05,
     shadowRadius: 10,
@@ -420,7 +435,7 @@ const s = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
-          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOpacity: 0.08,
     shadowRadius: 15,
@@ -429,7 +444,7 @@ const s = StyleSheet.create({
   },
 
   // Sections
-  sectionHeader: { marginBottom: 16, marginTop:11 },
+  sectionHeader: { marginBottom: 16, marginTop: 11 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: C.text },
   sectionSub: { fontSize: 13, color: C.sub, marginTop: 4 },
 
@@ -453,10 +468,10 @@ const s = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-     alignItems: 'center',
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  micIcon: { width: 44, height: 44,  },
+  micIcon: { width: 44, height: 44, },
 
   textArea: {
     backgroundColor: "#F8F9FC",
@@ -465,7 +480,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     color: C.text,
     minHeight: 100,
-   },
+  },
 
   // Context Chips
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
@@ -499,7 +514,7 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  emotionLabel: { fontSize: 14, color: "black", marginTop: 4 , },
+  emotionLabel: { fontSize: 14, color: "black", marginTop: 4, },
 
   // Source
   sourceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
@@ -529,7 +544,7 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  freqBtnSelected: { backgroundColor: "#E03B65",   },
+  freqBtnSelected: { backgroundColor: "#E03B65", },
   freqLabel: { fontSize: 14, fontWeight: '700', color: C.tagText },
   freqLabelSelected: { color: "white" },
 
@@ -546,23 +561,24 @@ const s = StyleSheet.create({
     borderRadius: 18,
     paddingVertical: 18,
     alignItems: 'center',
- 
-     
-  },
-  primaryBtnText: { color: 'white', fontSize: 16, fontWeight: '800',  
 
-textAlign:"center"
 
   },
-  
+  primaryBtnText: {
+    color: 'white', fontSize: 16, fontWeight: '800',
+
+    textAlign: "center"
+
+  },
+
   secondaryBtn: {
     flex: 1,
     backgroundColor: C.card,
     borderRadius: 18,
     paddingVertical: 18,
     alignItems: 'center',
-     borderColor: C.border,
-     justifyContent:"center"
+    borderColor: C.border,
+    justifyContent: "center"
   },
   secondaryBtnText: { color: "black", fontSize: 16, fontWeight: '700' },
 
@@ -572,7 +588,7 @@ textAlign:"center"
     borderRadius: 18,
     paddingVertical: 18,
     alignItems: 'center',
-   
+
   },
   saveBtnText: { color: 'white', fontSize: 16, fontWeight: '800' },
 });

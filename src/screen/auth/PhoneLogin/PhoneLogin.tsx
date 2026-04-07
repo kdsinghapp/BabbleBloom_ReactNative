@@ -17,8 +17,8 @@ import LoadingModal from "../../../utils/Loader";
 import { color } from "../../../constant";
 import ScreenNameEnum from "../../../routes/screenName.enum";
 const PhoneLogin = () => {
+  // const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  // const [phoneNumber, setPhoneNumber] = useState("787655445545");
   // 787655445545
   //  const [phoneNumber, setPhoneNumber] = useState("");  
   const [countryCode, setCountryCode] = useState("IN");

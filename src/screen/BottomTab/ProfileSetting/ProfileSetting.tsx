@@ -106,7 +106,7 @@ export default function ProfileSetting() {
               />
               <MenuItem
                 icon={imageIndex.MyAccount}
-                title="Add Child"
+                title="Add Child info"
                 onPress={() => navigation.navigate(ScreenNameEnum.MyProfile)}
               />
               <MenuItem

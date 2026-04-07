@@ -178,7 +178,7 @@ const VerifySignupOtpApi = async (
     phone_number: string;
     code: string;
     navigation: any;
- 
+
   },
   setLoading: (loading: boolean) => void,
   dispatch: any,
@@ -216,17 +216,17 @@ const VerifySignupOtpApi = async (
         await saveAuthData(user, access_token);
         dispatch(loginSuccess({ userData: user, token: access_token }));
         successToast(parsedResponse?.message || 'Verification successful!');
-      param.navigation.reset({
-  index: 0,
-  routes: [
-    {
-      name: ScreenNameEnum.MyProfile,
-      params: {
-        flowType: "signup",
-      },
-    },
-  ],
-});
+        param.navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: ScreenNameEnum.MyProfile,
+              params: {
+                flowType: "signup",
+              },
+            },
+          ],
+        });
         // param.navigation.reset({
         //   index: 0,
         //   routes: [{ name: ScreenNameEnum.HomeDashboard }],
@@ -600,7 +600,7 @@ export const AddChildApi = async (
       } as any);
     }
 
-    console.log("add formdata --  ",formdata)
+    console.log("add formdata --  ", formdata)
     const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.children}`, {
       method: 'POST',
       headers: {
@@ -739,6 +739,124 @@ export const DeleteChildApi = async (
     console.error('[DeleteChildApi] error:', error);
     errorToast('Network error');
     return false;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const CreateScriptApi = async (
+  param: {
+    child_id: number;
+    script_text: string;
+    context: string;
+    emotional_state: string;
+    source: string;
+    frequency: string;
+    user_guess?: string;
+    notes?: string;
+    media_file?: any;
+  },
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const formdata = new FormData();
+    formdata.append('child_id', param.child_id.toString());
+    formdata.append('script_text', param.script_text);
+    formdata.append('context', param.context);
+    formdata.append('emotional_state', param.emotional_state);
+    formdata.append('source', param.source);
+    formdata.append('frequency', param.frequency);
+
+    if (param.user_guess) formdata.append('user_guess', param.user_guess);
+    if (param.notes) formdata.append('notes', param.notes);
+
+    if (param.media_file?.uri) {
+      formdata.append('media_file', {
+        uri: param.media_file.uri,
+        name: param.media_file.fileName || 'audio.mp3',
+        type: param.media_file.type || 'audio/mpeg',
+      } as any);
+    }
+
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.scripts}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formdata,
+    });
+    console.log("add response", response)
+
+    const parsed = await response.json();
+    if (parsed) {
+      // successToast(parsed?.message || 'Script logged successfully');
+      return parsed;
+    }
+  } catch (error) {
+    console.error('[CreateScriptApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const GetScriptsApi = async (
+  child_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any[] | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.scripts}?child_id=${child_id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data || [];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetScriptsApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const GetScriptDetailApi = async (
+  script_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.scripts}/${script_id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed) {
+      return parsed;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetScriptDetailApi] error:', error);
+    return null;
   } finally {
     setLoading(false);
   }

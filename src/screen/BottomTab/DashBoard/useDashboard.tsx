@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
-import { GetChildrenApi, GetProfileApi } from '../../../Api/apiRequest';
+import { GetChildrenApi, GetProfileApi, GetScriptsApi, } from '../../../Api/apiRequest';
 import { loginSuccess } from '../../../redux/feature/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDashboardContext } from '../../../context/DashboardContext';
-
-export type { CounterOfferAcceptedPayload } from '../../../context/DashboardContext';
-
+ 
+ 
 const useDashboard = () => {
   const navigation = useNavigation();
-  const ctx = useDashboardContext();
+ 
   const [address, setAddress] = useState("");
   const [locationModal, setlocationModal] = useState(false);
   const [location, setLocation] = useState(null);
@@ -20,35 +18,24 @@ const useDashboard = () => {
   const locationRef: any = useRef(null);
   const [children, setChildren] = useState<any[]>([]);
   const [activeChild, setActiveChild] = useState<any>(null);
+  const [scripts, setScripts] = useState<any[]>([]);
 
-  const orderData = ctx?.orderData ?? [];
-  const counterOfferAcceptedModal = ctx?.counterOfferAcceptedModal ?? { visible: false, data: null };
-  const setCounterOfferAcceptedModal = ctx?.setCounterOfferAcceptedModal ?? (() => {});
-  const getParceldetailsApi = ctx?.getParceldetailsApi ?? (async () => {});
-  const registerOrderUpdateCallback = ctx?.registerOrderUpdateCallback ?? (() => {});
-  const initialFetchDone = useRef(false);
+   
+ 
 
-  useEffect(() => {
-    handleGetLocation();
-  }, []);
 
   useEffect(() => {
     getProfileApi();
     fetchChildren();
   }, []);
 
-  useEffect(() => {
-    if (ctx && !initialFetchDone.current) {
-      initialFetchDone.current = true;
-      getParceldetailsApi(setLoading);
-    }
-  }, [ctx]);
+ 
 
   useEffect(() => {
-    if (ctx) {
-      registerOrderUpdateCallback(() => getParceldetailsApi(setLoading));
+    if (activeChild?.id) {
+      fetchScripts(activeChild.id);
     }
-  }, [ctx]);
+  }, [activeChild]);
 
   const getProfileApi = async () => {
     try {
@@ -74,34 +61,15 @@ const useDashboard = () => {
       console.error('[useDashboard] fetchChildren error:', error);
     }
   };
-  // Inside your component
-  const [pickupLocation, setPickupLocation] = useState(null);
-   const [currentLocation, setCurrentLocation] = useState('');
-  const handleGetLocation = async () => {
-    try {
-      const data = await locationRef?.current?.fetchLocation();
-      if (data.error) {
-        // Alert.alert('Error', data.error);
-      } else {
-        // Store in AsyncStorage
-        await AsyncStorage.setItem('pickupLocation', JSON.stringify(data));
-        setcurrentlocation(data?.address)
-        // Update state
-        setCurrentLocation(data.address);
-        setPickupLocation(data);
-        // setPickupLat({
-        //   latitude: data.region.latitude,
-        //   longitude: data.region.longitude,
-        // });
 
-        console.log('Stored and set location:', data);
-      }
-    } catch (error) {
-      console.error('Error getting location:', error);
+  const fetchScripts = async (childId: number) => {
+    const res = await GetScriptsApi(childId, setLoading);
+    if (res) {
+      setScripts(res);
     }
   };
-  const fetchParcels = () => getParceldetailsApi(setLoading);
 
+ 
   return {
     navigation,
     address,
@@ -113,12 +81,12 @@ const useDashboard = () => {
     locationRef,
     currentlocation,
     isLoading,
-    orderData,
-    counterOfferAcceptedModal,
-    setCounterOfferAcceptedModal,
-    getParceldetailsApi: fetchParcels,
+ 
+    getParceldetailsApi: 
     children,
     activeChild,
+    scripts,
+    fetchScripts,
   };
 };
 

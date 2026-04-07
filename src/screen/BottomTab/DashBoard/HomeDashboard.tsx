@@ -12,8 +12,9 @@ import imageIndex from '../../../assets/imageIndex';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import screenNameEnum from '../../../routes/screenName.enum';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import useDashboard from './useDashboard';
+import moment from 'moment';
 import { BASE_URLIMAGE } from '../../../Api/apiRequest';
 import { useSelector } from 'react-redux';
 
@@ -49,10 +50,10 @@ const C = {
 };
 
 // ─── Data ────────────────────────────────────────────────────────────────────
-const recentScripts = [
-  // { id: '1', text: '"Want juice want juice"', time: '2 hours ago' },
-  // { id: '2', text: '"Want juice want juice"', time: '2 hours ago' },
-];
+// const recentScripts = [
+//   // { id: '1', text: '"Want juice want juice"', time: '2 hours ago' },
+//   // { id: '2', text: '"Want juice want juice"', time: '2 hours ago' },
+// ];
 
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -79,30 +80,40 @@ function TodayBanner() {
   );
 }
 
-function ScriptItem({ item, navigator }: { item: (typeof recentScripts)[0]; navigator: any }) {
+function ScriptItem({ item, navigator }: { item: any; navigator: any }) {
+  // Map emotional_state to corresponding image
+  const getEmotionImage = (state: string) => {
+    if (!state) return imageIndex.Happy;
+    const firstState = state.split(',')[0].toLowerCase().trim();
+    switch (firstState) {
+      case 'happy': return imageIndex.Happy;
+      case 'sad': return imageIndex.Sad;
+      case 'angry': return imageIndex.Angry;
+      case 'anxious': return imageIndex.Anxious;
+      case 'excited': return imageIndex.Excited;
+      case 'neutral': return imageIndex.Neutral;
+      default: return imageIndex.Happy;
+    }
+  };
+
   return (
     <View style={styles.scriptItem}>
       <View style={styles.scriptLeft}>
-        {/* Baby avatar */}
-        <Image source={imageIndex.moji}
-
-          style={{
-            width: 42,
-            height: 42
-          }}
+        <Image
+          source={getEmotionImage(item.emotional_state)}
+          style={{ width: 42, height: 42 }}
         />
 
-        <View>
-          <Text style={styles.scriptText}>{item.text}</Text>
+        <View style={{ flex: 1, marginRight: 10 }}>
+          <Text style={styles.scriptText} numberOfLines={2}>{item.script_text}</Text>
           <Text style={[styles.scriptTime, {
             color: "#ADA4A5"
-          }]}>{item.time}</Text>
+          }]}>{moment(item.created_at).fromNow()}</Text>
         </View>
       </View>
       <TouchableOpacity style={styles.scriptIconBtn}
-
         onPress={() => {
-          navigator.navigate(screenNameEnum.ScriptDetailsScreen)
+          navigator.navigate(screenNameEnum.ScriptDetailsScreen, { scriptItem: item })
         }}
       >
         <ScriptIcon />
@@ -111,7 +122,7 @@ function ScriptItem({ item, navigator }: { item: (typeof recentScripts)[0]; navi
   );
 }
 
-function RecentScripts() {
+function RecentScripts({ scripts }: { scripts: any[] }) {
   const navigator = useNavigation()
   return (
     <View style={styles.section}>
@@ -123,13 +134,14 @@ function RecentScripts() {
           }]}>See All</Text>
         </TouchableOpacity>
       </View>
-      {recentScripts.length > 0 ? (
-        recentScripts.map((item) => (
+      {scripts && scripts.length > 0 ? (
+        scripts.slice(0, 5).map((item) => (
           <ScriptItem key={item.id} item={item} navigator={navigator} />
         ))
       ) : (
-           <Text style={styles.emptyScriptsText}>No recent scripts found</Text>
-    
+        <View style={{ paddingVertical: 10 }}>
+          <Text style={styles.emptyScriptsText}>No recent scripts found</Text>
+        </View>
       )}
     </View>
   );
@@ -171,7 +183,15 @@ function WeeklyInsight() {
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const { activeChild, navigation: navigator } = useDashboard();
+  const { activeChild, navigation: navigator, scripts, fetchScripts } = useDashboard();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (activeChild?.id) {
+        fetchScripts(activeChild.id);
+      }
+    }, [activeChild])
+  );
   function QuickActions() {
     const quickActions = [
       {
@@ -211,7 +231,7 @@ export default function HomeScreen() {
       <TouchableOpacity style={styles.addBtn} activeOpacity={0.88}
 
         onPress={() => {
-          navigator.navigate(screenNameEnum.AddNewScript as never)
+          navigator.navigate(screenNameEnum.AddNewScript as never, { child_id: activeChild?.id } as never)
         }}
       >
         <View style={styles.addBtnInner}>
@@ -221,7 +241,7 @@ export default function HomeScreen() {
       </TouchableOpacity>
     );
   }
-    const userData = useSelector((state: any) => state.auth.userData);
+  const userData = useSelector((state: any) => state.auth.userData);
 
   function Header() {
     return (
@@ -241,14 +261,14 @@ export default function HomeScreen() {
             navigator.navigate(screenNameEnum.ProfileSetting as never)
           }}>
             <View style={styles.avatar}>
-                <Image
-  source={
-    userData?.profile_image
-      ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
-      : imageIndex.prfile
-  }
-  style={{ width: 55, height: 55, borderRadius: 50 }}
-/>
+              <Image
+                source={
+                  userData?.profile_image
+                    ? { uri: `${BASE_URLIMAGE}/${userData.profile_image}` }
+                    : imageIndex.prfile
+                }
+                style={{ width: 55, height: 55, borderRadius: 50 }}
+              />
             </View>
           </TouchableOpacity>
         </View>
@@ -266,7 +286,7 @@ export default function HomeScreen() {
         <Header />
         <TodayBanner />
         <AddScriptButton />
-        <RecentScripts />
+        <RecentScripts scripts={scripts} />
         <WeeklyInsight />
         <QuickActions />
       </ScrollView>
@@ -449,7 +469,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
-           shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
@@ -495,7 +515,7 @@ const styles = StyleSheet.create({
     backgroundColor: C.white,
     borderRadius: 14,
     padding: 14,
-          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
@@ -576,6 +596,6 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 14,
     fontWeight: '500',
-    textAlign:"center"
+    textAlign: "center"
   },
 });

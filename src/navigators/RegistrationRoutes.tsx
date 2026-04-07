@@ -3,8 +3,7 @@ import { View } from 'react-native';
 import { createNativeStackNavigator, NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import _routes from '../routes/routes';
 import ScreenNameEnum from '../routes/screenName.enum';
- import { DashboardProvider } from '../context/DashboardContext';
- 
+  
 export type RegistrationStackParamList = {
   [ScreenNameEnum.SPLASH_SCREEN]: undefined;
   [ScreenNameEnum.OnboardingScreen]: undefined;
@@ -81,8 +80,7 @@ const screenOptions: NativeStackNavigationOptions = {
 
 const RegistrationRoutes: React.FC = () => {
   return (
-       <DashboardProvider>
-        <View style={{ flex: 1 }}>
+         <View style={{ flex: 1 }}>
           <Stack.Navigator screenOptions={screenOptions}>
             {_routes.REGISTRATION_ROUTE.map((screen: RegistrationRouteType) => (
               <Stack.Screen
@@ -97,8 +95,7 @@ const RegistrationRoutes: React.FC = () => {
           </Stack.Navigator>
        
         </View>
-      </DashboardProvider>
-   );
+    );
 };
 
 export default RegistrationRoutes;

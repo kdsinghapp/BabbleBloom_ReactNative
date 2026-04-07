@@ -13,4 +13,5 @@ export const commonEndpoints = {
   contactUs: 'contact-us',
   parentProfile: 'parent/profile',
   children: 'children',
+  scripts: 'scripts',
 };
