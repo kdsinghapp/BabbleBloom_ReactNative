@@ -47,11 +47,28 @@ const ScriptDetailsScreen = () => {
 
   React.useEffect(() => {
     Tts.getInitStatus().then(() => {
-      Tts.setDefaultLanguage('en-US');
-      Tts.setDefaultRate(0.5);
+      Tts.setDefaultLanguage('en-US'); // Use US English to natively guarantee female options
+
       if (Platform.OS === 'ios') {
         Tts.setIgnoreSilentSwitch('ignore');
+        Tts.setDefaultRate(0.5);
+      } else {
+        Tts.setDefaultRate(0.5);
       }
+
+      // Explicitly set BOTH to a female voice to resolve the ladka/ladki differences
+      Tts.voices().then(voices => {
+        if (Platform.OS === 'ios') {
+          // Standard iOS Female voice
+          Tts.setDefaultVoice('com.apple.ttsbundle.Samantha-compact');
+        } else {
+          // Search Android engines for a female English voice
+          const androidFemale = voices.find(v => v.language.startsWith('en') && v.name.toLowerCase().includes('female'));
+          if (androidFemale) {
+            Tts.setDefaultVoice(androidFemale.id);
+          }
+        }
+      });
     }).catch((err) => {
       if (err.code === 'no_engine') {
         Tts.requestInstallEngine();
@@ -117,7 +134,6 @@ const ScriptDetailsScreen = () => {
       default: return imageIndex.Happy;
     }
   };
-  console.log("displayData", displayData)
 
   return (
     <SafeAreaView style={styles.container}>
@@ -328,10 +344,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatar: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     borderRadius: 18,
-    backgroundColor: '#D9D9D9',
+    // backgroundColor: '#D9D9D9',
     marginRight: 10,
   },
   scriptInfo: {
