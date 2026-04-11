@@ -7,12 +7,16 @@ import {
   ScrollView,
   Image,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import Svg, { Rect, Line, Polyline, Circle, Text as SvgText } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomHeader from '../../../compoent/CustomHeader';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import imageIndex from '../../../assets/imageIndex';
+import { useFocusEffect } from '@react-navigation/native';
+import useDashboard from '../DashBoard/useDashboard';
+import { GetWeeklyFocusApi, GetWeeklyReportsApi } from '../../../Api/apiRequest';
 
 type TabType = 'Activity' | 'Emotions' | 'Trends';
 
@@ -36,7 +40,6 @@ const COLORS = {
   lightGray: '#F0F0F0',
 };
 
-const weeklyBars = [80, 92, 76, 90, 84, 94, 88];
 const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const emotionalData = [
@@ -74,12 +77,8 @@ const milestones = [
   },
 ];
 
+// ─── Sub-components ────────────────────────────────────────────────────────────
 
-
- 
-// ─── Stats Row ────────────────────────────────────────────────────────────────
-
-// ─── Tab Bar ──────────────────────────────────────────────────────────────────
 const TabBar = ({
   activeTab,
   setActiveTab,
@@ -104,14 +103,14 @@ const TabBar = ({
   </View>
 );
 
-// ─── Activity Card ────────────────────────────────────────────────────────────
-const WeeklyBarsCard = () => {
+const WeeklyBarsCard = ({ data }: { data: number[] }) => {
+  const bars = data && data.length > 0 ? data : [0, 0, 0, 0, 0, 0, 0];
   const svgW = 300;
   const svgH = 130;
   const barW = 22;
   const maxBar = 104;
   const baseY = 112;
-  const totalBars = weeklyBars.length;
+  const totalBars = bars.length;
   const spacing = (svgW - barW * totalBars) / (totalBars + 1);
 
   return (
@@ -134,9 +133,9 @@ const WeeklyBarsCard = () => {
             strokeWidth="1"
           />
         ))}
-        {weeklyBars.map((value, index) => {
+        {bars.map((value, index) => {
           const x = spacing + index * (barW + spacing);
-          const height = (value / 100) * maxBar;
+          const height = Math.min((value / 100) * maxBar, maxBar);
           return (
             <React.Fragment key={index}>
               <Rect
@@ -145,8 +144,8 @@ const WeeklyBarsCard = () => {
                 width={barW}
                 height={height}
                 rx={8}
-                fill={index === 5 ? COLORS.pink : COLORS.pink}
-                opacity={index === 5 ? 1 : 0.75 + index * 0.04}
+                fill={COLORS.pink}
+                opacity={0.75 + index * 0.04}
               />
               <SvgText
                 x={x + barW / 2}
@@ -155,7 +154,7 @@ const WeeklyBarsCard = () => {
                 fontSize="13"
                 fill={"black"}
               >
-                {weekDays[index]}
+                {weekDays[index] || ''}
               </SvgText>
             </React.Fragment>
           );
@@ -165,40 +164,43 @@ const WeeklyBarsCard = () => {
   );
 };
 
-// ─── Emotions Card ────────────────────────────────────────────────────────────
-const EmotionalPatternsCard = () => (
-  <View style={styles.card}>
-    <View style={styles.cardHeader}>
-      <Text style={styles.cardTitle}>Emotional patterns</Text>
-    </View>
-    <View style={{ marginTop: 4 }}>
-      {emotionalData.map((item, index) => (
-        <View key={index} style={styles.progressRow}>
-          <View style={styles.progressLabelRow}>
-            <Text style={styles.progressLabel}>{item.label}</Text>
-            <Text style={[styles.progressPercent, { color: item.color }]}>{item.value}%</Text>
+const EmotionalPatternsCard = ({ data }: { data: any[] }) => {
+  const emotions = data && data.length > 0 ? data : emotionalData;
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>Emotional patterns</Text>
+      </View>
+      <View style={{ marginTop: 4 }}>
+        {emotions.map((item, index) => (
+          <View key={index} style={styles.progressRow}>
+            <View style={styles.progressLabelRow}>
+              <Text style={styles.progressLabel}>{item.label}</Text>
+              <Text style={[styles.progressPercent, { color: item.color || COLORS.green }]}>{item.value}%</Text>
+            </View>
+            <View style={styles.progressTrack}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${item.value}%`, backgroundColor: item.color || COLORS.green },
+                ]}
+              />
+            </View>
           </View>
-          <View style={styles.progressTrack}>
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${item.value}%`, backgroundColor: item.color },
-              ]}
-            />
-          </View>
-        </View>
-      ))}
+        ))}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
-// ─── Trends Card ──────────────────────────────────────────────────────────────
-const CommunicationImprovementCard = () => {
+const CommunicationImprovementCard = ({ data }: { data: any }) => {
+  const lines = data || trendLines;
   const svgW = 280;
   const svgH = 130;
   const pad = 20;
 
   const toPoints = (arr: number[]) => {
+    if (!arr || arr.length < 2) return "0,0";
     const stepX = (svgW - pad * 2) / (arr.length - 1);
     return arr
       .map((value, index) => {
@@ -210,15 +212,20 @@ const CommunicationImprovementCard = () => {
   };
 
   const lastPoint = (arr: number[]) => {
-    const stepX = (svgW - pad * 2) / (arr.length - 1);
+    if (!arr || arr.length === 0) return { x: 0, y: 0 };
+    const stepX = (svgW - pad * 2) / Math.max(arr.length - 1, 1);
     const x = pad + (arr.length - 1) * stepX;
     const y = svgH - pad - (arr[arr.length - 1] / 100) * (svgH - pad * 2);
     return { x, y };
   };
 
-  const blueEnd = lastPoint(trendLines.blue);
-  const purpleEnd = lastPoint(trendLines.purple);
-  const greenEnd = lastPoint(trendLines.green);
+  const blueData = lines.blue || [0];
+  const purpleData = lines.purple || [0];
+  const greenData = lines.green || [0];
+
+  const blueEnd = lastPoint(blueData);
+  const purpleEnd = lastPoint(purpleData);
+  const greenEnd = lastPoint(greenData);
 
   const legend = [
     { label: 'Verbal', color: COLORS.blue },
@@ -252,7 +259,7 @@ const CommunicationImprovementCard = () => {
           />
         ))}
         <Polyline
-          points={toPoints(trendLines.blue)}
+          points={toPoints(blueData)}
           fill="none"
           stroke={COLORS.blue}
           strokeWidth="2.5"
@@ -260,7 +267,7 @@ const CommunicationImprovementCard = () => {
           strokeLinejoin="round"
         />
         <Polyline
-          points={toPoints(trendLines.purple)}
+          points={toPoints(purpleData)}
           fill="none"
           stroke={COLORS.purple}
           strokeWidth="2.5"
@@ -268,7 +275,7 @@ const CommunicationImprovementCard = () => {
           strokeLinejoin="round"
         />
         <Polyline
-          points={toPoints(trendLines.green)}
+          points={toPoints(greenData)}
           fill="none"
           stroke={COLORS.trendGreen}
           strokeWidth="2.5"
@@ -283,7 +290,6 @@ const CommunicationImprovementCard = () => {
   );
 };
 
-// ─── Milestones ───────────────────────────────────────────────────────────────
 const MilestonesList = () => (
   <>
     <Text style={styles.sectionTitle}>Recent Milestones</Text>
@@ -296,65 +302,113 @@ const MilestonesList = () => (
           <Text style={styles.milestoneTitle}>{item.title}</Text>
           <Text style={styles.milestoneDate}>{item.date}</Text>
         </View>
-       </View>
+      </View>
     ))}
   </>
 );
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
-const ProgressScreen = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('Activity');
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'Activity':
-        return <WeeklyBarsCard />;
-      case 'Emotions':
-        return <EmotionalPatternsCard />;
-      case 'Trends':
-        return <CommunicationImprovementCard />;
+const ProgressScreen = () => {
+  const { activeChild } = useDashboard();
+  const [activeTab, setActiveTab] = useState<TabType>('Activity');
+  const [focusData, setFocusData] = useState<any>(null);
+  const [reportData, setReportData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (activeChild?.id) {
+        fetchProgressData(activeChild.id);
+      }
+    }, [activeChild])
+  );
+
+  const fetchProgressData = async (childId: number) => {
+    setIsLoading(true);
+    try {
+      const [focus, report] = await Promise.all([
+        GetWeeklyFocusApi(childId, () => { }),
+        GetWeeklyReportsApi(childId, () => { })
+      ]);
+      if (focus) setFocusData(focus);
+      if (report) setReportData(report);
+    } catch (error) {
+      console.error('[ProgressScreen] fetch error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
-const StatsRow = () => (
-  <View style={styles.statsRow}>
-    {stats.map((item, index) => (
-      <View key={index} style={styles.statCard}>
-        <View style={[styles.statIconCircle,]}>
-          <Image source={item?.img}
-          style={{
-            height:58,
-            width:58
-          }}
-          />
-          {/* <Text style={styles.statEmoji}>{item.emoji}</Text> */}
-        </View>
-      
-        <Text style={styles.statLabel}>{item.label}</Text>
-          <Text style={[styles.statValue, { color: item.valueColor }]}>{item.value}</Text>
+
+  const renderContent = () => {
+    const weeklyBarsData = reportData?.data?.weekly_bars || reportData?.weekly_bars || reportData?.total_scripts_per_day || [];
+    const emotionsData = reportData?.data?.emotional_patterns || reportData?.emotional_patterns || emotionalData;
+    const linesData = reportData?.data?.trend_lines || reportData?.trend_lines || trendLines;
+
+    switch (activeTab) {
+      case 'Activity':
+        return <WeeklyBarsCard data={weeklyBarsData} />;
+      case 'Emotions':
+        return <EmotionalPatternsCard data={emotionsData} />;
+      case 'Trends':
+        return <CommunicationImprovementCard data={linesData} />;
+    }
+  };
+
+  const StatsRow = () => {
+    const dynamicStats = [
+      {
+        img: imageIndex.Conservative,
+        value: focusData?.total_scripts || focusData?.data?.total_scripts || '0',
+        label: 'Scripts',
+        valueColor: COLORS.blue
+      },
+      {
+        value: focusData?.growth_rate || focusData?.data?.growth_rate || '0%',
+        label: 'Growth',
+        valueColor: '#40B36C',
+        img: imageIndex.icons
+      },
+      {
+        img: imageIndex.Positive,
+        value: focusData?.positive_rate || focusData?.data?.positive_rate || '0%',
+        label: 'Positive',
+        valueColor: COLORS.orange
+      },
+    ];
+
+    return (
+      <View style={styles.statsRow}>
+        {dynamicStats.map((item, index) => (
+          <View key={index} style={styles.statCard}>
+            <View style={styles.statIconCircle}>
+              <Image
+                source={item?.img}
+                style={{
+                  height: 58,
+                  width: 58
+                }}
+              />
+            </View>
+            <Text style={styles.statLabel}>{item.label}</Text>
+            <Text style={[styles.statValue, { color: item.valueColor }]}>{item.value}</Text>
+          </View>
+        ))}
       </View>
-    ))}
-  </View>
-);
-const stats = [
-  { emoji: '📘', 
-    
-    img:imageIndex.Conservative,
-    bg: '#EEF3FF', value: '27', label: 'Scripts', valueColor: COLORS.blue ,    
- },
-  { emoji: '📊', bg: '#EEFBF2', value: '+18%', label: 'Growth', valueColor: '#40B36C',
-    img:imageIndex.icons,
+    );
+  };
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.bg }}>
+        <ActivityIndicator size="large" color={COLORS.green} />
+      </View>
+    );
+  }
 
-   },
-  {
-    
-        img:imageIndex.Positive,
-
-    emoji: '☺', bg: '#FFF6E8', value: '82%', label: 'Positive', valueColor: COLORS.orange },
-];
   return (
     <SafeAreaView style={styles.safe}>
-       <StatusBarComponent />
+      <StatusBarComponent />
       <CustomHeader label="Progress" />
       <ScrollView
         style={styles.container}
@@ -371,30 +425,12 @@ const stats = [
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: COLORS.bg,
   },
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.green,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  headerIconPlaceholder: {
-    width: 24,
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    letterSpacing: 0.2,
-  },
-  // ScrollView
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,
@@ -404,7 +440,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 36,
   },
-  // Stats
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -417,12 +452,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',
-           shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
-
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
-    elevation: 15,
+    elevation: 8,
   },
   statIconCircle: {
     width: 44,
@@ -431,9 +465,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
-  },
-  statEmoji: {
-    fontSize: 20,
   },
   statValue: {
     fontSize: 17,
@@ -478,15 +509,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderRadius: 18,
     padding: 16,
-     borderColor: COLORS.border,
+    borderColor: COLORS.border,
     marginBottom: 16,
-          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
-
-
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.07,
     shadowRadius: 8,
-    elevation: 15,
+    elevation: 8,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -575,12 +604,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     marginBottom: 10,
-            shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
-    
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
-    elevation: 11,
+    elevation: 8,
   },
   milestoneIconWrap: {
     width: 40,
@@ -592,8 +620,8 @@ const styles = StyleSheet.create({
   },
   milestoneEmoji: {
     fontSize: 18,
-        fontWeight: '600',
-color:"black"
+    fontWeight: '600',
+    color: "black"
   },
   milestoneTitle: {
     fontSize: 14,
@@ -604,13 +632,6 @@ color:"black"
   milestoneDate: {
     fontSize: 11,
     color: COLORS.subText,
-  },
-  milestoneDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.green,
-    flexShrink: 0,
   },
 });
 

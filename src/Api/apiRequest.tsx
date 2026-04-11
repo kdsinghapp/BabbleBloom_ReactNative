@@ -862,6 +862,122 @@ export const GetScriptDetailApi = async (
   }
 };
 
+const GetActivitiesApi = async (
+  child_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any[] | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activities}?child_id=${child_id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data || [];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetActivitiesApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+const GetActivityDetailApi = async (
+  activity_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activities}/${activity_id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetActivityDetailApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+const GetWeeklyFocusApi = async (
+  child_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.focus}/weekly?child_id=${child_id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed) {
+      return parsed; // Returning full response as focus might have different structure
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetWeeklyFocusApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+const GetWeeklyReportsApi = async (
+  child_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.reports}/weekly?child_id=${child_id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed) {
+      return parsed;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetWeeklyReportsApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 // ─── Legacy APIs (Keeping as per user request for "proper all api call") ───
 
 const LogiApi = async (param: any, setLoading: (loading: boolean) => void) => {
@@ -1221,5 +1337,9 @@ export {
   AddParcelApi,
   Parceldetails,
   DeliveryAvailableRequests,
-  GetApi
+  GetApi,
+  GetActivitiesApi,
+  GetActivityDetailApi,
+  GetWeeklyFocusApi,
+  GetWeeklyReportsApi,
 };

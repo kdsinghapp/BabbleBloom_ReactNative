@@ -14,4 +14,7 @@ export const commonEndpoints = {
   parentProfile: 'parent/profile',
   children: 'children',
   scripts: 'scripts',
+  activities: 'activities',
+  focus: 'focus',
+  reports: 'reports',
 };
