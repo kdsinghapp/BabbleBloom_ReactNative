@@ -10,6 +10,7 @@ import {
   Platform,
   UIManager,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import imageIndex from '../../../assets/imageIndex';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -48,16 +49,20 @@ export default function FAQs() {
   const [faqs, setFaqs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const fetchFaqs = async (isRefreshing = false) => {
+    if (!isRefreshing) setLoading(true);
+    const data = await GetFAQsApi(setLoading);
+    if (data) {
+      setFaqs(data);
+    }
+  };
+
   useEffect(() => {
-    const fetchFaqs = async () => {
-      setLoading(true)
-      const data = await GetFAQsApi(setLoading);
-      if (data) {
-        setLoading(false)
-        setFaqs(data);
-      }
-    };
     fetchFaqs();
+  }, []);
+
+  const onRefresh = React.useCallback(async () => {
+    await fetchFaqs(true);
   }, []);
 
 
@@ -68,7 +73,12 @@ export default function FAQs() {
       {/* Header */}
       <LoadingModal visible={loading} />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={false} onRefresh={onRefresh} colors={['#8BC34A']} />
+        }
+      >
 
         {/* Illustration */}
         <Image
@@ -86,20 +96,19 @@ export default function FAQs() {
 
         {/* FAQ List */}
         <View style={styles.card}>
-          {loading ? (
-            <ActivityIndicator size="large" color="#8BC34A" style={{ marginTop: 20 }} />
-          ) : faqs.length > 0 ? (
+          {faqs.length > 0 ? (
             faqs.map((item, index) => (
               <FAQItem
                 key={index}
-                question={item.question}
-                answer={item.answer}
+                question={item.question || item.title}
+                answer={item.answer || item.description}
               />
             ))
-          ) : (
-            <Text style={styles.noData}>No FAQs found</Text>
-          )
-          }
+          ) : !loading ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.noData}>No FAQs found at the moment.</Text>
+            </View>
+          ) : null}
         </View>
 
       </ScrollView>
@@ -165,21 +174,22 @@ const styles = StyleSheet.create({
   },
 
   faqItem: {
-    marginBottom: 10,
-    backgroundColor: '#f9fafb',
-    borderRadius: 10,
-    padding: 12,
+    marginBottom: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   faqItemOpen: {
+    borderColor: '#8BC34A',
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8F5E9',
- shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
-
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 10,
+    shadowColor: '#8BC34A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   faqHeader: {
@@ -189,30 +199,36 @@ const styles = StyleSheet.create({
   },
 
   question: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
     flex: 1,
-    color: "black"
+    color: '#333',
   },
 
   answer: {
-    marginTop: 9,
-    fontSize: 12,
-    color: 'black',
-    lineHeight:11
-    
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    paddingTop: 10,
   },
 
   arrow: {
-    width: 28,
-    height: 28,
+    width: 20,
+    height: 20,
     marginLeft: 10,
+    tintColor: '#8BC34A',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
   },
   noData: {
     textAlign: 'center',
-    marginTop: 20,
-    fontSize: 14,
-    color: '#888',
+    fontSize: 15,
+    color: '#999',
+    fontWeight: '500',
   },
 });
-

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -8,6 +8,7 @@ import {
     FlatList,
     Image,
     Platform,
+    ActivityIndicator,
 } from 'react-native';
 import imageIndex from '../../../assets/imageIndex';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
@@ -15,50 +16,9 @@ import CustomHeader from '../../../compoent/CustomHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 import { useNavigation } from '@react-navigation/native';
-
-type ItemType = {
-    id: string;
-    title: string;
-    subtitle: string;
-    tag1: string;
-    tag2: string;
-    image: string;
- };
-const DATA: ItemType[] = [
-    {
-        id: '1',
-        title: 'Requesting Items',
-        subtitle: '"You want [item] Let me help you get it."',
-        tag1: '10 Years',
-        tag2: '2-3 years',
-        img: imageIndex.Happy
-    },
-    {
-        id: '2',
-        title: 'Expressing Frustration',
-        subtitle: '"I know it’s frustrating. Let’s take a deep breath together."',
-        tag1: 'Emotions',
-        tag2: '3-4 years',
-        img: imageIndex.Anxious
-    },
-    {
-        id: '3',
-        title: 'Morning Routine',
-        subtitle: '"Good morning! It’s time to start our day."',
-        tag1: 'Routines',
-        tag2: 'All Ages',
-        img: imageIndex.Neutral
-    },
-    {
-        id: '4',
-        title: 'Sharing Toys',
-        subtitle: '"Can we share? Let’s take turns with the toy."',
-        tag1: 'Social',
-        tag2: '3-4 years',
-        img: imageIndex.Happy
-    },
-    
-];
+import { GetLibraryResponsesApi } from '../../../Api/apiRequest';
+import LoadingModal from '../../../utils/Loader';
+import { useSelector } from 'react-redux';
 
 const Tag = ({ label, color }: { label: string; color: string }) => {
     return (
@@ -72,39 +32,67 @@ const Tag = ({ label, color }: { label: string; color: string }) => {
 
 const LibraryScreen = () => {
     const navigator = useNavigation();
-    const LibraryCard = ({ item }: { item: ItemType }) => {
-    return (
-        <View style={styles.card}>
-            <View style={styles.cardRow}>
-                <Image source={item.img} style={styles.avatar} />
+    const [responses, setResponses] = useState<any[]>([]);
+    const [searchText, setSearchText] = useState('');
+    const [loading, setLoading] = useState(false);
+    const selectedChild = useSelector((state: any) => state.children.selectedChild);
 
-                <View style={styles.cardContent}>
-                    <Text style={styles.cardTitle} numberOfLines={1}>
-                        {item.title}
-                    </Text>
+    const fetchResponses = async (query = '', showLoader = true) => {
+        const data = await GetLibraryResponsesApi(showLoader ? setLoading : () => { }, selectedChild?.id, query);
+        console.log('[LibraryScreen] API Response Data:', data);
+        if (data) {
+            setResponses(data);
+        }
+    };
 
-                    <Text style={styles.cardSubtitle} numberOfLines={2}>
-                        {item.subtitle}
-                    </Text>
+    useEffect(() => {
+        fetchResponses();
+    }, [selectedChild]);
 
-                    <View style={styles.tagRow}>
-                        <Tag label={item.tag1} color="#FFE8EF" />
-                        <Tag label={item.tag2} color="#E9F8EC" />
+    const handleSearch = (text: string) => {
+        setSearchText(text);
+        // Simple search triggering
+        if (text.length > 2 || text.length === 0) {
+            fetchResponses(text, false);
+        }
+    };
+
+    const LibraryCard = ({ item }: { item: any }) => {
+        return (
+            <View style={styles.card}>
+                <View style={styles.cardRow}>
+                    <Image
+                        source={item.image ? { uri: item.image } : imageIndex.Happy}
+                        style={styles.avatar}
+                    />
+
+                    <View style={styles.cardContent}>
+                        <Text style={styles.cardTitle} numberOfLines={1}>
+                            {item.title}
+                        </Text>
+
+                        <Text style={styles.cardSubtitle} numberOfLines={3}>
+                            {item.card_prompt || item.response_text || item.subtitle}
+                        </Text>
+
+                        <View style={styles.tagRow}>
+                            {item.category && <Tag label={item.category} color="#FFE8EF" />}
+                            {item.age_group && <Tag label={item.age_group} color="#E9F8EC" />}
+                        </View>
+
+                        <TouchableOpacity style={styles.button}
+
+                            onPress={() => {
+                                navigator.navigate(ScreenNameEnum.ActivityViewDetails)
+                            }}
+                        >
+                            <Text style={styles.buttonText}>View Details</Text>
+                        </TouchableOpacity>
                     </View>
-
-                    <TouchableOpacity style={styles.button} 
-                    
-                    onPress={()=>{
-                        navigator.navigate(ScreenNameEnum.ActivityViewDetails)
-                    }}
-                    >
-                        <Text style={styles.buttonText}>View Details</Text>
-                    </TouchableOpacity>
                 </View>
             </View>
-        </View>
-    );
-};
+        );
+    };
     return (
         <SafeAreaView style={styles.safeArea}>
             <StatusBarComponent />
@@ -128,6 +116,8 @@ const LibraryScreen = () => {
                             style={[styles.input, {
                                 marginLeft: 11
                             }]}
+                            value={searchText}
+                            onChangeText={handleSearch}
                         />
                     </View>
 
@@ -138,13 +128,19 @@ const LibraryScreen = () => {
 
                 {/* List */}
                 <FlatList
-                    data={DATA}
-                    keyExtractor={(item) => item.id}
+                    data={responses}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item }) => <LibraryCard item={item} />}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.listContent}
+                    ListEmptyComponent={!loading ? (
+                        <View style={{ alignItems: 'center', marginTop: 50 }}>
+                            <Text style={{ color: '#9A9A9A', fontSize: 16 }}>No items found in the library.</Text>
+                        </View>
+                    ) : null}
                 />
             </View>
+            <LoadingModal visible={loading} />
         </SafeAreaView>
     );
 };
@@ -236,9 +232,7 @@ const styles = StyleSheet.create({
         borderRadius: 18,
         padding: 14,
         marginBottom: 14,
-        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
-        
-        
+        shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
         shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 3 },
         borderWidth: Platform.OS === 'android' ? 0.5 : 0,
         borderColor: "#BCDBFF"

@@ -109,6 +109,15 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force 'com.caverock:androidsvg-aar:1.4'
+        dependencySubstitution {
+            substitute module("com.caverock:androidsvg") using module("com.caverock:androidsvg-aar:1.4")
+        }
+    }
+}
+
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     

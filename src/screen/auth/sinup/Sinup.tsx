@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@d11/react-native-fast-image';
 import Constcounty from '../PhoneLogin/Constcounty';
 
 import imageIndex from '../../../assets/imageIndex';

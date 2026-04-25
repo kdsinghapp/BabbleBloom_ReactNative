@@ -17,4 +17,7 @@ export const commonEndpoints = {
   activities: 'activities',
   focus: 'focus',
   reports: 'reports',
+  exportData: 'reports/export-data',
+  exportPdf: 'reports/export-pdf',
+  libraryResponses: 'library/responses',
 };

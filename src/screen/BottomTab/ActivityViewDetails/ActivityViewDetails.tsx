@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,9 @@ import CustomHeader from '../../../compoent/CustomHeader';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 import { useNavigation } from '@react-navigation/native';
 import imageIndex from '../../../assets/imageIndex';
+import { GetActivitiesApi } from '../../../Api/apiRequest';
+import LoadingModal from '../../../utils/Loader';
+import { useSelector } from 'react-redux';
  
 
 const activities = [
@@ -64,29 +67,44 @@ const activities = [
 
 const ActivityViewDetails = () => {
   const Navigator = useNavigation();
+const [activities, setActivities] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const selectedChild = useSelector((state: any) => state.children.selectedChild);
+  useEffect(() => {
+    // Simulate fetching reports based on activeTab
+    // In real implementation, you would fetch from API here
+    (async() => {
+      setLoading(true);
+     const data =  await GetActivitiesApi(selectedChild?.id || 4, setLoading);
+      console.log("Activities fetched", data);
+      setActivities(data);
+      setLoading(false);
+    })();
+  }, [selectedChild]);
   const renderItem = ({ item }: any) => {
     return (
       <View style={styles.card}>
-        <Image source={{ uri: item.image }} style={styles.cardImage} />
+        <Image source={{ uri: item.image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop' }} style={styles.cardImage} />
 
         <View style={styles.cardContent}>
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.description} numberOfLines={2}>
-            {item.description}
+            {item.short_description}
           </Text>
 
           <View style={styles.badgeRow}>
             <View style={[styles.badge, styles.pinkBadge]}>
               {/* <Ionicons name="time-outline" size={12} color="#EF476F" /> */}
               <Text style={[styles.badgeText, { color: '#EF476F' }]}>
-                {item.age}
+               {item.age_min} - {item.age_max} yrs
               </Text>
             </View>
 
             <View style={[styles.badge, styles.greenBadge]}>
               {/* <Ionicons name="leaf-outline" size={12} color="#2DBE60" /> */}
               <Text style={[styles.badgeText, { color: '#2DBE60' }]}>
-                {item.stage}
+                {item.stage_relevance}
               </Text>
             </View>
           </View>
@@ -96,7 +114,10 @@ const ActivityViewDetails = () => {
 
             <TouchableOpacity 
             
-            onPress={()=> Navigator.navigate(ScreenNameEnum.MoreViewDetails)}
+            onPress={()=> Navigator.navigate(ScreenNameEnum.MoreViewDetails, {
+              activity_id: item.id,
+              child_id: selectedChild?.id
+            })}
             style={styles.startBtn} activeOpacity={0.8}>
                <Text style={styles.startText}>start</Text>
             </TouchableOpacity>
@@ -108,6 +129,7 @@ const ActivityViewDetails = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+    <LoadingModal visible = {loading}/>
            <StatusBarComponent />
       <CustomHeader label="Activity View Details" />
       <View style={[styles.container,{
@@ -120,11 +142,13 @@ const ActivityViewDetails = () => {
             
             style={{width:22,height:22}}
             />
-             <TextInput
-              placeholder="Search activities or skills..."
-              placeholderTextColor="#7C8797"
-              style={styles.input}
-            />
+              <TextInput
+                placeholder="Search activities or skills..."
+                placeholderTextColor="#7C8797"
+                style={styles.input}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
           </View>
 
           <TouchableOpacity style={styles.filterBtn}>
@@ -133,11 +157,21 @@ const ActivityViewDetails = () => {
         </View>
 
         <FlatList
-          data={activities}
-          keyExtractor={(item) => item.id}
+          data={activities.filter((item: any) => 
+            item.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            item.short_description?.toLowerCase().includes(searchQuery.toLowerCase())
+          )}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            searchQuery ? (
+              <View style={{ alignItems: 'center', marginTop: 50 }}>
+                <Text style={{ color: '#9A9A9A', fontSize: 16 }}>No activities found for "{searchQuery}"</Text>
+              </View>
+            ) : null
+          }
         />
       </View>
     </SafeAreaView>
@@ -269,6 +303,7 @@ const styles = StyleSheet.create({
   },
   pinkBadge: {
     backgroundColor: '#FFE8EE',
+    marginBottom:10
   },
   greenBadge: {
     backgroundColor: '#E6F8EC',

@@ -7,15 +7,20 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'react-native';
+import { Image, ActivityIndicator } from 'react-native';
 import imageIndex from '../../../assets/imageIndex';
-
+import Share from 'react-native-share';
+import useDashboard from '../DashBoard/useDashboard';
+import { GetWeeklyReportsApi, ExportReportDataApi, ExportReportPdfApi } from '../../../Api/apiRequest';
 const Activity = () => {
-
+  const { activeChild } = useDashboard();
   const [activeTab, setActiveTab] = useState('Week');
+  const [reportData, setReportData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   const previousReports = [
     { id: 1, title: 'Week of March 5', date: 'Generated Mar 12', type: 'Week' },
@@ -23,6 +28,82 @@ const Activity = () => {
     { id: 3, title: 'Quarter Q1', date: 'Generated Mar 26', type: 'Quarter' },
     { id: 4, title: 'Week of Feb 19', date: 'Generated Feb 26', type: 'Week' },
   ];
+  useFocusEffect(
+    React.useCallback(() => {
+      if (activeChild?.id) {
+        fetchReport(activeChild.id, activeTab);
+      }
+    }, [activeChild, activeTab])
+  );
+
+  const fetchReport = async (childId: number, tab: string) => {
+    const periodMap: { [key: string]: string } = {
+      'Week': 'weekly',
+      'Month': 'monthly',
+      'Quarter': 'quarterly'
+    };
+    const period = periodMap[tab] || 'weekly';
+
+    setLoading(true);
+    try {
+      const resp = await GetWeeklyReportsApi(childId, () => { }, period);
+      console.log(`[Activity] API response for period ${period}:`, resp);
+      setReportData(resp);
+    } catch (error) {
+      console.error('[Activity] Error fetching report:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGeneratePDF = async () => {
+    if (!activeChild?.id) return;
+    const periodMap: { [key: string]: string } = {
+      'Week': 'weekly',
+      'Month': 'monthly',
+      'Quarter': 'quarterly'
+    };
+    const period = periodMap[activeTab] || 'weekly';
+
+    try {
+      const resp = await ExportReportPdfApi(activeChild.id, setLoading, period);
+      console.log('[Activity] Export PDF Response:', resp);
+      if (resp?.data?.pdf_url) {
+        await Share.open({
+          url: resp.data.pdf_url,
+          failOnCancel: false,
+        });
+      }
+    } catch (error) {
+      console.error('[Activity] Error exporting PDF:', error);
+    }
+  };
+
+  const handleEmailReport = async () => {
+    if (!activeChild?.id) return;
+    const periodMap: { [key: string]: string } = {
+      'Week': 'weekly',
+      'Month': 'monthly',
+      'Quarter': 'quarterly'
+    };
+    const period = periodMap[activeTab] || 'weekly';
+
+    try {
+      const resp = await ExportReportPdfApi(activeChild.id, setLoading, period);
+      console.log('[Activity] Export PDF for Email Response:', resp);
+      if (resp?.data?.pdf_url) {
+        await Share.open({
+          title: 'Share Report',
+          subject: 'BabbleBloom Communication Report',
+          message: `Here is the communication progress report: ${resp.data.pdf_url}`,
+          social: Share.Social.EMAIL,
+          failOnCancel: false,
+        });
+      }
+    } catch (error) {
+      console.error('[Activity] Error exporting PDF for email:', error);
+    }
+  };
 
   const filteredReports = previousReports.filter(
     item => item.type === activeTab
@@ -50,13 +131,19 @@ const Activity = () => {
     subtitle,
     leftBg,
     icon,
+    onPress,
   }: {
     title: string;
     subtitle: string;
     leftBg: string;
     icon: string;
+    onPress?: () => void;
   }) => (
-    <TouchableOpacity activeOpacity={0.8} style={styles.shareCard}>
+    <TouchableOpacity 
+      activeOpacity={0.8} 
+      onPress={onPress}
+      style={styles.shareCard}
+    >
       <View style={[styles.shareIconBox, { backgroundColor: leftBg }]}>
         <Text style={styles.shareIcon}>{icon}</Text>
       </View>
@@ -149,20 +236,41 @@ const Activity = () => {
 
             <View style={styles.reportHeaderText}>
               <Text style={styles.reportTitle}>
-                Communication Progress Report
+                {reportData?.data?.period?.period_type 
+                  ? `${reportData.data.period.period_type} Communication Progress Report`
+                  : 'Communication Progress Report'}
               </Text>
               <Text style={styles.reportDate}>
-                March 12 - March 19, 2026
+                {reportData?.data?.period?.start_date && reportData?.data?.period?.end_date 
+                  ? `${reportData.data.period.start_date} - ${reportData.data.period.end_date}`
+                  : 'March 12 - March 19, 2026'}
               </Text>
             </View>
           </View>
 
-          <StatRow label="Total Scripts" value="27" />
-          <StatRow label="Positive Emotions" value="82%" />
-          <StatRow label="Growth Rate" value="+18%" valueColor="#1FA971" />
-          <StatRow label="New Milestones" value="3" />
+          <StatRow 
+            label="Total Scripts" 
+            value={reportData?.data?.activity_stats?.total_scripts?.toString() || '0'} 
+          />
+          <StatRow 
+            label="Positive Emotions" 
+            value={`${reportData?.data?.activity_stats?.positive_emotions_pct || 0}%`} 
+          />
+          <StatRow 
+            label="Growth Rate" 
+            value={`+${reportData?.data?.activity_stats?.growth_rate || 0}%`} 
+            valueColor="#1FA971" 
+          />
+          <StatRow 
+            label="New Milestones" 
+            value={reportData?.data?.activity_stats?.new_milestones?.toString() || '0'} 
+          />
 
-          <TouchableOpacity activeOpacity={0.85} style={styles.generateButton}>
+          <TouchableOpacity 
+            activeOpacity={0.85} 
+            onPress={handleGeneratePDF}
+            style={styles.generateButton}
+          >
             <Text style={styles.generateButtonText}>
                Generate PDF Report
             </Text>
@@ -177,6 +285,7 @@ const Activity = () => {
           subtitle="Send to therapist or school"
           leftBg="#50C878"
           icon="✉️"
+          onPress={handleEmailReport}
         />
 
         <ShareCard
@@ -189,16 +298,18 @@ const Activity = () => {
         {/* Previous Reports */}
         <Text style={styles.sectionTitle}>Previous Reports</Text>
 
-        {filteredReports.length === 0 ? (
+        {loading ? (
+          <ActivityIndicator size="large" color="#E83F77" style={{ marginTop: 20 }} />
+        ) : (reportData?.data?.previous_reports?.length || 0) === 0 ? (
           <Text style={{ textAlign: 'center', marginTop: 10 }}>
             No reports available
           </Text>
         ) : (
-          filteredReports.map(item => (
+          reportData.data.previous_reports.map((item: any, index: number) => (
             <PreviousReportItem
-              key={item.id}
-              title={item.title}
-              date={item.date}
+              key={index}
+              title={item.label}
+              date={`Generated ${item.generated_date}`}
             />
           ))
         )}

@@ -399,23 +399,40 @@ export const GetProfileMeApi = async (
 export const GetFAQsApi = async (setLoading: (loading: boolean) => void): Promise<any[] | null> => {
   setLoading(true);
   const token = await AsyncStorage.getItem('token');
+  console.log('[GetFAQsApi] Fetching FAQs from:', `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.faqs}`);
   try {
     const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.faqs}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       },
     });
 
-    const parsed = await response.json();
-    console.log('[GetFAQsApi] response:', parsed);
-    if (parsed?.status === 1) {
-      return parsed.data;
-    } else {
-      // errorToast(parsed?.message || 'Failed to fetch FAQs');
+    const textResponse = await response.text();
+    console.log('[GetFAQsApi] Raw response:', textResponse);
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(textResponse);
+    } catch (e) {
+      console.error('[GetFAQsApi] JSON parse error:', e);
+      errorToast('Invalid server response');
       return null;
     }
+
+    if (parsed?.status === 1) {
+      console.log('[GetFAQsApi] FAQs fetched successfully:', parsed.data?.length, 'items');
+      return parsed.data;
+    } else {
+      console.warn('[GetFAQsApi] API returned non-success status:', parsed?.status, parsed?.message);
+      errorToast(parsed?.message || 'Failed to fetch FAQs');
+      return null;
+    }
+  } catch (error: any) {
+    console.error('[GetFAQsApi] Network error:', error);
+    errorToast('Network error. Please check your connection.');
+    return null;
   } finally {
     setLoading(false);
   }
@@ -891,14 +908,24 @@ const GetActivitiesApi = async (
   }
 };
 
-const GetActivityDetailApi = async (
-  activity_id: number,
-  setLoading: (loading: boolean) => void
-): Promise<any | null> => {
+export const GetLibraryResponsesApi = async (
+  setLoading: (loading: boolean) => void,
+  child_id?: number,
+  search?: string,
+  category?: string
+): Promise<any[] | null> => {
   setLoading(true);
   try {
     const token = await AsyncStorage.getItem('token');
-    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activities}/${activity_id}`, {
+    const queryParams = new URLSearchParams();
+    if (child_id) queryParams.append('child_id', child_id.toString());
+    if (search) queryParams.append('search', search);
+    if (category) queryParams.append('category', category);
+
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.libraryResponses}${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    console.log('[GetLibraryResponsesApi] Fetching from:', url);
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -907,6 +934,46 @@ const GetActivityDetailApi = async (
     });
 
     const parsed = await response.json();
+    if (parsed?.status === 1) {
+      console.log('[GetLibraryResponsesApi] Success:', parsed.data?.length, 'items');
+      return parsed.data || [];
+    } else {
+      errorToast(parsed?.message || 'Failed to fetch library responses');
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetLibraryResponsesApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const GetActivityDetailApi = async (
+  activity_id: number,
+  setLoading: (loading: boolean) => void,
+  child_id?: number
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    let url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activities}/${activity_id}`;
+    if (child_id) {
+      url += `?child_id=${child_id}`;
+    }
+    console.log('[GetActivityDetailApi] Requesting URL:', url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    console.log('[GetActivityDetailApi] Response:', parsed);
+
     if (parsed?.status === 1) {
       return parsed.data;
     } else {
@@ -951,12 +1018,16 @@ const GetWeeklyFocusApi = async (
 
 const GetWeeklyReportsApi = async (
   child_id: number,
-  setLoading: (loading: boolean) => void
+  setLoading: (loading: boolean) => void,
+  period: string = 'weekly'
 ): Promise<any | null> => {
   setLoading(true);
   try {
     const token = await AsyncStorage.getItem('token');
-    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.reports}/weekly?child_id=${child_id}`, {
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.reports}/weekly?child_id=${child_id}&period=${period}`;
+    console.log('[GetWeeklyReportsApi] Request URL:', url);
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -965,6 +1036,8 @@ const GetWeeklyReportsApi = async (
     });
 
     const parsed = await response.json();
+    console.log('[GetWeeklyReportsApi] Response:', JSON.stringify(parsed, null, 2));
+
     if (parsed) {
       return parsed;
     } else {
@@ -972,6 +1045,116 @@ const GetWeeklyReportsApi = async (
     }
   } catch (error) {
     console.error('[GetWeeklyReportsApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+const ExportReportDataApi = async (
+  child_id: number,
+  setLoading: (loading: boolean) => void,
+  period: string = 'weekly'
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.exportData}?child_id=${child_id}&period=${period}`;
+    console.log('[ExportReportDataApi] Request URL:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const textLine = await response.text();
+    console.log('[ExportReportDataApi] Raw response:', textLine);
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(textLine);
+      const urlValue = parsed?.data?.pdf_url || parsed?.data?.url;
+      if (typeof urlValue === 'string') {
+        const cleanedUrl = urlValue.startsWith('blob:') ? urlValue.replace('blob:', '') : urlValue;
+        if (!parsed.data) parsed.data = {};
+        parsed.data.url = cleanedUrl;
+        parsed.data.pdf_url = cleanedUrl;
+      }
+    } catch (e) {
+      let url = textLine;
+      if (textLine.startsWith('blob:')) {
+        url = textLine.replace('blob:', '');
+      }
+      parsed = { status: 1, data: { url, pdf_url: url } };
+    }
+
+    console.log('[ExportReportDataApi] Final parsed:', JSON.stringify(parsed, null, 2));
+
+    if (parsed) {
+      return parsed;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[ExportReportDataApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+const ExportReportPdfApi = async (
+  child_id: number,
+  setLoading: (loading: boolean) => void,
+  period: string = 'weekly'
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.exportPdf}?child_id=${child_id}&period=${period}`;
+    console.log('[ExportReportPdfApi] Request URL:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const textLine = await response.text();
+    console.log('[ExportReportPdfApi] Raw response:', textLine);
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(textLine);
+      const urlValue = parsed?.data?.pdf_url || parsed?.data?.url;
+      if (typeof urlValue === 'string') {
+        const cleanedUrl = urlValue.startsWith('blob:') ? urlValue.replace('blob:', '') : urlValue;
+        if (!parsed.data) parsed.data = {};
+        parsed.data.url = cleanedUrl;
+        parsed.data.pdf_url = cleanedUrl;
+      }
+    } catch (e) {
+      let url = textLine;
+      if (textLine.startsWith('blob:')) {
+        url = textLine.replace('blob:', '');
+      }
+      parsed = { status: 1, data: { url, pdf_url: url } };
+    }
+
+    console.log('[ExportReportPdfApi] Final parsed:', JSON.stringify(parsed, null, 2));
+
+    if (parsed) {
+      return parsed;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[ExportReportPdfApi] error:', error);
     return null;
   } finally {
     setLoading(false);
@@ -1315,6 +1498,79 @@ const DeliveryAvailableRequests = async (setLoading: (loading: boolean) => void)
   }
 };
 
+export const StartActivityApi = async (
+  activity_id: number,
+  child_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activities}/${activity_id}/start?child_id=${child_id}`;
+    console.log('[StartActivityApi] Requesting URL:', url);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    console.log('[StartActivityApi] Response:', parsed);
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      errorToast(parsed?.message || 'Failed to start activity');
+      return null;
+    }
+  } catch (error) {
+    console.error('[StartActivityApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const CompleteActivityApi = async (
+  activity_id: number,
+  session_id: number,
+  child_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activities}/${activity_id}/complete?session_id=${session_id}&child_id=${child_id}`;
+    console.log('[CompleteActivityApi] Requesting URL:', url);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    console.log('[CompleteActivityApi] Response:', parsed);
+    if (parsed?.status === 1) {
+      successToast(parsed?.message || 'Activity completed successfully');
+      return parsed.data;
+    } else {
+
+      errorToast(parsed?.message || 'Failed to complete activity');
+      return null;
+    }
+  } catch (error) {
+    console.error('[CompleteActivityApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 export {
   SignUpApi,
   SendSignupOtpApi,
@@ -1342,4 +1598,8 @@ export {
   GetActivityDetailApi,
   GetWeeklyFocusApi,
   GetWeeklyReportsApi,
+  ExportReportDataApi,
+  ExportReportPdfApi,
+  StartActivityApi,
+  CompleteActivityApi,
 };

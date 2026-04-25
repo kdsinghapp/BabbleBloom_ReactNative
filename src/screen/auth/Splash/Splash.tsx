@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, ImageBackground, View, Text } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import FastImage from 'react-native-fast-image';
+import FastImage from '@d11/react-native-fast-image';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 import { color } from '../../../constant';
 import imageIndex from '../../../assets/imageIndex';

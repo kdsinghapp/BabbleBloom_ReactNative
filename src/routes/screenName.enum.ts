@@ -14,7 +14,7 @@ enum ScreenNameEnum {
   ScriptDetailsScreen="ScriptDetailsScreen",
   MoreViewDetails="MoreViewDetails",
   ProfileSetting="ProfileSetting",
-  BirdNestRescueScreen="BirdNestRescueScreen",
+  ActivityPlayerScreen="ActivityPlayerScreen",
   NearbyDriversMap="NearbyDriversMap",
   Activity="Activity",
   FAQs = "FAQs",

@@ -19,7 +19,7 @@ import Activity from "../screen/BottomTab/Activity/Activity";
 import ActivityViewDetails from "../screen/BottomTab/ActivityViewDetails/ActivityViewDetails";
 import MoreViewDetails from "../screen/BottomTab/MoreViewDetails/MoreViewDetails";
 import ScriptDetailsScreen from "../screen/BottomTab/ScriptDetailsScreen/ScriptDetailsScreen";
-import BirdNestRescueScreen from "../screen/BottomTab/BirdNestRescueScreen/BirdNestRescueScreen";
+import ActivityPlayerScreen from "../screen/BottomTab/ActivityPlayerScreen/ActivityPlayerScreen";
 import ProfileSetting from "../screen/BottomTab/ProfileSetting/ProfileSetting";
 import FAQs from "../screen/Profile/FAQ/FAQs";
 import SupportScreen from "../screen/BottomTab/SupportScreen/SupportScreen";
@@ -83,8 +83,8 @@ const _routes: any = {
     },
 
     {
-      name: ScreenNameEnum.BirdNestRescueScreen,
-      Component: BirdNestRescueScreen,
+      name: ScreenNameEnum.ActivityPlayerScreen,
+      Component: ActivityPlayerScreen,
     },
 
 

@@ -48,7 +48,7 @@ export type RegistrationStackParamList = {
   [ScreenNameEnum.LibraryScreen]: undefined;
   [ScreenNameEnum.MoreViewDetails]: undefined;
   [ScreenNameEnum.ScriptDetailsScreen]: undefined;
-  [ScreenNameEnum.BirdNestRescueScreen]: undefined;
+  [ScreenNameEnum.ActivityPlayerScreen]: { scripts: any[], activityTitle: string };
   [ScreenNameEnum.ActivityViewDetails]: undefined;
   [ScreenNameEnum.Activity]: undefined;
   [ScreenNameEnum.EditProfile]: undefined;
