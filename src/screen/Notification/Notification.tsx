@@ -1,92 +1,115 @@
-import React from 'react';
-import { View, Text, StyleSheet, SectionList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, SectionList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomHeader from '../../compoent/CustomHeader';
-import imageIndex from '../../assets/imageIndex';
 import { useNavigation } from '@react-navigation/native';
+import { GetNotificationsApi, MarkNotificationReadApi } from '../../Api/apiRequest';
+import moment from 'moment';
+import LoadingModal from '../../utils/Loader';
 
-const notifications = [
-  {
-    title: 'Today',
-    data: [
-      {
-        id: '1',
-        title: 'Your weekly review has been answered',
-        date: 'Jun 2, 2024 at 09:41 AM',
-        unread: false,
-      },
-      {
-        id: '2',
-        title: 'Unread notification title',
-        date: 'Date',
-        unread: true,
-      },
-    ],
-  },
-  {
-    title: 'This week',
-    data: [
-      {
-        id: '3',
-        title: 'Unread notification title',
-        date: 'Date',
-        unread: true,
-      },
-      {
-        id: '4',
-        title: 'Notification title',
-        date: 'Date',
-        unread: false,
-      },
-      {
-        id: '5',
-        title: 'Notification title',
-        date: 'Date',
-        unread: false,
-      },
-    ],
-  },
-];
-
-const NotificationItem = ({ item }) => {
+const NotificationItem = ({ item, onPress }: { item: any; onPress: () => void }) => {
   return (
-    <View
+    <TouchableOpacity
+      onPress={onPress}
       style={[
         styles.itemContainer,
-        item.unread && styles.unreadBackground
+        !item.is_read && styles.unreadBackground
       ]}
     >
       <View style={styles.dot} />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.date}>{item.date}</Text>
+        <Text style={styles.message}>{item.message || item.content}</Text>
+        <Text style={styles.date}>{moment(item.created_at).format('MMM D, YYYY [at] hh:mm A')}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const NotificationsScreen = () => {
-    const navigation = useNavigation()
+  const navigation = useNavigation();
+  const [notificationsData, setNotificationsData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchNotifications = async (showLoading = true) => {
+    const data = await GetNotificationsApi(showLoading ? setIsLoading : () => { });
+    if (data) {
+      setNotificationsData(groupNotifications(data));
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const groupNotifications = (data: any[]) => {
+    if (!data || !Array.isArray(data)) return [];
+
+    const today: any[] = [];
+    const thisWeek: any[] = [];
+    const earlier: any[] = [];
+
+    const now = moment();
+
+    data.forEach(item => {
+      const date = moment(item.created_at);
+      if (now.isSame(date, 'day')) {
+        today.push(item);
+      } else if (now.diff(date, 'days') < 7) {
+        thisWeek.push(item);
+      } else {
+        earlier.push(item);
+      }
+    });
+
+    const sections = [];
+    if (today.length > 0) sections.push({ title: 'Today', data: today });
+    if (thisWeek.length > 0) sections.push({ title: 'This week', data: thisWeek });
+    if (earlier.length > 0) sections.push({ title: 'Earlier', data: earlier });
+
+    return sections;
+  };
+
+  const handleMarkAsRead = async (id: number) => {
+    await MarkNotificationReadApi(id, setIsLoading);
+    fetchNotifications(false);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-            <CustomHeader
-                label={"Notification"}
-               
-                // rightIcons={[
-                //     { icon: imageIndex.close, onPress:()=>navigation.navigate(ScreenNameEnum.NotificationsScreen)}
-                // ]}
-            />
-            <View        style={{ flex: 1, paddingHorizontal: 20, marginTop: 10 }}
->
-      <SectionList 
-        sections={notifications}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <NotificationItem item={item} />}
-        renderSectionHeader={({ section: { title } }) => (
-          <Text style={styles.sectionHeader}>{title}</Text>
-        )}
-        contentContainerStyle={{ paddingBottom: 20 }}
+      <LoadingModal visible={isLoading} />
+      <CustomHeader
+        label={"Notification"}
       />
+      <View style={{ flex: 1, paddingHorizontal: 20, marginTop: 10 }}>
+        {notificationsData.length > 0 ? (
+          <SectionList
+            sections={notificationsData}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <NotificationItem
+                item={item}
+                onPress={() => {
+                  if (!item.is_read) {
+                    handleMarkAsRead(item.id);
+                  }
+                }}
+              />
+            )}
+            renderSectionHeader={({ section: { title } }) => (
+              <Text style={styles.sectionHeader}>{title}</Text>
+            )}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            refreshing={false}
+            onRefresh={() => fetchNotifications(false)}
+          />
+        ) : (
+          !isLoading && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No notifications found</Text>
+            </View>
+          )
+        )}
       </View>
     </SafeAreaView>
   );
@@ -96,7 +119,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    
+
   },
   sectionHeader: {
     fontSize: 16,
@@ -128,11 +151,26 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     color: '#333',
+    fontWeight: '600',
+  },
+  message: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
   },
   date: {
     fontSize: 13,
     color: '#999',
     marginTop: 4,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
   },
 });
 

@@ -3,7 +3,7 @@ import { Platform, PermissionsAndroid } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 
 const CurrentLocation = forwardRef(({ onLocationFetched }, ref) => {
-  const GOOGLE_API_KEY = "AIzaSyDgFGS91BvviXh_f-nmvtEggUHJcaGyUwA";
+  const GOOGLE_API_KEY = "";
 
   const requestPermission = async () => {
     if (Platform.OS === 'android') {
@@ -51,18 +51,18 @@ const CurrentLocation = forwardRef(({ onLocationFetched }, ref) => {
     }
 
     return new Promise((resolve) => {
-    Geolocation.getCurrentPosition(
-  async (position) => {
-    const { latitude, longitude } = position.coords;
-    const result = await getAddressFromCoords(latitude, longitude);
-    resolve(result);
-  },
-  (error) => {
-    console.log("Location error:", error);
-    resolve({ error: error.message });
-  },
-  { enableHighAccuracy: false, timeout: 30000, maximumAge: 10000 }
-);
+      Geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          const result = await getAddressFromCoords(latitude, longitude);
+          resolve(result);
+        },
+        (error) => {
+          console.log("Location error:", error);
+          resolve({ error: error.message });
+        },
+        { enableHighAccuracy: false, timeout: 30000, maximumAge: 10000 }
+      );
 
     });
   };

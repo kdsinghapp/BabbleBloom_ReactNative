@@ -924,7 +924,7 @@ export const GetLibraryResponsesApi = async (
 
     const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.libraryResponses}${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     console.log('[GetLibraryResponsesApi] Fetching from:', url);
-    
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -1571,6 +1571,97 @@ export const CompleteActivityApi = async (
   }
 };
 
+export const GetNotificationsApi = async (
+  setLoading: (loading: boolean) => void
+): Promise<any[] | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.notifications}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      errorToast(parsed?.message || 'Failed to fetch notifications');
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetNotificationsApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const MarkNotificationReadApi = async (
+  notificationId: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.notifications}/${notificationId}/read`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      errorToast(parsed?.message || 'Failed to mark notification as read');
+      return null;
+    }
+  } catch (error) {
+    console.error('[MarkNotificationReadApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+export const GetDailyPromptApi = async (
+  childId: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.dailyPrompt}?child_id=${childId}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      // Don't show toast for daily prompt failure to avoid annoying user on dashboard
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetDailyPromptApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
 export {
   SignUpApi,
   SendSignupOtpApi,
@@ -1602,4 +1693,7 @@ export {
   ExportReportPdfApi,
   StartActivityApi,
   CompleteActivityApi,
+  GetNotificationsApi,
+  MarkNotificationReadApi,
+  GetDailyPromptApi,
 };

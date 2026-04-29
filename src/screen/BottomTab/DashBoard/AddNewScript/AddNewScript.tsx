@@ -153,17 +153,38 @@ export default function AddNewScriptScreen({ navigation, route }: any) {
   const [selectedFreq, setSelectedFreq] = useState('New');
   const [meaning, setMeaning] = useState('');
   const [notes, setNotes] = useState('');
+  const [errors, setErrors] = useState<any>({});
+
+  const validateStep = (step: number) => {
+    let newErrors: any = {};
+    if (step === 0) {
+      if (!scriptText.trim()) newErrors.scriptText = 'Please enter what your child said';
+    }
+    // Step 1 usually has defaults, but we can add validation if needed
+    if (step === 2) {
+      if (!meaning.trim()) newErrors.meaning = 'Please enter what you think it means';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const toggleEmotion = (id: string) => setSelectedEmotion(id);
 
   const goToStep = (step: number) => {
+    if (step > currentStep) {
+      if (!validateStep(currentStep)) return;
+    }
+
     if (step >= 0 && step <= 2) {
+      setErrors({});
       setCurrentStep(step);
       flatListRef.current?.scrollToIndex({ index: step, animated: true });
     }
   };
 
   const handleSave = async () => {
+    if (!validateStep(currentStep)) return;
+
     if (!child_id) {
       console.warn('Child ID is missing');
       return;
@@ -196,25 +217,29 @@ export default function AddNewScriptScreen({ navigation, route }: any) {
         <View style={s.stepContainer}>
           <View style={s.card}>
             <SectionHeader title="" subtitle="What exactly did your child say?" />
-            <View style={s.scriptInputContainer}>
-              <TextInput
-                multiline
-                numberOfLines={6}
-                placeholder="Type the script here…"
-                placeholderTextColor={"black"}
-                style={s.scriptInput}
-                value={scriptText}
-                onChangeText={setScriptText}
-                textAlignVertical="top"
-              />
-              <View style={s.inputFooter}>
-                <Text style={s.charCount}>{scriptText.length} / 500</Text>
-                <TouchableOpacity style={s.micBtn}>
-                  <Image source={imageIndex.voice} style={s.micIcon} />
-                </TouchableOpacity>
+              <View style={[s.scriptInputContainer, errors.scriptText && { borderColor: 'red' }]}>
+                <TextInput
+                  multiline
+                  numberOfLines={6}
+                  placeholder="Type the script here…"
+                  placeholderTextColor={"black"}
+                  style={s.scriptInput}
+                  value={scriptText}
+                  onChangeText={(txt) => {
+                    setScriptText(txt);
+                    if (errors.scriptText) setErrors({ ...errors, scriptText: null });
+                  }}
+                  textAlignVertical="top"
+                />
+                <View style={s.inputFooter}>
+                  <Text style={s.charCount}>{scriptText.length} / 500</Text>
+                  <TouchableOpacity style={s.micBtn}>
+                    <Image source={imageIndex.voice} style={s.micIcon} />
+                  </TouchableOpacity>
+                </View>
               </View>
+              {errors.scriptText && <Text style={s.errorText}>{errors.scriptText}</Text>}
             </View>
-          </View>
 
           <View style={s.card}>
             <SectionHeader title="Context" subtitle="" />
@@ -294,16 +319,20 @@ export default function AddNewScriptScreen({ navigation, route }: any) {
         <View style={s.card}>
           <SectionHeader title="" subtitle="What do you think it means?" />
           <TextInput
-            style={s.textArea}
+            style={[s.textArea, errors.meaning && { borderColor: 'red', borderWidth: 1 }]}
             placeholder="Explain the intended meaning…"
             placeholderTextColor={"black"}
             value={meaning}
-            onChangeText={setMeaning}
+            onChangeText={(txt) => {
+              setMeaning(txt);
+              if (errors.meaning) setErrors({ ...errors, meaning: null });
+            }}
 
             multiline
             numberOfLines={4}
             textAlignVertical="top"
           />
+          {errors.meaning && <Text style={s.errorText}>{errors.meaning}</Text>}
         </View>
 
         <View style={s.card}>
@@ -591,4 +620,11 @@ const s = StyleSheet.create({
 
   },
   saveBtnText: { color: 'white', fontSize: 16, fontWeight: '800' },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 4,
+    fontWeight: '500',
+  },
 });

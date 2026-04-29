@@ -14,17 +14,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import screenNameEnum from '../../../routes/screenName.enum';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import useDashboard from './useDashboard';
-import moment from 'moment';
-import { BASE_URLIMAGE } from '../../../Api/apiRequest';
+import ScriptItem from '../../../compoent/ScriptItem';
+import { BASE_URLIMAGE, GetDailyPromptApi } from '../../../Api/apiRequest';
 import { useSelector } from 'react-redux';
 
-// ─── Icon placeholders (replace with react-native-vector-icons or expo icons) ───
 const PlusCircle = () => (
   <View style={styles.iconCircle}>
     <Text style={styles.iconCircleText}>＋</Text>
   </View>
 );
-const ScriptIcon = () => <Image source={imageIndex.Frame} style={{ width: 29, height: 29 }} />;
 const BarChartIcon = () => <Image source={imageIndex.grap} style={{ width: 29, height: 29 }} />;
 const LibraryIcon = () => <Image source={imageIndex.Library} style={{ width: 29, height: 29 }} />;
 const ActivityIcon = () => <Image source={imageIndex.Activity} style={{ width: 29, height: 29 }} />;
@@ -49,24 +47,13 @@ const C = {
   tagText: '#E8336D',
 };
 
-// ─── Data ────────────────────────────────────────────────────────────────────
-// const recentScripts = [
-//   // { id: '1', text: '"Want juice want juice"', time: '2 hours ago' },
-//   // { id: '2', text: '"Want juice want juice"', time: '2 hours ago' },
-// ];
 
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-
-
-function TodayBanner() {
+function TodayBanner({ prompt }: { prompt: any }) {
+  const displayPrompt = prompt?.prompt || "Try this today: 'Let's\nplay together.";
   return (
     <View style={styles.banner}>
-      <View style={[styles.bannerContent, {
-        bottom: 15
-      }]}>
-        <Text style={styles.bannerTitle}>{"Try this today: 'Let's\nplay together."}</Text>
+      <View style={[styles.bannerContent]}>
+        <Text style={styles.bannerTitle}>{displayPrompt}</Text>
         <TouchableOpacity style={styles.bannerBtn} activeOpacity={0.85}>
           <Text style={styles.bannerBtnText}>Let's play together</Text>
         </TouchableOpacity>
@@ -80,47 +67,6 @@ function TodayBanner() {
   );
 }
 
-function ScriptItem({ item, navigator }: { item: any; navigator: any }) {
-  // Map emotional_state to corresponding image
-  const getEmotionImage = (state: string) => {
-    if (!state) return imageIndex.Happy;
-    const firstState = state.split(',')[0].toLowerCase().trim();
-    switch (firstState) {
-      case 'happy': return imageIndex.Happy;
-      case 'sad': return imageIndex.Sad;
-      case 'angry': return imageIndex.Angry;
-      case 'anxious': return imageIndex.Anxious;
-      case 'excited': return imageIndex.Excited;
-      case 'neutral': return imageIndex.Neutral;
-      default: return imageIndex.Happy;
-    }
-  };
-
-  return (
-    <View style={styles.scriptItem}>
-      <View style={styles.scriptLeft}>
-        <Image
-          source={getEmotionImage(item.emotional_state)}
-          style={{ width: 42, height: 42 }}
-        />
-
-        <View style={{ flex: 1, marginRight: 10 }}>
-          <Text style={styles.scriptText} numberOfLines={2}>{item.script_text}</Text>
-          <Text style={[styles.scriptTime, {
-            color: "#ADA4A5"
-          }]}>{moment(item.created_at).fromNow()}</Text>
-        </View>
-      </View>
-      <TouchableOpacity style={styles.scriptIconBtn}
-        onPress={() => {
-          navigator.navigate(screenNameEnum.ScriptDetailsScreen, { scriptItem: item })
-        }}
-      >
-        <ScriptIcon />
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 function RecentScripts({ scripts }: { scripts: any[] }) {
   const navigator = useNavigation()
@@ -128,14 +74,16 @@ function RecentScripts({ scripts }: { scripts: any[] }) {
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Scripts</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => {
+          navigator.navigate(screenNameEnum.AllRecentScripts as never, { scripts: scripts } as never)
+        }}>
           <Text style={[styles.seeAll, {
             color: "#00D490"
           }]}>See All</Text>
         </TouchableOpacity>
       </View>
       {scripts && scripts.length > 0 ? (
-        scripts.slice(0, 5).map((item) => (
+        scripts.slice(0, 3).map((item) => (
           <ScriptItem key={item.id} item={item} navigator={navigator} />
         ))
       ) : (
@@ -179,16 +127,23 @@ function WeeklyInsight() {
 }
 
 
-
-// ─── Screen ──────────────────────────────────────────────────────────────────
-
 export default function HomeScreen() {
   const { activeChild, navigation: navigator, scripts, fetchScripts } = useDashboard();
+
+  const [dailyPrompt, setDailyPrompt] = React.useState<any>(null);
+
+  const fetchDailyPrompt = async (childId: number) => {
+    const data = await GetDailyPromptApi(childId, () => { });
+    if (data) {
+      setDailyPrompt(data);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
       if (activeChild?.id) {
         fetchScripts(activeChild.id);
+        fetchDailyPrompt(activeChild.id);
       }
     }, [activeChild])
   );
@@ -229,7 +184,6 @@ export default function HomeScreen() {
   function AddScriptButton() {
     return (
       <TouchableOpacity style={styles.addBtn} activeOpacity={0.88}
-
         onPress={() => {
           navigator.navigate(screenNameEnum.AddNewScript as never, { child_id: activeChild?.id } as never)
         }}
@@ -251,7 +205,10 @@ export default function HomeScreen() {
           <Text style={styles.subGreeting}>Let's support {activeChild?.full_name || 'Emma'} today</Text>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.bellBtn}>
+          <TouchableOpacity
+            style={styles.bellBtn}
+            onPress={() => navigator.navigate(screenNameEnum.NotificationsScreen as never)}
+          >
             <Image source={imageIndex.NotificationIcon}
 
               style={{ width: 22, height: 22 }}
@@ -284,7 +241,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Header />
-        <TodayBanner />
+        <TodayBanner prompt={dailyPrompt} />
         <AddScriptButton />
         <RecentScripts scripts={scripts} />
         <WeeklyInsight />
@@ -294,7 +251,6 @@ export default function HomeScreen() {
   );
 }
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   safe: {
@@ -352,7 +308,6 @@ const styles = StyleSheet.create({
     borderRadius: 21,
   },
 
-  // Banner
   banner: {
     marginHorizontal: 15,
     marginTop: 15,
@@ -367,6 +322,7 @@ const styles = StyleSheet.create({
   bannerContent: {
     flex: 1,
     paddingRight: 8,
+    bottom: 15
   },
   bannerTitle: {
     fontSize: 20,
@@ -375,6 +331,7 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     marginBottom: 14,
+    marginTop: 10
   },
   bannerBtn: {
     backgroundColor: C.brownDark,
@@ -460,51 +417,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // Script Item
-  scriptItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: C.white,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
-
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 10,
-  },
-  scriptLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  scriptAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFF0E0',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scriptText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: C.textDark,
-  },
-  scriptTime: {
-    fontSize: 12,
-    color: C.textGray,
-    marginTop: 2,
-  },
-  scriptIconBtn: {
-
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 
   // Weekly Insight
   insightRow: {

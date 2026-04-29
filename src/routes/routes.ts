@@ -1,6 +1,7 @@
 import OnboardingScreen from "../screen/auth/Onboarding/Onboarding";
 import ScreenNameEnum from "./screenName.enum";
 import NotificationsScreen from "../screen/Notification/Notification";
+import NotificationsSetting from "../screen/Notification/NotificationsSetting";
 import Sinup from "../screen/auth/sinup/Sinup";
 import ChangePassword from "../screen/Profile/ChangePassword/ChangePassword";
 import Splash from "../screen/auth/Splash/Splash";
@@ -11,6 +12,7 @@ import PrivacyPolicy from "../screen/Profile/PrivacyPolicy";
 import EditProfile from "../screen/Profile/EditProfile/EditProfile";
 import MyProfile from "../screen/auth/MyProfile/MyProfile";
 import HomeDashboard from "../screen/BottomTab/DashBoard/HomeDashboard";
+import AllRecentScripts from "../screen/BottomTab/DashBoard/AllRecentScripts";
 import AddNewScript from "../screen/BottomTab/DashBoard/AddNewScript/AddNewScript";
 import ParentInfoScreen from "../screen/Profile/ParentInfo/ParentInfoScreen";
 import ProgressScreen from "../screen/BottomTab/Progress/ProgressScreen";
@@ -144,6 +146,10 @@ const _routes: any = {
       name: ScreenNameEnum.NotificationsScreen,
       Component: NotificationsScreen,
     },
+    {
+      name: ScreenNameEnum.NotificationsSetting,
+      Component: NotificationsSetting,
+    },
 
 
     {
@@ -161,6 +167,10 @@ const _routes: any = {
 
 
 
+    {
+      name: ScreenNameEnum.AllRecentScripts,
+      Component: AllRecentScripts,
+    },
     //    {
     //   name: ScreenNameEnum.DocumentShow,
     //   Component: DocumentShow,

@@ -20,4 +20,6 @@ export const commonEndpoints = {
   exportData: 'reports/export-data',
   exportPdf: 'reports/export-pdf',
   libraryResponses: 'library/responses',
+  notifications: 'notifications',
+  dailyPrompt: 'notifications/daily-prompt',
 };

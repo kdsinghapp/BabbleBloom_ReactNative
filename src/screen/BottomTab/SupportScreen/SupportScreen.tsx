@@ -71,22 +71,6 @@ export default function SupportScreen() {
 
         {/* Message Box */}
         <View style={styles.card}>
-          {/* <Text style={styles.label}>Name*</Text>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter your name"
-            style={styles.singleInput}
-          />
-
-          <Text style={styles.label}>Email (Optional)</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            keyboardType="email-address"
-            style={styles.singleInput}
-          /> */}
 
           <Text style={styles.label}>How can we help?*</Text>
 
@@ -116,7 +100,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-
   },
 
   header: {
@@ -208,12 +191,11 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
     marginBottom: 5,
-     shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
-    
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
-        elevation: 10,
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 10,
   },
 
   singleInput: {
@@ -232,7 +214,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
   },
-
   sendIcon: {
     width: 16,
     height: 16,

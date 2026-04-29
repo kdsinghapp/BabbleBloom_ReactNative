@@ -1,8 +1,3 @@
-// CounterOfferModal.js
-// Reusable React Native modal styled like the provided screenshot
-// Drop this file into your project and import the default export.
-// Example usage at the bottom.
-
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Modal,
@@ -135,7 +130,7 @@ const CounterOfferModal = ({
 
 export default CounterOfferModal;
 
- const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   center: {
     flex: 1,
     justifyContent: 'center',
@@ -160,24 +155,24 @@ export default CounterOfferModal;
   title: {
     textAlign: 'center',
     fontSize: 18,
-     color: '#222',
+    color: '#222',
     marginTop: 6,
     marginBottom: 14,
-    fontFamily:font.MonolithRegular
+    fontFamily: font.MonolithRegular
   },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E6E6E6',
-     borderRadius: 12,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 8,
   },
   currency: {
     fontSize: 18,
-    fontFamily:font.MonolithRegular,
+    fontFamily: font.MonolithRegular,
     color: '#9CA3AF',
     marginRight: 6,
   },
@@ -186,7 +181,7 @@ export default CounterOfferModal;
     fontSize: 18,
     color: '#1F2937',
     paddingVertical: 4,
-    fontFamily:font.MonolithRegular
+    fontFamily: font.MonolithRegular
 
   },
   row: {
@@ -200,11 +195,11 @@ export default CounterOfferModal;
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
- 
+
   },
   buttonLabel: {
     fontSize: 16,
-     fontFamily:font.MonolithRegular
+    fontFamily: font.MonolithRegular
 
   },
   error: {
@@ -212,7 +207,7 @@ export default CounterOfferModal;
     fontSize: 12,
     marginTop: 2,
     textAlign: 'center',
-    fontFamily:font.MonolithRegular
+    fontFamily: font.MonolithRegular
 
   },
 });

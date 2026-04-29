@@ -117,7 +117,7 @@ export default function ProfileSetting() {
               <MenuItem
                 icon={imageIndex.nofication}
                 title="Notification"
-                onPress={() => navigation.navigate(ScreenNameEnum.NotificationsScreen)}
+                onPress={() => navigation.navigate(ScreenNameEnum.NotificationsSetting)}
               />
               <MenuItem
                 icon={imageIndex.ContactUs}

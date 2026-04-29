@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-   View,
+  View,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -53,7 +53,7 @@ const MoreViewDetails = () => {
       }
     });
 
-    const onStart = () => {};
+    const onStart = () => { };
     const onFinish = () => setIsPlaying(null);
     const onCancel = () => setIsPlaying(null);
 
@@ -126,8 +126,8 @@ const MoreViewDetails = () => {
               <Text style={styles.cardText}>{item}</Text>
             </View>
           )) || (
-            <Text style={styles.cardText}>Check activity details for practice points.</Text>
-          )}
+              <Text style={styles.cardText}>Check activity details for practice points.</Text>
+            )}
         </View>
 
         {/* Scripts */}
@@ -143,8 +143,8 @@ const MoreViewDetails = () => {
 
         {activityData?.scripts_to_model?.map((item: any, index: number) => (
           <View key={item.id || index} style={styles.scriptItem}>
-            <TouchableOpacity 
-              style={[styles.playButton, isPlaying === item.id && { backgroundColor: '#E03B65' }]} 
+            <TouchableOpacity
+              style={[styles.playButton, isPlaying === item.id && { backgroundColor: '#E03B65' }]}
               onPress={() => handleSpeech(item.text, item.id)}
             >
               <Text style={[styles.playIcon, isPlaying === item.id && { color: '#FFF' }]}>
@@ -159,13 +159,13 @@ const MoreViewDetails = () => {
             </TouchableOpacity>
           </View>
         )) || (
-          <Text style={{ textAlign: 'center', marginTop: 10, color: '#999' }}>No scripts available.</Text>
-        )}
+            <Text style={{ textAlign: 'center', marginTop: 10, color: '#999' }}>No scripts available.</Text>
+          )}
       </ScrollView>
 
       {/* Bottom Button */}
-      <TouchableOpacity 
-        style={styles.bottomButton} 
+      <TouchableOpacity
+        style={styles.bottomButton}
         onPress={() => navigation.navigate(ScreenNameEnum.ActivityPlayerScreen, {
           scripts: activityData?.scripts_to_model || [],
           activityTitle: activityData?.title,
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 20,
-    marginHorizontal:15
+    marginHorizontal: 15
   },
   imageWrapper: {
     alignItems: 'center',
@@ -214,8 +214,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    position:"absolute",
-    top:125
+    position: "absolute",
+    top: 125
   },
   badgeText: {
     fontSize: 13,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     marginTop: 16,
-    shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'black',
     lineHeight: 18,
-    fontWeight:"500"
+    fontWeight: "500"
   },
   scriptHeaderRow: {
     marginTop: 18,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
-    marginHorizontal:15,
+    marginHorizontal: 15,
     marginBottom: 10,
   },
   bottomButtonText: {
