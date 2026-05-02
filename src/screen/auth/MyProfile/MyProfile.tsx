@@ -123,8 +123,8 @@ const GenderSelector = ({ selected, onSelect, error }: { selected: string; onSel
         </TouchableOpacity>
       ))}
     </View>
-    {error ? <Text style={[styles.errorText,{
-      marginTop:12
+    {error ? <Text style={[styles.errorText, {
+      marginTop: 12
     }]}>{error}</Text> : null}
   </View>
 );
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 60,
-       shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
@@ -567,9 +567,9 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     fontSize: 13,
-     marginBottom: 8,
+    marginBottom: 8,
     marginLeft: 4,
-   },
+  },
   genderRow: {
     flexDirection: "row",
     gap: 12,
@@ -583,13 +583,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     justifyContent: "center",
     alignItems: "center",
-     shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 10,
-   
+
   },
   malePillActive: {
     backgroundColor: "#EBF5FF",

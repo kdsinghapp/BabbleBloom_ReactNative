@@ -48,8 +48,11 @@ const AuthSlice = createSlice({
       // 🔥 Clear AsyncStorage on logout
       AsyncStorage.removeItem('authData');
     },
+    setUserData(state, action: PayloadAction<any>) {
+      state.userData = action.payload;
+    },
   },
 });
 
-export const { loginSuccess, restoreLogin, logout } = AuthSlice.actions;
+export const { loginSuccess, restoreLogin, logout, setUserData } = AuthSlice.actions;
 export default AuthSlice.reducer;

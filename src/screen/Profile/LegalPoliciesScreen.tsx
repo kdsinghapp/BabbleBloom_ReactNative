@@ -23,8 +23,8 @@ const LegalPoliciesScreen = () => {
 const getPrivacyPolicy = async () => {
   try {
     const response = await Termsconditions(setLoading);
-    if (response && response?.content) {
-      setContent(response.content); // ✅ content is now set correctly
+    if (response && response?.data?.content_html) {
+      setContent(response.data.content_html); 
     } else {
       setContent('<p>No content available</p>');
     }

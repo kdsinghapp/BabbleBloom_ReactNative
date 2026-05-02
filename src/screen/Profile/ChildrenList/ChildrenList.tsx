@@ -109,13 +109,6 @@ const ChildrenList = () => {
             >
               <Image source={imageIndex.Editpen} style={styles.editIcon} />
             </TouchableOpacity>
-            {/* <TouchableOpacity
-              style={styles.actionBtn}
-              activeOpacity={0.7}
-              onPress={() => handleDeleteChild(item.id)}
-            >
-              <Image source={imageIndex.delete} style={styles.deleteIcon} />
-            </TouchableOpacity> */}
           </View>
         </View>
 
@@ -154,9 +147,9 @@ const ChildrenList = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBarComponent />
-<CustomHeader label="My Child Profile" />   
+      <CustomHeader label="My Child Profile" />
 
-   <LoadingModal visible={isLoading} />
+      <LoadingModal visible={isLoading} />
 
       <FlatList
         data={children}
@@ -171,13 +164,6 @@ const ChildrenList = () => {
           ) : null
         }
       />
-
-      {/* <TouchableOpacity
-        style={styles.addFAB}
-        onPress={() => navigation.navigate(ScreenNameEnum.MyProfile)}
-      >
-        <Text style={styles.fabIcon}>+</Text>
-      </TouchableOpacity> */}
     </SafeAreaView>
   );
 };
@@ -198,12 +184,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#F3F4F6',
-  shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
- 
-     shadowOffset: { width: 0, height: 1 },
-     shadowOpacity: 0.06,
-     shadowRadius: 4,
-     elevation: 10,
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 10,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -328,8 +313,8 @@ const styles = StyleSheet.create({
 
     color: 'white',
     textAlign: "center",
-    fontSize: 24 ,
-    fontWeight:"600"
+    fontSize: 24,
+    fontWeight: "600"
   },
   emptyContainer: {
     flex: 1,

@@ -40,7 +40,6 @@ export default function OtpScreen() {
       <StatusBarComponent />
       <CustomHeader label={'Back'} />
       <LoadingModal visible={isLoading} />
-
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -89,7 +88,7 @@ export default function OtpScreen() {
                 <Text style={styles.errorText}>{errorMessage}</Text>
               ) : null}
             </View>
-            <View style={{ marginTop: 20 , marginBottom:10 }}>
+            <View style={{ marginTop: 20, marginBottom: 10 }}>
               <CustomButton title={"Continue"} onPress={handleVerifyOTP} />
             </View>
             {/* Submit Button */}

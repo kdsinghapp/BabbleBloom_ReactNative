@@ -32,7 +32,9 @@ export default {
     Regulation: require('./images/Regulation.png'),
     Location: require('./images/Location.png'),
     profiel: require('./images/profiel.png'),
+    sp1: require('./images/sp1.png'),
     sp2: require('./images/sp2.png'),
+    sp3: require('./images/sp3.png'),
     icons: require('./images/icons.png'),
     Positive: require('./images/Positive.png'),
     Conservative: require('./images/Conservative.png'),
@@ -66,4 +68,7 @@ export default {
     faq: require('./images/faq.png'),
     contact: require('./images/contact.png'),
     delete: require('./images/delete.png'),
+    deleteCircle: require('./images/deleteCircle.png'),
+    download: require('./images/download.png'),
+    play: require('./images/play.png'),
 }; 

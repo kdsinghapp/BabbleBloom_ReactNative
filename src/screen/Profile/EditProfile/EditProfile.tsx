@@ -14,7 +14,6 @@ import { launchImageLibrary } from "react-native-image-picker";
 import { openCamera } from "../../../utils/cameraHelper";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import StatusBarComponent from "../../../compoent/StatusBarCompoent";
 import CustomHeader from "../../../compoent/CustomHeader";
@@ -22,9 +21,8 @@ import CustomInput from "../../../compoent/CustomInput";
 import CustomButton from "../../../compoent/CustomButton";
 import ImagePickerModal from "../../../compoent/ImagePickerModal";
 import imageIndex from "../../../assets/imageIndex";
-import { BASE_URLIMAGE, GetParentProfileApi, UpdateParentProfileApi } from "../../../Api/apiRequest";
-import { loginSuccess } from "../../../redux/feature/authSlice";
-import { errorToast, successToast } from "../../../utils/customToast";
+import { BASE_URLIMAGE, GetParentProfileApi, UpdateParentProfileApi, updateReduxProfile } from "../../../Api/apiRequest";
+import { errorToast } from "../../../utils/customToast";
 
 const EditProfile = () => {
   const navigation = useNavigation();
@@ -41,17 +39,7 @@ const EditProfile = () => {
   const dispatch = useDispatch();
   const [fullNameError, setFullNameError] = useState("");
   const [emailError, setEmailError] = useState("");
-  const getProfileData = async () => {
-    try {
-      const response = await GetParentProfileApi(setIsLoading);
-      if (response) {
-        const token = await AsyncStorage.getItem("token") || "";
-        dispatch(loginSuccess({ userData: response, token }));
-      }
-    } catch (error) {
-      console.error("GetProfileMeApi error:", error);
-    }
-  };
+
   const pickImageFromGallery = () => {
     launchImageLibrary({ mediaType: "photo", quality: 0.5 }, (response: any) => {
       if (response.assets && response.assets.length > 0) {
@@ -91,7 +79,7 @@ const EditProfile = () => {
       const response = await UpdateParentProfileApi(params, setIsLoading);
 
       if (response) {
-        await getProfileData();
+        await updateReduxProfile(dispatch, response);
         navigation.goBack();
       }
     } catch (error) {
@@ -116,11 +104,11 @@ const EditProfile = () => {
             <View style={styles.avatarWrapper}>
               <Image
                 source={
-                   image?.uri 
-                    ? { uri: image.uri } 
-                    : (typeof image === 'string' && image 
-                        ? { uri: `${BASE_URLIMAGE}/${image}` } 
-                        : imageIndex.prfile)
+                  image?.uri
+                    ? { uri: image.uri }
+                    : (typeof image === 'string' && image
+                      ? { uri: `${BASE_URLIMAGE}/${image}` }
+                      : imageIndex.prfile)
                 }
                 style={styles.profileImage}
                 resizeMode="cover"
@@ -162,7 +150,6 @@ const EditProfile = () => {
             </View>
           </View>
 
-          {/* Image Picker Modal */}
           <ImagePickerModal
             modalVisible={isModalVisible}
             setModalVisible={setIsModalVisible}

@@ -9,7 +9,6 @@ import {
   Image,
   Modal,
 } from "react-native";
-import { color } from "../constant";
 import font from "../theme/font";
 import imageIndex from "../assets/imageIndex";
 
@@ -47,7 +46,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
         style={[styles.dropdown, leftIcon && { paddingLeft: 40 }]}
         onPress={() => setVisible(true)}
       >
-        
+
         <Text
           style={[
             styles.selectedText,
@@ -58,12 +57,12 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
             ? data.find((item) => item.value === value)?.label
             : placeholder}
         </Text>
-        <Image source={imageIndex.arrowqdown} 
-        
-        style={{
-          height:22,
-          width:22,
-        }}
+        <Image source={imageIndex.arrowqdown}
+
+          style={{
+            height: 22,
+            width: 22,
+          }}
         />
       </TouchableOpacity>
 
@@ -121,7 +120,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     marginTop: 15,
-    marginBottom:15
+    marginBottom: 15
   },
   dropdown: {
     height: 55,
@@ -130,9 +129,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     justifyContent: "space-between",
     borderWidth: 1.5,
-    borderColor: "#F7F8F8", 
-    flexDirection:"row" ,
-    alignItems:"center"
+    borderColor: "#F7F8F8",
+    flexDirection: "row",
+    alignItems: "center"
   },
   iconWrapper: {
     position: "absolute",

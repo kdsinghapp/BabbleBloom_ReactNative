@@ -228,11 +228,22 @@ const SignUp: React.FC = () => {
                 {agreed && <Text style={styles.checkmark}>✓</Text>}
               </View>
               <Text style={styles.termsText}>
-                I agree to the Barber{' '}
-                <Text style={styles.termsLink}>Terms of Service</Text>
+                I agree to the BabbleBloom{' '}
+                <Text 
+                  style={styles.termsLink} 
+                  onPress={() => navigation.navigate(ScreenNameEnum.LegalPoliciesScreen as any)}
+                >
+                  Terms of Service
+                </Text>
                 {' '}and{'\n'}
-                <Text style={styles.termsLink}>Privacy Policy</Text>
+                <Text 
+                  style={styles.termsLink} 
+                  onPress={() => navigation.navigate(ScreenNameEnum.PrivacyPolicy as any)}
+                >
+                  Privacy Policy
+                </Text>
               </Text>
+
             </TouchableOpacity>
             {termsError ? <Text style={styles.errorText}>{termsError}</Text> : null}
 

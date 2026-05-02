@@ -48,13 +48,20 @@ const C = {
 };
 
 
-function TodayBanner({ prompt }: { prompt: any }) {
-  const displayPrompt = prompt?.prompt || "Try this today: 'Let's\nplay together.";
+function TodayBanner({ suggestion, navigation }: { suggestion: string; navigation: any }) {
+  const displayPrompt = suggestion || "Try this today: 'Let's\nplay together.";
   return (
     <View style={styles.banner}>
       <View style={[styles.bannerContent]}>
         <Text style={styles.bannerTitle}>{displayPrompt}</Text>
-        <TouchableOpacity style={styles.bannerBtn} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={styles.bannerBtn}
+          activeOpacity={0.85}
+          onPress={() => {
+            console.log('Banner button clicked');
+            navigation.navigate(screenNameEnum.LibraryScreen);
+          }}
+        >
           <Text style={styles.bannerBtnText}>Let's play together</Text>
         </TouchableOpacity>
       </View>
@@ -95,7 +102,10 @@ function RecentScripts({ scripts }: { scripts: any[] }) {
   );
 }
 
-function WeeklyInsight() {
+function WeeklyInsight({ summary }: { summary: any }) {
+  const total = summary?.total_scripts || 0;
+  const topEmotion = summary?.repeated_script_names || 'None';
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Weekly Insight</Text>
@@ -105,7 +115,7 @@ function WeeklyInsight() {
           <Text style={[styles.insightLabel, {
             color: "#000000"
           }]}>Scripts this week</Text>
-          <Text style={styles.insightNumber}>00</Text>
+          <Text style={styles.insightNumber}>{total.toString().padStart(2, '0')}</Text>
         </View>
         {/* Right card */}
         <View style={[styles.insightCard, { flex: 1, marginLeft: 8 }]}>
@@ -114,43 +124,33 @@ function WeeklyInsight() {
 
           }]}>Most repeated</Text>
           <View style={styles.insightTag}>
-            <Text style={styles.insightTagText}>"Want juice"</Text>
+            <Text style={styles.insightTagText}>{topEmotion}</Text>
           </View>
         </View>
       </View>
-      <Text style={styles.insightNoteText}>
-        Pattern found: Evenings show more overwhelm scripts than mornings. Consider adding sensory
-        breaks at 5 PM.
-      </Text>
+      {summary?.total_scripts > 0 && (
+        <Text style={styles.insightNoteText}>
+          Pattern found: {summary.total_scripts} new scripts added this week across {summary.total_activity_sessions || 0} contexts.
+        </Text>
+      )}
     </View>
   );
 }
 
 
 export default function HomeScreen() {
-  const { activeChild, navigation: navigator, scripts, fetchScripts } = useDashboard();
-
-  const [dailyPrompt, setDailyPrompt] = React.useState<any>(null);
-
-  const fetchDailyPrompt = async (childId: number) => {
-    const data = await GetDailyPromptApi(childId, () => { });
-    if (data) {
-      setDailyPrompt(data);
-    }
-  };
+  const { activeChild, navigation: navigator, scripts, fetchScripts, dashboardData } = useDashboard();
 
   useFocusEffect(
     React.useCallback(() => {
       if (activeChild?.id) {
         fetchScripts(activeChild.id);
-        fetchDailyPrompt(activeChild.id);
       }
     }, [activeChild])
   );
   function QuickActions() {
     const quickActions = [
       {
-
         name: screenNameEnum.ProgressScreen,
         label: 'Reports', color: "#67B3C8", Icon: BarChartIcon
       },
@@ -198,10 +198,18 @@ export default function HomeScreen() {
   const userData = useSelector((state: any) => state.auth.userData);
 
   function Header() {
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'Good Morning';
+      if (hour < 17) return 'Good Afternoon';
+      if (hour < 21) return 'Good Evening';
+      return 'Good Night';
+    };
+
     return (
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Good Morning</Text>
+          <Text style={styles.greeting}>{getGreeting()}</Text>
           <Text style={styles.subGreeting}>Let's support {activeChild?.full_name || 'Emma'} today</Text>
         </View>
         <View style={styles.headerRight}>
@@ -210,7 +218,6 @@ export default function HomeScreen() {
             onPress={() => navigator.navigate(screenNameEnum.NotificationsScreen as never)}
           >
             <Image source={imageIndex.NotificationIcon}
-
               style={{ width: 22, height: 22 }}
             />
           </TouchableOpacity>
@@ -241,16 +248,15 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Header />
-        <TodayBanner prompt={dailyPrompt} />
+        <TodayBanner suggestion={dashboardData?.daily_modeling_suggestion} navigation={navigator} />
         <AddScriptButton />
         <RecentScripts scripts={scripts} />
-        <WeeklyInsight />
+        <WeeklyInsight summary={dashboardData?.weekly_summary} />
         <QuickActions />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   safe: {
@@ -265,7 +271,6 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
 
-  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -292,15 +297,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   bellBtn: {
-
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatar: {
-
     alignItems: 'center',
     justifyContent: 'center',
-
   },
   avatarImg: {
     width: 55,
@@ -322,7 +324,8 @@ const styles = StyleSheet.create({
   bannerContent: {
     flex: 1,
     paddingRight: 8,
-    bottom: 15
+    bottom: 15,
+    zIndex: 10,
   },
   bannerTitle: {
     fontSize: 20,
@@ -339,6 +342,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 50,
     alignSelf: 'flex-start',
+    zIndex: 20,
   },
   bannerBtnText: {
     color: C.white,

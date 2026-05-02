@@ -30,7 +30,7 @@ const slides: Slide[] = [
     id: '1',
     title: "Track your child’s communication",
     description: 'Monitor communication patterns in a simple and clear way.',
-    img: imageIndex.sp2,
+    img: imageIndex.sp1,
   },
   {
     id: '2',
@@ -42,14 +42,13 @@ const slides: Slide[] = [
     id: '3',
     title: 'Get simple responses',
     description: 'Receive simple and helpful responses for daily support.',
-    img: imageIndex.sp2,
+    img: imageIndex.sp3,
   },
 ];
 
 const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const flatListRef = useRef<FlatList<Slide>>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-
   const onMomentumScrollEnd = (
     event: NativeSyntheticEvent<NativeScrollEvent>,
   ) => {
@@ -74,7 +73,7 @@ const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     return (
       <View style={styles.slide}>
         <View style={styles.cardContainer}>
-          
+
           {/* FULL IMAGE */}
           <View style={styles.imageContainer}>
             <Image source={item.img} style={styles.image} />
@@ -82,7 +81,6 @@ const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
           {/* BOTTOM CARD */}
           <View style={styles.bottomWhiteCard}>
-            
             <View style={styles.miniIndicatorRow}>
               <View style={styles.miniIndicatorLine} />
               <View style={styles.miniIndicatorDot} />
@@ -96,7 +94,6 @@ const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                 style={{ height: 70, width: 70 }}
               />
             </TouchableOpacity>
-
           </View>
         </View>
       </View>
@@ -105,10 +102,7 @@ const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      
-      {/* STATUS BAR */}
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-
       <FlatList
         ref={flatListRef}
         data={slides}
@@ -124,7 +118,6 @@ const OnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           index,
         })}
       />
-
     </View>
   );
 };

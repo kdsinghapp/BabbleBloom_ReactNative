@@ -24,7 +24,7 @@ if linkage != nil
 
 end
 
-target 'Gfinance' do
+target 'BabbleBloom' do
   config = use_native_modules!
   rn_maps_path = '../node_modules/react-native-maps'
   pod 'react-native-google-maps', :path => rn_maps_path

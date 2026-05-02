@@ -14,13 +14,12 @@ import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
 import ScreenNameEnum from '../../../routes/screenName.enum';
 import LogoutModal from '../../../compoent/LogoutModal';
+import DeleteAccountModal from '../../../compoent/DeleteAccountModal';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RegistrationStackParamList } from '../../../navigators/RegistrationRoutes';
 import { useDispatch, useSelector } from 'react-redux';
-import { BASE_URLIMAGE, GetProfileMeApi, handleLogout } from '../../../Api/apiRequest';
-import { loginSuccess } from '../../../redux/feature/authSlice';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URLIMAGE, GetParentProfileApi, handleLogout, updateReduxProfile, DeleteAccountApi, GetChildrenApi } from '../../../Api/apiRequest';
 import { color } from '../../../constant';
 
 const MenuItem = ({ icon, title, subtitle, onPress }: { icon: any; title: string; subtitle?: string; onPress: () => void }) => (
@@ -41,24 +40,37 @@ export default function ProfileSetting() {
   const dispatch = useDispatch()
   const navigation = useNavigation<NativeStackNavigationProp<RegistrationStackParamList>>();
   const [visible, setVisible] = React.useState(false);
+  const [deleteVisible, setDeleteVisible] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [children, setChildren] = React.useState<any[]>([]);
   const userData = useSelector((state: any) => state.auth.userData);
 
   const getProfileData = async () => {
     try {
-      const response = await GetProfileMeApi(setLoading);
+      const response = await GetParentProfileApi(setLoading);
       if (response) {
-        const token = await AsyncStorage.getItem("token") || "";
-        dispatch(loginSuccess({ userData: response, token }));
+        await updateReduxProfile(dispatch, response);
       }
     } catch (error) {
       console.error("[ProfileSetting] Fetch error:", error);
     }
   };
 
+  const fetchChildren = async () => {
+    try {
+      const response = await GetChildrenApi(setLoading);
+      if (response) {
+        setChildren(response);
+      }
+    } catch (error) {
+      console.error("[ProfileSetting] fetchChildren error:", error);
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       getProfileData();
+      fetchChildren();
     }, [])
   );
 
@@ -81,8 +93,6 @@ export default function ProfileSetting() {
             style={styles.avatar}
 
           />
-
-
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{userData?.full_name || 'User Name'}</Text>
             <Text style={styles.username}>{userData?.email || userData?.phone_number || ''}</Text>
@@ -106,13 +116,14 @@ export default function ProfileSetting() {
               />
               <MenuItem
                 icon={imageIndex.MyAccount}
-                title="Add Child info"
-                onPress={() => navigation.navigate(ScreenNameEnum.MyProfile)}
-              />
-              <MenuItem
-                icon={imageIndex.MyAccount}
                 title="Child info"
-                onPress={() => navigation.navigate(ScreenNameEnum.ChildrenList)}
+                onPress={() => {
+                  if (children && children.length > 0) {
+                    navigation.navigate(ScreenNameEnum.ChildrenList);
+                  } else {
+                    navigation.navigate(ScreenNameEnum.MyProfile);
+                  }
+                }}
               />
               <MenuItem
                 icon={imageIndex.nofication}
@@ -128,15 +139,32 @@ export default function ProfileSetting() {
 
             <View style={styles.card}>
               <MenuItem
+                icon={imageIndex.ContactUs}
+                title="Privacy Policy"
+                onPress={() => navigation.navigate(ScreenNameEnum.PrivacyPolicy)}
+              />
+              <MenuItem
+                icon={imageIndex.ContactUs}
+                title="Terms and Conditions"
+                onPress={() => navigation.navigate(ScreenNameEnum.LegalPoliciesScreen)}
+              />
+              <MenuItem
                 icon={imageIndex.FAQs}
                 title="FAQs"
                 onPress={() => navigation.navigate(ScreenNameEnum.FAQs)}
               />
+
               <MenuItem
                 icon={imageIndex.logout}
                 title="Log out"
                 subtitle="Further secure your account for safety"
                 onPress={() => setVisible(true)}
+              />
+              <MenuItem
+                icon={imageIndex.deleteCircle}
+                title="Delete Account"
+                subtitle="Permanently remove your account and data"
+                onPress={() => setDeleteVisible(true)}
               />
             </View>
           </>
@@ -147,6 +175,14 @@ export default function ProfileSetting() {
             handleLogout(dispatch, navigation, setVisible);
           }}
           onCancel={() => setVisible(false)}
+        />
+
+        <DeleteAccountModal
+          visible={deleteVisible}
+          onDelete={() => {
+            DeleteAccountApi(setLoading, dispatch, navigation, setDeleteVisible);
+          }}
+          onCancel={() => setDeleteVisible(false)}
         />
       </ScrollView>
     </SafeAreaView>

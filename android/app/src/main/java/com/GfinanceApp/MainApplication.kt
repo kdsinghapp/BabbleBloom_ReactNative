@@ -1,4 +1,4 @@
-package com.GfinanceApp
+package com.babblebloom.app
 
 import android.app.Application
 import com.facebook.react.PackageList

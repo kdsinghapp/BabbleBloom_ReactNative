@@ -21,16 +21,15 @@ import imageIndex from '../../../assets/imageIndex';
 const ActivityPlayerScreen = () => {
     const navigation = useNavigation();
     const route = useRoute<any>();
-    const { scripts = [], activityTitle = 'Activity', activity_id, child_id } = route.params || {};
+    const { scripts = [], activityTitle = 'Activity', activity_id, child_id, session_id } = route.params || {};
     console.log('[ActivityPlayerScreen] activity_id:', activity_id, 'child_id:', child_id, 'scripts count:', scripts.length);
 
     const [currentStep, setCurrentStep] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [sessionId, setSessionId] = useState<number | null>(null);
+    const [sessionId, setSessionId] = useState<number | null>(session_id || null);
     const [loading, setLoading] = useState(false);
     const selectedChild = useSelector((state: any) => state.children.selectedChild);
-
-    const properChildId = child_id || selectedChild?.id || 4; // Fallback to 4 for testing if needed
+    const properChildId = child_id || selectedChild?.id;
 
 
     const totalSteps = scripts.length;
@@ -52,14 +51,19 @@ const ActivityPlayerScreen = () => {
         Tts.addEventListener('tts-finish', onFinish);
         Tts.addEventListener('tts-cancel', onCancel);
 
-        // Start Activity API
-        if (activity_id && properChildId) {
+        // Start Activity API - only if not already started
+        if (activity_id && properChildId && !sessionId) {
             (async () => {
                 const res = await StartActivityApi(activity_id, properChildId, setLoading);
+                console.log('[ActivityPlayerScreen] StartActivityApi response received:', res);
                 if (res?.session_id) {
                     setSessionId(res.session_id);
                 }
             })();
+        } else if (sessionId) {
+            console.log('[ActivityPlayerScreen] Session already exists:', sessionId);
+        } else {
+            alert('Missing IDs: activity_id=' + activity_id + ' properChildId=' + properChildId);
         }
 
         return () => {
@@ -82,8 +86,8 @@ const ActivityPlayerScreen = () => {
             Tts.stop();
         } else {
             console.log('[ActivityPlayerScreen] Completing activity. activity_id:', activity_id, 'sessionId:', sessionId);
-            if (activity_id && sessionId && properChildId) {
-                await CompleteActivityApi(activity_id, sessionId, properChildId, setLoading);
+            if (activity_id && sessionId) {
+                await CompleteActivityApi(activity_id, sessionId, setLoading);
             }
             navigation.goBack();
         }
@@ -135,7 +139,6 @@ const ActivityPlayerScreen = () => {
                     <Text style={styles.labelText}>Suggested Context</Text>
                     <Text style={styles.phraseText}>{currentScript?.stage_level || 'Keep going!'}</Text>
                 </View>
-
                 {/* Try Saying Card */}
                 <View style={styles.card}>
                     <TouchableOpacity
@@ -146,7 +149,6 @@ const ActivityPlayerScreen = () => {
                     </TouchableOpacity>
                     <Text style={styles.labelText}>Try Saying</Text>
                     <Text style={styles.phraseText}>"{currentScript?.text}"</Text>
-
                     <TouchableOpacity style={styles.playButtonMini} onPress={handleSpeech}>
                         <Text style={styles.playButtonText}>{isPlaying ? '■ Stop Audio' : '▶ Play Audio'}</Text>
                     </TouchableOpacity>
@@ -170,7 +172,6 @@ const ActivityPlayerScreen = () => {
 };
 
 const PINK = '#E03B65';
-const LIGHT_PINK = '#fce8ed';
 const BG = '#fff';
 const WHITE = '#fff';
 

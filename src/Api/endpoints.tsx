@@ -20,6 +20,10 @@ export const commonEndpoints = {
   exportData: 'reports/export-data',
   exportPdf: 'reports/export-pdf',
   libraryResponses: 'library/responses',
-  notifications: 'notifications',
+  notifications: 'notifications/',
   dailyPrompt: 'notifications/daily-prompt',
+  parentAccount: 'parent/account',
+  dashboardHome: 'dashboard/home',
+  activitiesProgress: 'activities/progress',
+  notificationsSettings: 'notifications/settings',
 };

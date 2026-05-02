@@ -14,33 +14,38 @@ const C = {
 
 export default function ScriptItem({ item, navigator }: { item: any; navigator: any }) {
   // Map emotional_state to corresponding image
-  const getEmotionImage = (state: string) => {
-    if (!state) return imageIndex.Happy;
-    const firstState = state.split(',')[0].toLowerCase().trim();
-    switch (firstState) {
-      case 'happy': return imageIndex.Happy;
-      case 'sad': return imageIndex.Sad;
-      case 'angry': return imageIndex.Angry;
-      case 'anxious': return imageIndex.Anxious;
-      case 'excited': return imageIndex.Excited;
-      case 'neutral': return imageIndex.Neutral;
-      default: return imageIndex.Happy;
-    }
+  const emotions = {
+    happy: { image: imageIndex.Happy, color: '#FFD93D' },
+    sad: { image: imageIndex.Sad, color: '#74B9FF' },
+    angry: { image: imageIndex.Angry, color: '#E03B65' },
+    anxious: { image: imageIndex.Anxious, color: '#A29BFE' },
+    excited: { image: imageIndex.Excited, color: '#55EFC4' },
+    neutral: { image: imageIndex.Neutral, color: '#94A3B8' },
   };
+
+  const getEmotionData = (state: string) => {
+    if (!state) return emotions.happy;
+    const key = state.split(',')[0].toLowerCase().trim() as keyof typeof emotions;
+    return emotions[key] || emotions.happy;
+  };
+
+  const emotionData = getEmotionData(item.emotional_state);
 
   return (
     <View style={styles.scriptItem}>
       <View style={styles.scriptLeft}>
-        <Image
-          source={getEmotionImage(item.emotional_state)}
-          style={{ width: 42, height: 42 }}
-        />
+        <View style={[styles.emotionContainer, { backgroundColor: emotionData.color + '20' }]}>
+          <Image
+            source={emotionData.image}
+            style={{ width: 32, height: 32 }}
+          />
+        </View>
 
         <View style={{ flex: 1, marginRight: 10 }}>
           <Text style={styles.scriptText} numberOfLines={2}>{item.script_text}</Text>
           <Text style={[styles.scriptTime, {
             color: "#ADA4A5"
-          }]}>{moment(item.created_at).fromNow()}</Text>
+          }]}>{moment.utc(item.created_at).fromNow()}</Text>
         </View>
       </View>
       <TouchableOpacity style={styles.scriptIconBtn}
@@ -74,6 +79,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     flex: 1,
+  },
+  emotionContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scriptText: {
     fontSize: 14,

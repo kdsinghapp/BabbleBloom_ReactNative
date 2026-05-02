@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  StatusBar,
   ScrollView,
   Image,
   Platform,
@@ -121,48 +120,53 @@ const ScriptDetailsScreen = () => {
     }
   };
 
-  const getEmotionImage = (state: string) => {
-    if (!state) return imageIndex.Happy;
-    const firstState = state.split(',')[0].toLowerCase().trim();
-    switch (firstState) {
-      case 'happy': return imageIndex.Happy;
-      case 'sad': return imageIndex.Sad;
-      case 'angry': return imageIndex.Angry;
-      case 'anxious': return imageIndex.Anxious;
-      case 'excited': return imageIndex.Excited;
-      case 'neutral': return imageIndex.Neutral;
-      default: return imageIndex.Happy;
-    }
+  const emotions = {
+    happy: { image: imageIndex.Happy, color: '#FFD93D' },
+    sad: { image: imageIndex.Sad, color: '#74B9FF' },
+    angry: { image: imageIndex.Angry, color: '#E03B65' },
+    anxious: { image: imageIndex.Anxious, color: '#A29BFE' },
+    excited: { image: imageIndex.Excited, color: '#55EFC4' },
+    neutral: { image: imageIndex.Neutral, color: '#94A3B8' },
   };
+
+  const getEmotionData = (state: string) => {
+    if (!state) return emotions.happy;
+    const key = state.split(',')[0].toLowerCase().trim() as keyof typeof emotions;
+    return emotions[key] || emotions.happy;
+  };
+
+  const emotionData = getEmotionData(displayData?.data?.emotional_state);
 
   return (
     <SafeAreaView style={styles.container}>
       <LoadingModal visible={isLoading} />
       <StatusBarComponent />
       <CustomHeader label="Script Details" />
-
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
         {/* Script Card */}
         <View style={styles.scriptCard}>
-          <Text style={[styles.moodText, { textTransform: 'capitalize' }]}>
-            {displayData?.data?.emotional_state || 'Happy'}
-          </Text>
+          <View style={[styles.moodBadge, { backgroundColor: emotionData.color + '20' }]}>
+            <Text style={[styles.moodText, { color: emotionData.color, textTransform: 'capitalize' }]}>
+              {displayData?.data?.emotional_state || 'Happy'}
+            </Text>
+          </View>
 
           <View style={styles.scriptRow}>
-            <Image source={getEmotionImage(displayData?.data?.emotional_state)}
-              style={styles.avatar}
-            />
+            <View style={[styles.emotionCircle, { backgroundColor: emotionData.color + '15' }]}>
+              <Image source={emotionData.image}
+                style={styles.avatar}
+              />
+            </View>
 
             <View style={styles.scriptInfo}>
               <Text style={styles.scriptTitle} numberOfLines={1}>
                 {displayData?.data?.script_text}
               </Text>
               <Text style={styles.scriptTime}>
-                {displayData?.data?.created_at ? moment(displayData.data.created_at).calendar() : 'Just now'}
+                {displayData?.data?.created_at ? moment.utc(displayData.data.created_at).local().calendar() : 'Just now'}
               </Text>
             </View>
 
@@ -281,9 +285,9 @@ const ScriptDetailsScreen = () => {
         )}
 
         {/* Button */}
-        <TouchableOpacity style={styles.button}>
+        {/* <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>See More Suggestions</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -332,23 +336,33 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 10,
   },
+  moodBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 8,
+    marginLeft: 54,
+  },
   moodText: {
     fontSize: 12,
-    color: '#50C878',
-    marginBottom: 8,
-    marginLeft: 48,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  emotionCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
   scriptRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 18,
-    // backgroundColor: '#D9D9D9',
-    marginRight: 10,
+    width: 28,
+    height: 28,
   },
   scriptInfo: {
     flex: 1,

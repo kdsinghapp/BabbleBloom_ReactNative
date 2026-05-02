@@ -27,7 +27,7 @@
 		B136918589944E8DBA3C399C /* TT Neoris Trial Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8DFA08540A50490288791646 /* TT Neoris Trial Thin.ttf */; };
 		C2B06A5D2420434DB8BA9F74 /* TT Neoris Trial Light Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 12016C250235407CBD6BA148 /* TT Neoris Trial Light Italic.ttf */; };
 		CB3E726B59DD4115B0945FB9 /* TT Neoris Trial Bold Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 481BFC8CF45646DC9510075F /* TT Neoris Trial Bold Italic.ttf */; };
-		D45771018053987D7A23E51E /* libPods-Gfinance.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D9DF2D04DD2693698157 /* libPods-Gfinance.a */; };
+		D45771018053987D7A23E51E /* libPods-BabbleBloom.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D9DF2D04DD2693698157 /* libPods-BabbleBloom.a */; };
 		D8BCF44E096C4F09BB4C7F86 /* TT Neoris Trial Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0F025943F53849E399F4E818 /* TT Neoris Trial Medium.ttf */; };
 		E2C86E292A16421CA9B93DB5 /* Panton-Trial-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7DA315965DF24FD4811C120A /* Panton-Trial-SemiBold.ttf */; };
 		E3F391C189864712A1218DF7 /* TT Neoris Trial Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 54BA20C35C584592B4882FCE /* TT Neoris Trial Black.ttf */; };
@@ -38,33 +38,33 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		00D0D9DF2D04DD2693698157 /* libPods-Gfinance.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Gfinance.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		00D0D9DF2D04DD2693698157 /* libPods-BabbleBloom.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BabbleBloom.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0569C5698C1140518C04BD8E /* TT Neoris Trial Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Bold.ttf"; path = "../assets/fonts/TT Neoris Trial Bold.ttf"; sourceTree = "<group>"; };
-		06795A017F618D0CCA11B21A /* Pods-Gfinance.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gfinance.debug.xcconfig"; path = "Target Support Files/Pods-Gfinance/Pods-Gfinance.debug.xcconfig"; sourceTree = "<group>"; };
+		06795A017F618D0CCA11B21A /* Pods-BabbleBloom.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BabbleBloom.debug.xcconfig"; path = "Target Support Files/Pods-BabbleBloom/Pods-BabbleBloom.debug.xcconfig"; sourceTree = "<group>"; };
 		0F025943F53849E399F4E818 /* TT Neoris Trial Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Medium.ttf"; path = "../assets/fonts/TT Neoris Trial Medium.ttf"; sourceTree = "<group>"; };
 		0F7FA053AFBA4A92B0BCCDFE /* TT Neoris Trial Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Regular.ttf"; path = "../assets/fonts/TT Neoris Trial Regular.ttf"; sourceTree = "<group>"; };
 		1010E562EFFD4E2CBC7EDE4E /* TT Neoris Trial Medium Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Medium Italic.ttf"; path = "../assets/fonts/TT Neoris Trial Medium Italic.ttf"; sourceTree = "<group>"; };
 		12016C250235407CBD6BA148 /* TT Neoris Trial Light Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Light Italic.ttf"; path = "../assets/fonts/TT Neoris Trial Light Italic.ttf"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* Gfinance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gfinance.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Gfinance/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Gfinance/Info.plist; sourceTree = "<group>"; };
-		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = Gfinance/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* BabbleBloom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BabbleBloom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = BabbleBloom/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = BabbleBloom/Info.plist; sourceTree = "<group>"; };
+		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = BabbleBloom/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		23BE6E31B5B8471C95577D4E /* TT Neoris Trial Variable.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Variable.ttf"; path = "../assets/fonts/TT Neoris Trial Variable.ttf"; sourceTree = "<group>"; };
 		24B536112B9B4271AA20C95B /* TT Neoris Trial DemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial DemiBold.ttf"; path = "../assets/fonts/TT Neoris Trial DemiBold.ttf"; sourceTree = "<group>"; };
 		481BFC8CF45646DC9510075F /* TT Neoris Trial Bold Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Bold Italic.ttf"; path = "../assets/fonts/TT Neoris Trial Bold Italic.ttf"; sourceTree = "<group>"; };
 		54BA20C35C584592B4882FCE /* TT Neoris Trial Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Black.ttf"; path = "../assets/fonts/TT Neoris Trial Black.ttf"; sourceTree = "<group>"; };
 		726D45B3B7B841BA9A3625E6 /* TT Neoris Trial Thin Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Thin Italic.ttf"; path = "../assets/fonts/TT Neoris Trial Thin Italic.ttf"; sourceTree = "<group>"; };
 		72D1A480DE5C4502911C23A5 /* TT Neoris Trial Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Italic.ttf"; path = "../assets/fonts/TT Neoris Trial Italic.ttf"; sourceTree = "<group>"; };
-		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Gfinance/AppDelegate.swift; sourceTree = "<group>"; };
+		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = BabbleBloom/AppDelegate.swift; sourceTree = "<group>"; };
 		7633AB502DB44FCA959AF883 /* TT Neoris Trial ExtraLight Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial ExtraLight Italic.ttf"; path = "../assets/fonts/TT Neoris Trial ExtraLight Italic.ttf"; sourceTree = "<group>"; };
-		7D919E9E2E43309900B6C466 /* Gfinance.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Gfinance.entitlements; path = Gfinance/Gfinance.entitlements; sourceTree = "<group>"; };
+		7D919E9E2E43309900B6C466 /* BabbleBloom.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = BabbleBloom.entitlements; path = BabbleBloom/BabbleBloom.entitlements; sourceTree = "<group>"; };
 		7DA315965DF24FD4811C120A /* Panton-Trial-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Panton-Trial-SemiBold.ttf"; path = "../assets/fonts/Panton-Trial-SemiBold.ttf"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Gfinance/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = BabbleBloom/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8BF6208708BA4AE586D9D6DE /* TT Neoris Trial Hairline Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Hairline Italic.ttf"; path = "../assets/fonts/TT Neoris Trial Hairline Italic.ttf"; sourceTree = "<group>"; };
 		8DFA08540A50490288791646 /* TT Neoris Trial Thin.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Thin.ttf"; path = "../assets/fonts/TT Neoris Trial Thin.ttf"; sourceTree = "<group>"; };
 		AA7C69F740E34F30A614668C /* TT Neoris Trial ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial ExtraBold.ttf"; path = "../assets/fonts/TT Neoris Trial ExtraBold.ttf"; sourceTree = "<group>"; };
 		BACC2B2BC9824EE28C331056 /* Monolith Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Monolith Regular.otf"; path = "../assets/fonts/Monolith Regular.otf"; sourceTree = "<group>"; };
-		BD75D110FE2F239F064FBC94 /* Pods-Gfinance.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gfinance.release.xcconfig"; path = "Target Support Files/Pods-Gfinance/Pods-Gfinance.release.xcconfig"; sourceTree = "<group>"; };
+		BD75D110FE2F239F064FBC94 /* Pods-BabbleBloom.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BabbleBloom.release.xcconfig"; path = "Target Support Files/Pods-BabbleBloom/Pods-BabbleBloom.release.xcconfig"; sourceTree = "<group>"; };
 		BDCD7D343A174F34A757877A /* TT Neoris Trial DemiBold Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial DemiBold Italic.ttf"; path = "../assets/fonts/TT Neoris Trial DemiBold Italic.ttf"; sourceTree = "<group>"; };
 		C0EF55C11FF741B980F24B60 /* TT Neoris Trial ExtraBold Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial ExtraBold Italic.ttf"; path = "../assets/fonts/TT Neoris Trial ExtraBold Italic.ttf"; sourceTree = "<group>"; };
 		C8F3D165793F4F58B00B639F /* TT Neoris Trial Black Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "TT Neoris Trial Black Italic.ttf"; path = "../assets/fonts/TT Neoris Trial Black Italic.ttf"; sourceTree = "<group>"; };
@@ -79,31 +79,31 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D45771018053987D7A23E51E /* libPods-Gfinance.a in Frameworks */,
+				D45771018053987D7A23E51E /* libPods-BabbleBloom.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* Gfinance */ = {
+		13B07FAE1A68108700A75B9A /* BabbleBloom */ = {
 			isa = PBXGroup;
 			children = (
-				7D919E9E2E43309900B6C466 /* Gfinance.entitlements */,
+				7D919E9E2E43309900B6C466 /* BabbleBloom.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 			);
-			name = Gfinance;
+			name = BabbleBloom;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				00D0D9DF2D04DD2693698157 /* libPods-Gfinance.a */,
+				00D0D9DF2D04DD2693698157 /* libPods-BabbleBloom.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -118,7 +118,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* Gfinance */,
+				13B07FAE1A68108700A75B9A /* BabbleBloom */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -133,7 +133,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* Gfinance.app */,
+				13B07F961A680F5B00A75B9A /* BabbleBloom.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -141,8 +141,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				06795A017F618D0CCA11B21A /* Pods-Gfinance.debug.xcconfig */,
-				BD75D110FE2F239F064FBC94 /* Pods-Gfinance.release.xcconfig */,
+				06795A017F618D0CCA11B21A /* Pods-BabbleBloom.debug.xcconfig */,
+				BD75D110FE2F239F064FBC94 /* Pods-BabbleBloom.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -180,9 +180,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* Gfinance */ = {
+		13B07F861A680F5B00A75B9A /* BabbleBloom */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Gfinance" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "BabbleBloom" */;
 			buildPhases = (
 				0C128EC2B6E0DA58D29A7B6B /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -196,9 +196,9 @@
 			);
 			dependencies = (
 			);
-			name = Gfinance;
-			productName = Gfinance;
-			productReference = 13B07F961A680F5B00A75B9A /* Gfinance.app */;
+			name = BabbleBloom;
+			productName = BabbleBloom;
+			productReference = 13B07F961A680F5B00A75B9A /* BabbleBloom.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -214,7 +214,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Gfinance" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "BabbleBloom" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -227,7 +227,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* Gfinance */,
+				13B07F861A680F5B00A75B9A /* BabbleBloom */,
 			);
 		};
 /* End PBXProject section */
@@ -300,7 +300,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Gfinance-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-BabbleBloom-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -313,15 +313,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Gfinance/Pods-Gfinance-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-BabbleBloom/Pods-BabbleBloom-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Gfinance/Pods-Gfinance-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-BabbleBloom/Pods-BabbleBloom-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Gfinance/Pods-Gfinance-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BabbleBloom/Pods-BabbleBloom-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		A00656CD6593B04FD8F3DE10 /* [CP] Copy Pods Resources */ = {
@@ -330,15 +330,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Gfinance/Pods-Gfinance-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-BabbleBloom/Pods-BabbleBloom-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Gfinance/Pods-Gfinance-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-BabbleBloom/Pods-BabbleBloom-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Gfinance/Pods-Gfinance-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BabbleBloom/Pods-BabbleBloom-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -357,15 +357,15 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 06795A017F618D0CCA11B21A /* Pods-Gfinance.debug.xcconfig */;
+			baseConfigurationReference = 06795A017F618D0CCA11B21A /* Pods-BabbleBloom.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Gfinance/Gfinance.entitlements;
+				CODE_SIGN_ENTITLEMENTS = BabbleBloom/BabbleBloom.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YK4V89Z262;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = Gfinance/Info.plist;
+				INFOPLIST_FILE = BabbleBloom/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -377,8 +377,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.GfinanceApp;
-				PRODUCT_NAME = Gfinance;
+				PRODUCT_BUNDLE_IDENTIFIER = com.babblebloom.app;
+				PRODUCT_NAME = BabbleBloom;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -387,14 +387,14 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BD75D110FE2F239F064FBC94 /* Pods-Gfinance.release.xcconfig */;
+			baseConfigurationReference = BD75D110FE2F239F064FBC94 /* Pods-BabbleBloom.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Gfinance/Gfinance.entitlements;
+				CODE_SIGN_ENTITLEMENTS = BabbleBloom/BabbleBloom.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YK4V89Z262;
-				INFOPLIST_FILE = Gfinance/Info.plist;
+				INFOPLIST_FILE = BabbleBloom/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -406,8 +406,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.GfinanceApp;
-				PRODUCT_NAME = Gfinance;
+				PRODUCT_BUNDLE_IDENTIFIER = com.babblebloom.app;
+				PRODUCT_NAME = BabbleBloom;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -590,7 +590,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Gfinance" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "BabbleBloom" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -599,7 +599,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Gfinance" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "BabbleBloom" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

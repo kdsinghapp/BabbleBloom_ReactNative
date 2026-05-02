@@ -9,16 +9,16 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import Svg, { Rect, Line, Polyline, Circle, Text as SvgText } from 'react-native-svg';
+import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomHeader from '../../../compoent/CustomHeader';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import imageIndex from '../../../assets/imageIndex';
 import { useFocusEffect } from '@react-navigation/native';
 import useDashboard from '../DashBoard/useDashboard';
-import { GetWeeklyFocusApi, GetWeeklyReportsApi } from '../../../Api/apiRequest';
+import { GetActivitiesProgressApi, GetWeeklyFocusApi, GetWeeklyReportsApi } from '../../../Api/apiRequest';
 
-type TabType = 'Activity' | 'Emotions' | 'Trends';
+type TabType = 'Activity' | 'Script' | 'Emotions';
 
 const COLORS = {
   bg: 'white',
@@ -49,12 +49,6 @@ const emotionalData = [
   { label: 'Sad', value: 79, color: COLORS.pink },
   { label: 'Anxious', value: 63, color: COLORS.purple },
 ];
-
-const trendLines = {
-  blue: [20, 35, 48, 62, 78, 95],
-  purple: [20, 33, 44, 58, 73, 88],
-  green: [20, 29, 39, 50, 63, 76],
-};
 
 const milestones = [
   {
@@ -87,7 +81,7 @@ const TabBar = ({
   setActiveTab: (t: TabType) => void;
 }) => (
   <View style={styles.tabsWrap}>
-    {(['Activity', 'Emotions', 'Trends'] as TabType[]).map(tab => {
+    {(['Activity', 'Script', 'Emotions'] as TabType[]).map(tab => {
       const isActive = activeTab === tab;
       return (
         <TouchableOpacity
@@ -103,7 +97,7 @@ const TabBar = ({
   </View>
 );
 
-const WeeklyBarsCard = ({ data }: { data: number[] }) => {
+const WeeklyBarsCard = ({ data, title }: { data: number[]; title?: string }) => {
   const bars = data && data.length > 0 ? data : [0, 0, 0, 0, 0, 0, 0];
   const svgW = 300;
   const svgH = 130;
@@ -116,7 +110,7 @@ const WeeklyBarsCard = ({ data }: { data: number[] }) => {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>Scripts this week</Text>
+        <Text style={styles.cardTitle}>{title || 'Scripts this week'}</Text>
         <View style={styles.cardBadge}>
           <Text style={styles.cardBadgeText}>7 days</Text>
         </View>
@@ -164,6 +158,38 @@ const WeeklyBarsCard = ({ data }: { data: number[] }) => {
   );
 };
 
+const ScriptSummaryCard = ({ summary, insights }: { summary: any; insights?: any }) => {
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>Script Summary</Text>
+        <View style={styles.cardBadge}>
+          <Text style={styles.cardBadgeText}>Weekly</Text>
+        </View>
+      </View>
+      <View style={styles.scriptSummaryBody}>
+        <Text style={styles.scriptSummaryValue}>{summary?.total_scripts_this_week || 0}</Text>
+        <Text style={styles.scriptSummaryLabel}>Total scripts this week</Text>
+
+        {summary?.script_growth_percentage !== undefined && (
+          <View style={[styles.cardBadge, { backgroundColor: COLORS.greenLight, marginTop: 12 }]}>
+            <Text style={[styles.cardBadgeText, { color: COLORS.green }]}>
+              +{summary.script_growth_percentage}% Growth
+            </Text>
+          </View>
+        )}
+
+        {insights?.repeated_script_names && (
+          <View style={styles.insightsBox}>
+            <Text style={styles.insightsTitle}>Most Repeated:</Text>
+            <Text style={styles.insightsValue}>{insights.repeated_script_names}</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
+
 const EmotionalPatternsCard = ({ data }: { data: any[] }) => {
   const emotions = data && data.length > 0 ? data : emotionalData;
   return (
@@ -193,119 +219,26 @@ const EmotionalPatternsCard = ({ data }: { data: any[] }) => {
   );
 };
 
-const CommunicationImprovementCard = ({ data }: { data: any }) => {
-  const lines = data || trendLines;
-  const svgW = 280;
-  const svgH = 130;
-  const pad = 20;
 
-  const toPoints = (arr: number[]) => {
-    if (!arr || arr.length < 2) return "0,0";
-    const stepX = (svgW - pad * 2) / (arr.length - 1);
-    return arr
-      .map((value, index) => {
-        const x = pad + index * stepX;
-        const y = svgH - pad - (value / 100) * (svgH - pad * 2);
-        return `${x},${y}`;
-      })
-      .join(' ');
-  };
-
-  const lastPoint = (arr: number[]) => {
-    if (!arr || arr.length === 0) return { x: 0, y: 0 };
-    const stepX = (svgW - pad * 2) / Math.max(arr.length - 1, 1);
-    const x = pad + (arr.length - 1) * stepX;
-    const y = svgH - pad - (arr[arr.length - 1] / 100) * (svgH - pad * 2);
-    return { x, y };
-  };
-
-  const blueData = lines.blue || [0];
-  const purpleData = lines.purple || [0];
-  const greenData = lines.green || [0];
-
-  const blueEnd = lastPoint(blueData);
-  const purpleEnd = lastPoint(purpleData);
-  const greenEnd = lastPoint(greenData);
-
-  const legend = [
-    { label: 'Verbal', color: COLORS.blue },
-    { label: 'Social', color: COLORS.purple },
-    { label: 'Focus', color: COLORS.trendGreen },
-  ];
-
+const MilestonesList = ({ data }: { data: any[] }) => {
+  const list = data && data.length > 0 ? data : milestones;
   return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>Communication improvement</Text>
-      </View>
-      <View style={styles.legendRow}>
-        {legend.map((l, i) => (
-          <View key={i} style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: l.color }]} />
-            <Text style={[styles.legendLabel, { color: l.color }]}>{l.label}</Text>
+    <>
+      <Text style={styles.sectionTitle}>Recent Milestones</Text>
+      {list.map((item, index) => (
+        <View key={index} style={styles.milestoneCard}>
+          <View style={[styles.milestoneIconWrap, { backgroundColor: COLORS.orangeLight }]}>
+            <Text style={styles.milestoneEmoji}>{item.icon || item.emoji || '⭐'}</Text>
           </View>
-        ))}
-      </View>
-      <Svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`}>
-        {[0, 1, 2, 3].map(i => (
-          <Line
-            key={`h-${i}`}
-            x1={pad}
-            y1={pad + i * 24}
-            x2={svgW - pad}
-            y2={pad + i * 24}
-            stroke="#EEEEEE"
-            strokeWidth="1"
-          />
-        ))}
-        <Polyline
-          points={toPoints(blueData)}
-          fill="none"
-          stroke={COLORS.blue}
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Polyline
-          points={toPoints(purpleData)}
-          fill="none"
-          stroke={COLORS.purple}
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Polyline
-          points={toPoints(greenData)}
-          fill="none"
-          stroke={COLORS.trendGreen}
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Circle cx={blueEnd.x} cy={blueEnd.y} r="4" fill={COLORS.blue} />
-        <Circle cx={purpleEnd.x} cy={purpleEnd.y} r="4" fill={COLORS.purple} />
-        <Circle cx={greenEnd.x} cy={greenEnd.y} r="4" fill={COLORS.trendGreen} />
-      </Svg>
-    </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.milestoneTitle}>{item.title}</Text>
+            {item.date && <Text style={styles.milestoneDate}>{item.date}</Text>}
+          </View>
+        </View>
+      ))}
+    </>
   );
 };
-
-const MilestonesList = () => (
-  <>
-    <Text style={styles.sectionTitle}>Recent Milestones</Text>
-    {milestones.map((item, index) => (
-      <View key={index} style={styles.milestoneCard}>
-        <View style={[styles.milestoneIconWrap, { backgroundColor: item.bg }]}>
-          <Text style={styles.milestoneEmoji}>{item.emoji}</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.milestoneTitle}>{item.title}</Text>
-          <Text style={styles.milestoneDate}>{item.date}</Text>
-        </View>
-      </View>
-    ))}
-  </>
-);
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -314,6 +247,7 @@ const ProgressScreen = () => {
   const [activeTab, setActiveTab] = useState<TabType>('Activity');
   const [focusData, setFocusData] = useState<any>(null);
   const [reportData, setReportData] = useState<any>(null);
+  const [progressData, setProgressData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useFocusEffect(
@@ -327,12 +261,14 @@ const ProgressScreen = () => {
   const fetchProgressData = async (childId: number) => {
     setIsLoading(true);
     try {
-      const [focus, report] = await Promise.all([
+      const [focus, report, progress] = await Promise.all([
         GetWeeklyFocusApi(childId, () => { }),
-        GetWeeklyReportsApi(childId, () => { })
+        GetWeeklyReportsApi(childId, () => { }),
+        GetActivitiesProgressApi(childId, () => { })
       ]);
       if (focus) setFocusData(focus);
       if (report) setReportData(report);
+      if (progress) setProgressData(progress);
     } catch (error) {
       console.error('[ProgressScreen] fetch error:', error);
     } finally {
@@ -341,38 +277,44 @@ const ProgressScreen = () => {
   };
 
   const renderContent = () => {
-    const weeklyBarsData = reportData?.data?.weekly_bars || reportData?.weekly_bars || reportData?.total_scripts_per_day || [];
-    const emotionsData = reportData?.data?.emotional_patterns || reportData?.emotional_patterns || emotionalData;
-    const linesData = reportData?.data?.trend_lines || reportData?.trend_lines || trendLines;
-
     switch (activeTab) {
       case 'Activity':
-        return <WeeklyBarsCard data={weeklyBarsData} />;
+        return <WeeklyBarsCard data={progressData?.data?.weekly_activity_chart?.values || []} title="Activities this week" />;
+      case 'Script':
+        return <ScriptSummaryCard summary={progressData?.data?.progress_summary} insights={progressData?.data?.script_insights} />;
       case 'Emotions':
-        return <EmotionalPatternsCard data={emotionsData} />;
-      case 'Trends':
-        return <CommunicationImprovementCard data={linesData} />;
+        const emotionsMap = progressData?.data?.emotion_chart;
+        const mappedEmotions = emotionsMap ? emotionsMap.labels.map((label: string, index: number) => ({
+          label: label.charAt(0).toUpperCase() + label.slice(1),
+          value: emotionsMap.values[index],
+          color: emotionalData[index % emotionalData.length].color
+        })) : emotionalData;
+        return <EmotionalPatternsCard data={mappedEmotions} />;
+      default:
+        return null;
     }
   };
 
   const StatsRow = () => {
+    const actProg = progressData?.data?.activity_progress;
+    const progSum = progressData?.data?.progress_summary;
     const dynamicStats = [
       {
         img: imageIndex.Conservative,
-        value: focusData?.total_scripts || focusData?.data?.total_scripts || '0',
-        label: 'Scripts',
+        value: actProg?.total_activities || '0',
+        label: 'Activities',
         valueColor: COLORS.blue
       },
       {
-        value: focusData?.growth_rate || focusData?.data?.growth_rate || '0%',
-        label: 'Growth',
+        value: (actProg?.completion_rate_percentage || progSum?.activity_completion_rate || 0) + '%',
+        label: 'Completion',
         valueColor: '#40B36C',
         img: imageIndex.icons
       },
       {
         img: imageIndex.Positive,
-        value: focusData?.positive_rate || focusData?.data?.positive_rate || '0%',
-        label: 'Positive',
+        value: progSum?.total_scripts_this_week || '0',
+        label: 'Scripts',
         valueColor: COLORS.orange
       },
     ];
@@ -418,13 +360,11 @@ const ProgressScreen = () => {
         <StatsRow />
         <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
         {renderContent()}
-        <MilestonesList />
+        <MilestonesList data={progressData?.data?.recent_milestones || []} />
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   safe: {
@@ -632,6 +572,40 @@ const styles = StyleSheet.create({
   milestoneDate: {
     fontSize: 11,
     color: COLORS.subText,
+  },
+  scriptSummaryBody: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  scriptSummaryValue: {
+    fontSize: 48,
+    fontWeight: '800',
+    color: COLORS.green,
+  },
+  scriptSummaryLabel: {
+    fontSize: 14,
+    color: COLORS.subText,
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  insightsBox: {
+    marginTop: 16,
+    width: '100%',
+    padding: 12,
+    backgroundColor: COLORS.blueLight,
+    borderRadius: 12,
+  },
+  insightsTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.blue,
+    marginBottom: 4,
+  },
+  insightsValue: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '500',
   },
 });
 

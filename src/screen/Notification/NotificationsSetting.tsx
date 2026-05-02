@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StatusBarComponent from '../../compoent/StatusBarCompoent';
 import CustomHeader from '../../compoent/CustomHeader';
+import { GetNotificationSettingsApi, UpdateNotificationSettingsApi } from '../../Api/apiRequest';
 
-const SettingItem = ({ label, value, onToggle }: { label: string; value: boolean; onToggle: (val: boolean) => void }) => (
+const SettingItem = ({ label, value, onToggle, disabled }: { label: string; value: boolean; onToggle: (val: boolean) => void; disabled?: boolean }) => (
   <View style={styles.item}>
     <Text style={styles.label}>{label}</Text>
     <Switch
       value={value}
       onValueChange={onToggle}
+      disabled={disabled}
       trackColor={{ false: '#D1D1D1', true: '#A1D14A' }}
       thumbColor={'#FFFFFF'}
     />
@@ -22,6 +24,41 @@ export default function NotificationsSetting() {
   const [vibrate, setVibrate] = useState(false);
   const [appUpdates, setAppUpdates] = useState(true);
 
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    const data = await GetNotificationSettingsApi();
+    if (data) {
+      setNotification(data.push_enabled);
+      setSound(data.sound_enabled);
+      setVibrate(data.vibration_enabled);
+      setAppUpdates(data.app_updates_enabled);
+    }
+  };
+
+  const handleToggle = async (type: 'push' | 'sound' | 'vibrate' | 'appUpdates', newValue: boolean) => {
+    // Current values
+    const currentValues = {
+      push_enabled: type === 'push' ? newValue : notification,
+      sound_enabled: type === 'sound' ? newValue : sound,
+      vibration_enabled: type === 'vibrate' ? newValue : vibrate,
+      app_updates_enabled: type === 'appUpdates' ? newValue : appUpdates,
+    };
+
+    const data = await UpdateNotificationSettingsApi(currentValues);
+    if (data) {
+      setNotification(data.push_enabled);
+      setSound(data.sound_enabled);
+      setVibrate(data.vibration_enabled);
+      setAppUpdates(data.app_updates_enabled);
+    } else {
+      // If update fails, we might want to refresh from server to ensure sync
+      fetchSettings();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBarComponent />
@@ -33,22 +70,22 @@ export default function NotificationsSetting() {
         <SettingItem
           label="Notification"
           value={notification}
-          onToggle={setNotification}
+          onToggle={(val) => handleToggle('push', val)}
         />
         <SettingItem
           label="Sound"
           value={sound}
-          onToggle={setSound}
+          onToggle={(val) => handleToggle('sound', val)}
         />
         <SettingItem
           label="Vibrate"
           value={vibrate}
-          onToggle={setVibrate}
+          onToggle={(val) => handleToggle('vibrate', val)}
         />
         <SettingItem
           label="Application updates"
           value={appUpdates}
-          onToggle={setAppUpdates}
+          onToggle={(val) => handleToggle('appUpdates', val)}
         />
       </View>
     </SafeAreaView>

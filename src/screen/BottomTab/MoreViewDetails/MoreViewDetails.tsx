@@ -24,13 +24,11 @@ const MoreViewDetails = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { activity_id, child_id } = route.params || {};
-  console.log('[MoreViewDetails] activity_id:', activity_id, 'child_id:', child_id);
-
   const [loading, setLoading] = useState(false);
   const [activityData, setActivityData] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState<number | null>(null);
   const selectedChild = useSelector((state: any) => state.children.selectedChild);
-  const properChildId = child_id || selectedChild?.id || 4;
+  const properChildId = child_id || selectedChild?.id;
 
   useEffect(() => {
     if (activity_id) {
@@ -65,7 +63,6 @@ const MoreViewDetails = () => {
       Tts.stop();
     };
   }, []);
-
   const handleSpeech = (text: string, id: number) => {
     if (isPlaying === id) {
       Tts.stop();
@@ -99,7 +96,6 @@ const MoreViewDetails = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Top Image */}
         <View style={styles.imageWrapper}>
           <Image
             source={
@@ -144,12 +140,12 @@ const MoreViewDetails = () => {
         {activityData?.scripts_to_model?.map((item: any, index: number) => (
           <View key={item.id || index} style={styles.scriptItem}>
             <TouchableOpacity
-              style={[styles.playButton, isPlaying === item.id && { backgroundColor: '#E03B65' }]}
+              style={[styles.playButton,
+                // isPlaying === item.id && { backgroundColor: '#E03B65' }
+              ]}
               onPress={() => handleSpeech(item.text, item.id)}
             >
-              <Text style={[styles.playIcon, isPlaying === item.id && { color: '#FFF' }]}>
-                {isPlaying === item.id ? '■' : '▶'}
-              </Text>
+              <Image source={isPlaying === item.id ? imageIndex.speak : imageIndex.play} resizeMode='contain' style={{ width: isPlaying === item.id ? 28 : 12, height: isPlaying === item.id ? 28 : 12 }} />
             </TouchableOpacity>
 
             <Text style={styles.scriptItemText}>{item.text}</Text>
@@ -162,8 +158,6 @@ const MoreViewDetails = () => {
             <Text style={{ textAlign: 'center', marginTop: 10, color: '#999' }}>No scripts available.</Text>
           )}
       </ScrollView>
-
-      {/* Bottom Button */}
       <TouchableOpacity
         style={styles.bottomButton}
         onPress={() => navigation.navigate(ScreenNameEnum.ActivityPlayerScreen, {
@@ -175,7 +169,6 @@ const MoreViewDetails = () => {
       >
         <Text style={styles.bottomButtonText}>▷ Start Activity</Text>
       </TouchableOpacity>
-
     </SafeAreaView>
   );
 };
@@ -328,3 +321,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+

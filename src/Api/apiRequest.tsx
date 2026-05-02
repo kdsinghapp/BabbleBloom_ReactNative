@@ -8,7 +8,7 @@ export const BASE_URLIMAGE = 'https://python.aitechnotech.in/bubblebloom';
 const AUTH_BASE_URL = `${BUBBLEBLOOM_BASE_URL}/auth`;
 
 import ScreenNameEnum from '../routes/screenName.enum';
-import { loginSuccess, logout } from '../redux/feature/authSlice';
+import { loginSuccess, logout, setUserData } from '../redux/feature/authSlice';
 import { errorToast, successToast } from '../utils/customToast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Toast } from '../utils/Toast';
@@ -60,7 +60,19 @@ const getAuthData = async () => {
   }
 };
 
-// ─── BabbleBloom Auth APIs ───────────────────────────────────────────────────
+export const updateReduxProfile = async (dispatch: any, userData: any) => {
+  if (!userData || !dispatch) return;
+  dispatch(setUserData(userData));
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (token) {
+      await AsyncStorage.setItem('authData', JSON.stringify({ userData, token }));
+      console.log('Auth data updated in storage');
+    }
+  } catch (error) {
+    console.error('Error updating auth data in storage:', error);
+  }
+};
 
 const SignUpApi = async (
   param: {
@@ -178,7 +190,8 @@ const VerifySignupOtpApi = async (
     phone_number: string;
     code: string;
     navigation: any;
-
+    fcm_token?: string;
+    device_name?: string;
   },
   setLoading: (loading: boolean) => void,
   dispatch: any,
@@ -189,6 +202,8 @@ const VerifySignupOtpApi = async (
       country_code: param.country_code,
       phone_number: param.phone_number,
       code: param.code,
+      fcm_token: param.fcm_token || "",
+      device_name: param.device_name || "",
     }).toString();
 
     const response = await fetch(`${AUTH_BASE_URL}/${authEndpoints.signupVerifyOtp}`, {
@@ -215,6 +230,7 @@ const VerifySignupOtpApi = async (
         await AsyncStorage.setItem('token', access_token);
         await saveAuthData(user, access_token);
         dispatch(loginSuccess({ userData: user, token: access_token }));
+
         successToast(parsedResponse?.message || 'Verification successful!');
         param.navigation.reset({
           index: 0,
@@ -304,6 +320,8 @@ const VerifyLoginOtpApi = async (
     phone_number: string;
     code: string;
     navigation: any;
+    fcm_token?: string;
+    device_name?: string;
   },
   setLoading: (loading: boolean) => void,
   dispatch: any,
@@ -314,6 +332,8 @@ const VerifyLoginOtpApi = async (
       country_code: param.country_code,
       phone_number: param.phone_number,
       code: param.code,
+      fcm_token: param.fcm_token || "",
+      device_name: param.device_name || "",
     }).toString();
 
     const response = await fetch(`${AUTH_BASE_URL}/${authEndpoints.loginVerifyOtp}`, {
@@ -340,6 +360,7 @@ const VerifyLoginOtpApi = async (
         await AsyncStorage.setItem('token', access_token);
         await saveAuthData(user, access_token);
         dispatch(loginSuccess({ userData: user, token: access_token }));
+
         successToast(parsedResponse?.message || 'Login successful!');
         param.navigation.reset({
           index: 0,
@@ -666,7 +687,7 @@ export const UpdateChildApi = async (
     formdata.append('interests', param.interests);
     formdata.append('communication_level', param.communication_level);
 
-    if (param.profile_image?.uri && (param.profile_image.uri.startsWith('file://') || param.profile_image.uri.startsWith('content://'))) {
+    if (param.profile_image?.uri && !param.profile_image.uri.startsWith('http')) {
       formdata.append('profile_image', {
         uri: param.profile_image.uri,
         name: param.profile_image.fileName || 'child.jpg',
@@ -950,7 +971,7 @@ export const GetLibraryResponsesApi = async (
   }
 };
 
-export const GetActivityDetailApi = async (
+const GetActivityDetailApi = async (
   activity_id: number,
   setLoading: (loading: boolean) => void,
   child_id?: number
@@ -981,6 +1002,37 @@ export const GetActivityDetailApi = async (
     }
   } catch (error) {
     console.error('[GetActivityDetailApi] error:', error);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+const GetActivitiesProgressApi = async (
+  child_id: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activitiesProgress}?child_id=${child_id}`;
+    console.log('[GetActivitiesProgressApi] Requesting URL:', url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed) {
+      return parsed;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetActivitiesProgressApi] error:', error);
     return null;
   } finally {
     setLoading(false);
@@ -1498,11 +1550,12 @@ const DeliveryAvailableRequests = async (setLoading: (loading: boolean) => void)
   }
 };
 
-export const StartActivityApi = async (
+const StartActivityApi = async (
   activity_id: number,
   child_id: number,
   setLoading: (loading: boolean) => void
 ): Promise<any | null> => {
+  console.log('[StartActivityApi] Called with:', { activity_id, child_id });
   setLoading(true);
   try {
     const token = await AsyncStorage.getItem('token');
@@ -1512,14 +1565,34 @@ export const StartActivityApi = async (
       method: 'POST',
       headers: {
         'Accept': 'application/json',
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
+      body: JSON.stringify({}),
     });
 
-    const parsed = await response.json();
-    console.log('[StartActivityApi] Response:', parsed);
+    const textResponse = await response.text();
+    console.log('[StartActivityApi] Raw response:', textResponse);
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(textResponse);
+    } catch {
+      // If not JSON, handle as raw session ID
+      if (textResponse) {
+        return { session_id: textResponse };
+      }
+      throw new Error('Empty or invalid response');
+    }
+
     if (parsed?.status === 1) {
+      if (typeof parsed.data === 'number' || typeof parsed.data === 'string') {
+        return { session_id: parsed.data };
+      }
       return parsed.data;
+    } else if (parsed?.session_id || typeof parsed === 'number' || typeof parsed === 'string') {
+      // Handle cases where status wrapper is missing
+      return typeof parsed === 'object' ? parsed : { session_id: parsed };
     } else {
       errorToast(parsed?.message || 'Failed to start activity');
       return null;
@@ -1533,23 +1606,24 @@ export const StartActivityApi = async (
   }
 };
 
-export const CompleteActivityApi = async (
+const CompleteActivityApi = async (
   activity_id: number,
   session_id: number,
-  child_id: number,
   setLoading: (loading: boolean) => void
 ): Promise<any | null> => {
   setLoading(true);
   try {
     const token = await AsyncStorage.getItem('token');
-    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activities}/${activity_id}/complete?session_id=${session_id}&child_id=${child_id}`;
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.activities}/${activity_id}/complete?session_id=${session_id}`;
     console.log('[CompleteActivityApi] Requesting URL:', url);
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
+      body: JSON.stringify({}),
     });
 
     const parsed = await response.json();
@@ -1558,7 +1632,6 @@ export const CompleteActivityApi = async (
       successToast(parsed?.message || 'Activity completed successfully');
       return parsed.data;
     } else {
-
       errorToast(parsed?.message || 'Failed to complete activity');
       return null;
     }
@@ -1571,7 +1644,8 @@ export const CompleteActivityApi = async (
   }
 };
 
-export const GetNotificationsApi = async (
+
+const GetNotificationsApi = async (
   setLoading: (loading: boolean) => void
 ): Promise<any[] | null> => {
   setLoading(true);
@@ -1601,7 +1675,7 @@ export const GetNotificationsApi = async (
   }
 };
 
-export const MarkNotificationReadApi = async (
+const MarkNotificationReadApi = async (
   notificationId: number,
   setLoading: (loading: boolean) => void
 ): Promise<any | null> => {
@@ -1632,7 +1706,7 @@ export const MarkNotificationReadApi = async (
   }
 };
 
-export const GetDailyPromptApi = async (
+const GetDailyPromptApi = async (
   childId: number,
   setLoading: (loading: boolean) => void
 ): Promise<any | null> => {
@@ -1659,6 +1733,157 @@ export const GetDailyPromptApi = async (
     return null;
   } finally {
     setLoading(false);
+  }
+};
+
+
+const DeleteAccountApi = async (
+  setLoading: (loading: boolean) => void,
+  dispatch: any,
+  navigation: any,
+  setvisible?: (val: boolean) => void
+): Promise<void> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.parentAccount}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      // 1. Clear all persistence layers
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('authData');
+      if (setvisible) setvisible(false);
+
+      // 2. Reset Redux state
+      dispatch(logout());
+
+      // 3. Reset navigation stack to the beginning
+      navigation.reset({
+        index: 0,
+        routes: [{ name: ScreenNameEnum.OnboardingScreen }],
+      });
+
+      successToast(parsed?.message || 'Account deleted successfully');
+    } else {
+      errorToast(parsed?.message || 'Failed to delete account');
+    }
+  } catch (error) {
+    console.error('[DeleteAccountApi] error:', error);
+    errorToast('Network error. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const GetDashboardHomeApi = async (
+  childId: number,
+  setLoading: (loading: boolean) => void
+): Promise<any | null> => {
+  setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const url = `${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.dashboardHome}?child_id=${childId}`;
+    console.log('[GetDashboardHomeApi] Requesting URL:', url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    console.log('[GetDashboardHomeApi] Response:', parsed);
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      errorToast(parsed?.message || 'Failed to fetch dashboard data');
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetDashboardHomeApi] error:', error);
+    errorToast('Network error');
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
+
+const GetNotificationSettingsApi = async (
+  setLoading?: (loading: boolean) => void
+): Promise<any | null> => {
+  if (setLoading) setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.notificationsSettings}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[GetNotificationSettingsApi] error:', error);
+    return null;
+  } finally {
+    if (setLoading) setLoading(false);
+  }
+};
+
+const UpdateNotificationSettingsApi = async (
+  param: {
+    push_enabled: boolean;
+    sound_enabled: boolean;
+    vibration_enabled: boolean;
+    app_updates_enabled: boolean;
+  },
+  setLoading?: (loading: boolean) => void
+): Promise<any | null> => {
+  if (setLoading) setLoading(true);
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const body = new URLSearchParams({
+      push_enabled: param.push_enabled.toString(),
+      sound_enabled: param.sound_enabled.toString(),
+      vibration_enabled: param.vibration_enabled.toString(),
+      app_updates_enabled: param.app_updates_enabled.toString(),
+    }).toString();
+
+    const response = await fetch(`${BUBBLEBLOOM_BASE_URL}/${commonEndpoints.notificationsSettings}`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Bearer ${token}`,
+      },
+      body,
+    });
+
+    const parsed = await response.json();
+    if (parsed?.status === 1) {
+      return parsed.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('[UpdateNotificationSettingsApi] error:', error);
+    return null;
+  } finally {
+    if (setLoading) setLoading(false);
   }
 };
 
@@ -1696,4 +1921,9 @@ export {
   GetNotificationsApi,
   MarkNotificationReadApi,
   GetDailyPromptApi,
+  DeleteAccountApi,
+  GetDashboardHomeApi,
+  GetActivitiesProgressApi,
+  GetNotificationSettingsApi,
+  UpdateNotificationSettingsApi,
 };

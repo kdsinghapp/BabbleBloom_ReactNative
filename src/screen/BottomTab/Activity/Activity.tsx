@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  Linking,
 } from 'react-native';
+
 import { useFocusEffect } from '@react-navigation/native';
 import StatusBarComponent from '../../../compoent/StatusBarCompoent';
 import CustomHeader from '../../../compoent/CustomHeader';
@@ -16,6 +18,9 @@ import imageIndex from '../../../assets/imageIndex';
 import Share from 'react-native-share';
 import useDashboard from '../DashBoard/useDashboard';
 import { GetWeeklyReportsApi, ExportReportDataApi, ExportReportPdfApi } from '../../../Api/apiRequest';
+import ReactNativeBlobUtil from 'react-native-blob-util';
+import Snackbar from 'react-native-snackbar';
+
 const Activity = () => {
   const { activeChild } = useDashboard();
   const [activeTab, setActiveTab] = useState('Week');
@@ -69,11 +74,9 @@ const Activity = () => {
       const resp = await ExportReportPdfApi(activeChild.id, setLoading, period);
       console.log('[Activity] Export PDF Response:', resp);
       if (resp?.data?.pdf_url) {
-        await Share.open({
-          url: resp.data.pdf_url,
-          failOnCancel: false,
-        });
+        await handleDownloadReport(resp.data.pdf_url);
       }
+
     } catch (error) {
       console.error('[Activity] Error exporting PDF:', error);
     }
@@ -139,8 +142,8 @@ const Activity = () => {
     icon: string;
     onPress?: () => void;
   }) => (
-    <TouchableOpacity 
-      activeOpacity={0.8} 
+    <TouchableOpacity
+      activeOpacity={0.8}
       onPress={onPress}
       style={styles.shareCard}
     >
@@ -153,40 +156,114 @@ const Activity = () => {
         <Text style={styles.shareSubtitle}>{subtitle}</Text>
       </View>
 
-       <Image source={imageIndex.share} 
-       style={{
-        height:22,
-        width:22
-       }}
-       />
+      <Image source={imageIndex.share}
+        style={{
+          height: 22,
+          width: 22
+        }}
+      />
     </TouchableOpacity>
   );
+
+  const handleDownloadReport = async (pdfUrl: string) => {
+    if (!pdfUrl) return;
+
+    if (Platform.OS === 'android') {
+      try {
+        const { config, fs } = ReactNativeBlobUtil;
+        const date = new Date();
+        const fileDir = fs.dirs.DownloadDir;
+        const fileName = `BabbleBloom_Report_${Math.floor(date.getTime() + date.getSeconds() / 2)}.pdf`;
+
+        Snackbar.show({
+          text: 'Starting download...',
+          duration: Snackbar.LENGTH_SHORT,
+        });
+
+        const res = await config({
+          fileCache: true,
+          addAndroidDownloads: {
+            useDownloadManager: true,
+            notification: true,
+            path: `${fileDir}/${fileName}`,
+            description: 'Downloading communication report.',
+            mime: 'application/pdf',
+            mediaScannable: true,
+          },
+        }).fetch('GET', pdfUrl);
+
+        if (res) {
+          Snackbar.show({
+            text: 'Download completed successfully!',
+            duration: Snackbar.LENGTH_LONG,
+            backgroundColor: '#4CAF50',
+          });
+        }
+      } catch (error) {
+        console.error('[Activity] ReactNativeBlobUtil download failed:', error);
+        // Fallback to Linking if direct download fails
+        await openInBrowser(pdfUrl);
+      }
+    } else {
+      // For iOS or other platforms, open in browser/system share
+      await openInBrowser(pdfUrl);
+    }
+  };
+
+  const openInBrowser = async (url: string) => {
+    try {
+      await Linking.openURL(url);
+    } catch (error) {
+      console.error('[Activity] openInBrowser failed:', error);
+      try {
+        await Share.open({ url, failOnCancel: false });
+      } catch (shareError) {
+        console.error('[Activity] Share failed too:', shareError);
+      }
+    }
+  };
+
+
+
 
   const PreviousReportItem = ({
     title,
     date,
+    onDownload,
   }: {
     title: string;
     date: string;
+    onDownload: () => void;
   }) => (
-    <TouchableOpacity activeOpacity={0.8} style={styles.previousCard}>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      style={styles.previousCard}
+      onPress={onDownload}
+    >
       <View style={styles.previousLeft}>
-       <Image source={imageIndex.pinkDoc} 
-       
-       style={{
-        height:55,
-        width:55 ,
-        marginRight:18
-       }}
-       />
+        <Image source={imageIndex.pinkDoc}
+
+          style={{
+            height: 55,
+            width: 55,
+            marginRight: 18
+          }}
+        />
 
         <View>
           <Text style={styles.previousTitle}>{title}</Text>
           <Text style={styles.previousSubtitle}>{date}</Text>
         </View>
       </View>
+      <TouchableOpacity onPress={onDownload}>
+        <Image source={imageIndex.download}
 
-      <Text style={styles.downloadIcon}>↓</Text>
+          style={{
+            height: 24,
+            width: 24
+          }}
+        />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -226,53 +303,53 @@ const Activity = () => {
         {/* Report Card */}
         <View style={styles.reportCard}>
           <View style={styles.reportHeader}>
-           <Image source={imageIndex.doc}  
-            style={{
-              width: 55,  
-              height: 55,
-              marginRight:8
-           }}
-           />
+            <Image source={imageIndex.doc}
+              style={{
+                width: 55,
+                height: 55,
+                marginRight: 8
+              }}
+            />
 
             <View style={styles.reportHeaderText}>
               <Text style={styles.reportTitle}>
-                {reportData?.data?.period?.period_type 
+                {reportData?.data?.period?.period_type
                   ? `${reportData.data.period.period_type} Communication Progress Report`
                   : 'Communication Progress Report'}
               </Text>
               <Text style={styles.reportDate}>
-                {reportData?.data?.period?.start_date && reportData?.data?.period?.end_date 
+                {reportData?.data?.period?.start_date && reportData?.data?.period?.end_date
                   ? `${reportData.data.period.start_date} - ${reportData.data.period.end_date}`
                   : 'March 12 - March 19, 2026'}
               </Text>
             </View>
           </View>
 
-          <StatRow 
-            label="Total Scripts" 
-            value={reportData?.data?.activity_stats?.total_scripts?.toString() || '0'} 
+          <StatRow
+            label="Total Scripts"
+            value={reportData?.data?.activity_stats?.total_scripts?.toString() || '0'}
           />
-          <StatRow 
-            label="Positive Emotions" 
-            value={`${reportData?.data?.activity_stats?.positive_emotions_pct || 0}%`} 
+          <StatRow
+            label="Positive Emotions"
+            value={`${reportData?.data?.activity_stats?.positive_emotions_pct || 0}%`}
           />
-          <StatRow 
-            label="Growth Rate" 
-            value={`+${reportData?.data?.activity_stats?.growth_rate || 0}%`} 
-            valueColor="#1FA971" 
+          <StatRow
+            label="Growth Rate"
+            value={`+${reportData?.data?.activity_stats?.growth_rate || 0}%`}
+            valueColor="#1FA971"
           />
-          <StatRow 
-            label="New Milestones" 
-            value={reportData?.data?.activity_stats?.new_milestones?.toString() || '0'} 
+          <StatRow
+            label="New Milestones"
+            value={reportData?.data?.activity_stats?.new_milestones?.toString() || '0'}
           />
 
-          <TouchableOpacity 
-            activeOpacity={0.85} 
+          <TouchableOpacity
+            activeOpacity={0.85}
             onPress={handleGeneratePDF}
             style={styles.generateButton}
           >
             <Text style={styles.generateButtonText}>
-               Generate PDF Report
+              Generate PDF Report
             </Text>
           </TouchableOpacity>
         </View>
@@ -310,9 +387,11 @@ const Activity = () => {
               key={index}
               title={item.label}
               date={`Generated ${item.generated_date}`}
+              onDownload={() => handleDownloadReport(item.pdf_url)}
             />
           ))
         )}
+
 
       </ScrollView>
     </SafeAreaView>
@@ -332,7 +411,6 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
 
-  /* 🔥 Tabs */
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#F5F5F5',
@@ -340,7 +418,7 @@ const styles = StyleSheet.create({
     padding: 5,
     marginBottom: 20,
 
- 
+
   },
 
   tabButton: {
@@ -373,7 +451,7 @@ const styles = StyleSheet.create({
     marginBottom: 22,
 
     elevation: 15,
-          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOpacity: 0.06,
     shadowRadius: 10,
@@ -445,7 +523,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
 
-   
+
   },
 
   generateButtonText: {
@@ -472,7 +550,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
 
     elevation: 15,
-        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
 
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -526,8 +604,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
 
     elevation: 15,
-          shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
-  
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
+
     shadowOpacity: 0.05,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },

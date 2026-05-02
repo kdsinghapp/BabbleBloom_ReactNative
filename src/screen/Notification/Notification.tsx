@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SectionList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomHeader from '../../compoent/CustomHeader';
-import { useNavigation } from '@react-navigation/native';
 import { GetNotificationsApi, MarkNotificationReadApi } from '../../Api/apiRequest';
 import moment from 'moment';
 import LoadingModal from '../../utils/Loader';
@@ -20,14 +19,13 @@ const NotificationItem = ({ item, onPress }: { item: any; onPress: () => void })
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.message}>{item.message || item.content}</Text>
-        <Text style={styles.date}>{moment(item.created_at).format('MMM D, YYYY [at] hh:mm A')}</Text>
+        <Text style={styles.date}>{moment.utc(item.created_at).local().format('MMM D, YYYY [at] hh:mm A')}</Text>
       </View>
     </TouchableOpacity>
   );
 };
 
 const NotificationsScreen = () => {
-  const navigation = useNavigation();
   const [notificationsData, setNotificationsData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,7 +48,6 @@ const NotificationsScreen = () => {
     const earlier: any[] = [];
 
     const now = moment();
-
     data.forEach(item => {
       const date = moment(item.created_at);
       if (now.isSame(date, 'day')) {
@@ -66,7 +63,6 @@ const NotificationsScreen = () => {
     if (today.length > 0) sections.push({ title: 'Today', data: today });
     if (thisWeek.length > 0) sections.push({ title: 'This week', data: thisWeek });
     if (earlier.length > 0) sections.push({ title: 'Earlier', data: earlier });
-
     return sections;
   };
 
@@ -85,6 +81,7 @@ const NotificationsScreen = () => {
         {notificationsData.length > 0 ? (
           <SectionList
             sections={notificationsData}
+            showsVerticalScrollIndicator={false}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <NotificationItem
@@ -175,3 +172,5 @@ const styles = StyleSheet.create({
 });
 
 export default NotificationsScreen;
+
+

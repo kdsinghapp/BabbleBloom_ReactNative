@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
 import { useDispatch } from 'react-redux';
-import { VerifySignupOtpApi, VerifyLoginOtpApi, SendSignupOtpApi, Resend_otp } from '../../../Api/apiRequest';
-import ScreenNameEnum from '../../../routes/screenName.enum';
+import { VerifySignupOtpApi, VerifyLoginOtpApi, SendSignupOtpApi, LoginApi } from '../../../Api/apiRequest';
+import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const useOtpVerification = (cellCount: number = 4) => {
   const navigation = useNavigation();
@@ -57,18 +58,29 @@ export const useOtpVerification = (cellCount: number = 4) => {
   };
 
   const handleResendOTP = async () => {
-    if (timer > 0) return; // prevent multiple clicks during countdown
+    if (timer > 0) return;
     setIsLoading(true);
     try {
-      await SendSignupOtpApi(
-        {
-          country_code: resolvedCountryCode,
-          phone_number: resolvedPhoneNumber,
-          navigation,
-        },
-        setIsLoading,
-      );
-      setTimer(30); // restart 30 s timer
+      if (flowType === 'login') {
+        await LoginApi(
+          {
+            country_code: resolvedCountryCode,
+            phone_number: resolvedPhoneNumber,
+            navigation,
+          },
+          setIsLoading,
+        );
+      } else {
+        await SendSignupOtpApi(
+          {
+            country_code: resolvedCountryCode,
+            phone_number: resolvedPhoneNumber,
+            navigation,
+          },
+          setIsLoading,
+        );
+      }
+      setTimer(30);
     } catch (error) {
       console.error('OTP resend error:', error);
     } finally {
@@ -84,6 +96,9 @@ export const useOtpVerification = (cellCount: number = 4) => {
 
     setIsLoading(true);
     try {
+      const fcmToken = await AsyncStorage.getItem('fcmToken') || "";
+      const deviceName = Platform.OS === 'android' ? 'android' : 'ios';
+
       if (flowType === 'login') {
         await VerifyLoginOtpApi(
           {
@@ -91,6 +106,8 @@ export const useOtpVerification = (cellCount: number = 4) => {
             phone_number: resolvedPhoneNumber,
             code: value,
             navigation,
+            fcm_token: fcmToken,
+            device_name: deviceName,
           },
           setIsLoading,
           dispatch,
@@ -102,6 +119,8 @@ export const useOtpVerification = (cellCount: number = 4) => {
             phone_number: resolvedPhoneNumber,
             code: value,
             navigation,
+            fcm_token: fcmToken,
+            device_name: deviceName,
           },
           setIsLoading,
           dispatch,
@@ -113,6 +132,7 @@ export const useOtpVerification = (cellCount: number = 4) => {
       setIsLoading(false);
     }
   };
+
 
   return {
     value,

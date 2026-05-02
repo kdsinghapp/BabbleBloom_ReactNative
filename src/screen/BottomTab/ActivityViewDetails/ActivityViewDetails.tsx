@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
- 
+
   TextInput,
   TouchableOpacity,
   FlatList,
@@ -20,66 +20,24 @@ import imageIndex from '../../../assets/imageIndex';
 import { GetActivitiesApi } from '../../../Api/apiRequest';
 import LoadingModal from '../../../utils/Loader';
 import { useSelector } from 'react-redux';
- 
-
-const activities = [
-  {
-    id: '1',
-    title: 'Bird Nest Rescue',
-    description: 'Help the mama bird find her lost eggs using gentle movements.',
-    age: '3–6 yrs',
-    stage: 'Single 1–2',
-    duration: '15–20 min play',
-    image:
-      'https://images.unsplash.com/photo-1444464666168-49d633b86797?q=80&w=800&auto=format&fit=crop',
-  },
-  {
-    id: '2',
-    title: 'Rainbow Sorting',
-    description: 'A colorful sensory game to practice naming and grouping.',
-    age: '2–4 yrs',
-    stage: 'Stage 1',
-    duration: '15–20 min play',
-    image:
-      'https://images.unsplash.com/photo-1519337265831-281ec6cc8514?q=80&w=800&auto=format&fit=crop',
-  },
-  {
-    id: '3',
-    title: 'Moonlight Shadow',
-    description: 'Explore light and dark while building descriptive vocabulary.',
-    age: '4–6 yrs',
-    stage: 'Stage 2',
-    duration: '15–20 min play',
-    image:
-      'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=800&auto=format&fit=crop',
-  },
-  {
-    id: '4',
-    title: 'Garden Whispers',
-    description: 'Help the mama bird find her lost eggs using gentle movements.',
-    age: '5+ yrs',
-    stage: 'Stage 3+',
-    duration: '15–20 min play',
-    image:
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop',
-  },
-];
 
 const ActivityViewDetails = () => {
   const Navigator = useNavigation();
-const [activities, setActivities] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const selectedChild = useSelector((state: any) => state.children.selectedChild);
   useEffect(() => {
     // Simulate fetching reports based on activeTab
     // In real implementation, you would fetch from API here
-    (async() => {
-      setLoading(true);
-     const data =  await GetActivitiesApi(selectedChild?.id || 4, setLoading);
-      console.log("Activities fetched", data);
-      setActivities(data);
-      setLoading(false);
+    (async () => {
+      if (selectedChild?.id) {
+        setLoading(true);
+        const data = await GetActivitiesApi(selectedChild.id, setLoading);
+        console.log("Activities fetched", data);
+        setActivities(data);
+        setLoading(false);
+      }
     })();
   }, [selectedChild]);
   const renderItem = ({ item }: any) => {
@@ -97,7 +55,7 @@ const [activities, setActivities] = useState<any[]>([]);
             <View style={[styles.badge, styles.pinkBadge]}>
               {/* <Ionicons name="time-outline" size={12} color="#EF476F" /> */}
               <Text style={[styles.badgeText, { color: '#EF476F' }]}>
-               {item.age_min} - {item.age_max} yrs
+                {item.age_min} - {item.age_max} yrs
               </Text>
             </View>
 
@@ -112,14 +70,14 @@ const [activities, setActivities] = useState<any[]>([]);
           <View style={styles.bottomRow}>
             <Text style={styles.duration}>{item.duration}</Text>
 
-            <TouchableOpacity 
-            
-            onPress={()=> Navigator.navigate(ScreenNameEnum.MoreViewDetails, {
-              activity_id: item.id,
-              child_id: selectedChild?.id
-            })}
-            style={styles.startBtn} activeOpacity={0.8}>
-               <Text style={styles.startText}>start</Text>
+            <TouchableOpacity
+
+              onPress={() => Navigator.navigate(ScreenNameEnum.MoreViewDetails, {
+                activity_id: item.id,
+                child_id: selectedChild?.id
+              })}
+              style={styles.startBtn} activeOpacity={0.8}>
+              <Text style={styles.startText}>start</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -129,26 +87,26 @@ const [activities, setActivities] = useState<any[]>([]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-    <LoadingModal visible = {loading}/>
-           <StatusBarComponent />
+      <LoadingModal visible={loading} />
+      <StatusBarComponent />
       <CustomHeader label="Activity View Details" />
-      <View style={[styles.container,{
-        marginTop:20
+      <View style={[styles.container, {
+        marginTop: 20
       }]}>
- 
+
         <View style={styles.searchRow}>
           <View style={styles.searchBox}>
-            <Image source={imageIndex.search1} 
-            
-            style={{width:22,height:22}}
+            <Image source={imageIndex.search1}
+
+              style={{ width: 22, height: 22 }}
             />
-              <TextInput
-                placeholder="Search activities or skills..."
-                placeholderTextColor="#7C8797"
-                style={styles.input}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
+            <TextInput
+              placeholder="Search activities or skills..."
+              placeholderTextColor="#7C8797"
+              style={styles.input}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
           </View>
 
           <TouchableOpacity style={styles.filterBtn}>
@@ -157,8 +115,8 @@ const [activities, setActivities] = useState<any[]>([]);
         </View>
 
         <FlatList
-          data={activities.filter((item: any) => 
-            item.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          data={activities.filter((item: any) =>
+            item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.short_description?.toLowerCase().includes(searchQuery.toLowerCase())
           )}
           keyExtractor={(item) => item.id.toString()}
@@ -188,7 +146,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
- marginHorizontal:15
+    marginHorizontal: 15
   },
   header: {
     flexDirection: 'row',
@@ -239,11 +197,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-      filterIcon: {
-        fontSize: 18,
-        color: '#fff',
-        fontWeight: '700',
-    },
+  filterIcon: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: '700',
+  },
   listContent: {
     paddingBottom: 20,
   },
@@ -253,15 +211,15 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 10,
     marginBottom: 14,
-   // iOS Shadow
-        shadowColor:  Platform.OS === 'android' ?'#BCDBFF' :"black",
-  shadowOffset: { width: 0, height: 3 },
-  shadowOpacity: 0.08,
-  shadowRadius: 6,
+    // iOS Shadow
+    shadowColor: Platform.OS === 'android' ? '#BCDBFF' : "black",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
 
-  // Android Shadow
-  elevation: 10,
-  marginHorizontal:5
+    // Android Shadow
+    elevation: 10,
+    marginHorizontal: 5
   },
   cardImage: {
     width: 100,
@@ -303,7 +261,7 @@ const styles = StyleSheet.create({
   },
   pinkBadge: {
     backgroundColor: '#FFE8EE',
-    marginBottom:10
+    marginBottom: 10
   },
   greenBadge: {
     backgroundColor: '#E6F8EC',
