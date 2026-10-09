@@ -60,7 +60,6 @@ export default {
     Icon: require('./images/Icon.png'),
     prfile: require('./images/prfile.png'),
     back: require('./images/back.png'),
-    logout: require('./images/logout.png'),
     dounArroww: require('./images/dounArroww.png'),
     aboutus: require('./images/aboutus.png'),
     BackLeft: require('./images/BackLeft.png'),

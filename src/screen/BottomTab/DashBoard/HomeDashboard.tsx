@@ -161,7 +161,7 @@ export default function HomeScreen() {
     ];
 
     return (
-      <View style={[styles.section, { paddingBottom: 32 }]}>
+      <View style={[styles.section, { paddingBottom: 0 }]}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.quickRow}>
           {quickActions?.map(({ label, color, Icon, name }) => (
@@ -277,7 +277,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? 16 : 8,
-    paddingBottom: 12,
     backgroundColor: C.white,
   },
   greeting: {
@@ -289,7 +288,6 @@ const styles = StyleSheet.create({
   subGreeting: {
     fontSize: 13,
     color: C.textGray,
-    marginTop: 2,
   },
   headerRight: {
     flexDirection: 'row',
@@ -312,7 +310,7 @@ const styles = StyleSheet.create({
 
   banner: {
     marginHorizontal: 15,
-    marginTop: 15,
+    marginTop: 5,
     borderRadius: 20,
     backgroundColor: C.cream,
     overflow: 'hidden',
@@ -401,7 +399,7 @@ const styles = StyleSheet.create({
   // Section
   section: {
     paddingHorizontal: 16,
-    marginTop: 24,
+    marginTop: 10,
   },
   sectionHeader: {
     flexDirection: 'row',
